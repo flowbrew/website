@@ -3,7 +3,7 @@ name: CICD
 on: [push]
 
 env:
-  WEBSITE_REPO: flowbrew/website.github.io
+  WEBSITE_REPO: flowbrew/website-deployment
 
 jobs:
   build-deploy:
