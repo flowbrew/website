@@ -18,17 +18,16 @@ def run(command_line):
     return subprocess.check_output(shlex.split(command_line))
 
 def wait_until_deployed(domain, branch, sha):
-    url = f'https://{domain}/branch_{branch}'
+    url = f'https://{domain}/branch_{branch}/'
     print('wait_until_deployed on', url)
     for _ in range(0, 60):
-        with urllib.request.urlopen(url) as response:
-            html = str(response.read())
-            soup = BeautifulSoup(html)
-            sha_ = soup.find(
-                'meta', {'name': 'github-commit-sha'}
-                ).get('content')
-            if sha == sha_:
-                return True
+        html = str(urllib.request.urlopen(url).read())
+        soup = BeautifulSoup(html)
+        sha_ = soup.find(
+            'meta', {'name': 'github-commit-sha'}
+            ).get('content')
+        if sha == sha_:
+            return True
         time.sleep(2)
     raise Exception("Can't detect deployment on {url}")
 
