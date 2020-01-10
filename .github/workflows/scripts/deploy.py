@@ -19,7 +19,10 @@ def run(command_line):
 
 
 def wait_until_deployed(domain, branch, sha):
-    url = f'https://{domain}/branch_{branch}/'
+    url = (
+        f'https://{domain}/branch_{branch}/' if branch != 'master' else
+        f'https://{domain}/'
+        )
     print('wait_until_deployed on', url)
     for _ in range(0, 60):
         try:
