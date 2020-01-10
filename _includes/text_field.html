@@ -1,0 +1,18 @@
+<div class="mdc-text-field mdc-text-field--outlined" id="{{ include.id }}-wrapper">
+  <input
+    class="mdc-text-field__input"
+    id="{{ include.id }}"
+    {% if include.required %} required {% endif %}
+    {% if include.type == "tel" %} pattern="^[0-9-+\s()]*$" {% endif %}
+    {% if include.type %} type="{{include.type}}" {% endif %}
+  />
+  <div class="mdc-notched-outline">
+    <div class="mdc-notched-outline__leading"></div>
+    <div class="mdc-notched-outline__notch">
+      <label for="text-field-hero-input" class="mdc-floating-label">{{
+        include.name
+      }}</label>
+    </div>
+    <div class="mdc-notched-outline__trailing"></div>
+  </div>
+</div>

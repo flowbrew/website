@@ -1,0 +1,39 @@
+name: CICD
+
+on: [push]
+
+env:
+  WEBSITE_REPO: flowbrew/website.github.io
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    container: 
+      image: ntoss/builder:latest
+    env:
+      BUILD_PATH: ./_site
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      # Saving branch name to ${BRANCH_NAME}
+      - uses: nelonoel/branch-name@v1
+
+      - uses: actions/checkout@v1
+      - name: Build Jekyll
+        run: |
+          .github/workflows/scripts/build.py \
+              -d ${{ env.BUILD_PATH }} \
+              -b ${{ env.BRANCH_NAME }}
+
+      - name: Deploy Jekyll
+        run: |
+          pip install path
+          .github/workflows/scripts/deploy.py \
+              -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
+              -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
+              -r ${{ env.WEBSITE_REPO }} \
+              -s ${{ env.BUILD_PATH }} \
+              -b ${{ env.BRANCH_NAME }}

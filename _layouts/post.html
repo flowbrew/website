@@ -1,0 +1,84 @@
+---
+layout: default
+---
+
+<article>
+  <section class="post">
+    <h1 class="article-title">{{ page.title }}</h1>
+    <div class="subtitle">{{ page.subtitle }}</div>
+    <div class="author">
+      <div class="avatar">
+        <a href="{{ page.author.url | relative_url }}">
+          {% include image_variant.html class='author-avatar' image=page.author.image alt=page.author.name %}
+        </a>
+      </div>
+      <div class="side-text">
+        <div class="ct">
+          <a class="tdn" href="{{ page.author.url | relative_url }}">{{ page.author.name }}</a>
+        </div>
+        <div class="lct">
+          {{ page.date | date: "%d.%m.%Y" }} ·
+          <span class="reading-time"></span>
+        </div>
+      </div>
+    </div>
+
+    {% include image.html 
+      class="i3x2" 
+      image=page.image.image 
+      alt=page.image.alt
+      caption=page.image.caption 
+      %}
+
+    <div class="entry">
+      {{ content }}
+    </div>
+  </section>
+</article>
+
+<script type="application/ld+json">
+  {
+      "@context": "http://schema.org",
+      "@graph": [
+      {
+          "@type": "NewsArticle",
+          "image": "{{ page.image.url }}",
+          "url": "{{ page.url }}",
+          "dateCreated": "{{ page.date }}",
+          "datePublished": "{{ page.date }}",
+          "dateModified": "{{ page.date }}",
+          "headline": "{{ page.title }}",
+          "name": "{{ page.title }}",
+          "description": "{{ page.description }}",
+          "keywords": "{{ page.keywords }}",
+          "mainEntityOfPage": "{{ page.url }}",
+          "author": {
+              "@type": "Person",
+              "name": "{{ page.author.name }}",
+              "url": "{{ page.author.url | relative_url }}"
+          },
+          "creator": {
+              "@type": "Thing",
+              "name": "{{ page.author.name }}"
+          },
+          "publisher": {
+              "@type": "Organization",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "{{ '/assets/img/logo_black.png' | absolute_url }}",
+                "height": 60, 
+                "width": 129
+              },
+              "url" : "https://flowbrew.ru",
+              "email": "ak@flowbrew.ru",
+              "contactPoint" : [
+              { "@type" : "ContactPoint",
+                "telephone" : "+7-921-920-3135",
+                "contactType" : "customer service"
+              } ],
+              "name": "Flow Brew"
+          }
+      }
+      ]
+  }
+</script>

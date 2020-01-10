@@ -1,0 +1,375 @@
+---
+layout: page
+title: Оформление заказа
+description: Обволакивающий вкус, кремово-ореховое послевкусие и ягодный аромат. Бесплатная доставка по Спб и Москве. Flow Brew
+link_image: matcha_tea_flowbrew.jpg
+
+product: Чай матча 60 г (60 чашек)
+
+---
+
+{% assign product = site.products.matcha %}
+
+<style>
+  .checkout-buttons {
+    text-align: right;
+    margin-bottom: 5rem;
+  }
+
+  html {
+  }
+
+  .mdc-elevation--z2,
+  .mdc-elevation--z1,
+  .mdc-elevation--z3,
+  .mdc-elevation--z4 {
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
+
+  .checkot-block {
+    border-radius: 6px;
+    padding: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+  }
+
+  #price-panel {
+    color: rgba(0, 0, 0, 0.84);
+    /* margin-bottom: 0.75rem; */
+    /* border: none; */
+    /* padding: 0; */
+  }
+
+  #comment-wrapper {
+    margin: 0;
+  }
+
+  #order-date {
+  }
+
+  #footer {
+    color: rgba(0, 0, 0, 0.84);
+  }
+
+  figure {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .fix-text {
+    color: rgba(0, 0, 0, 0.84);
+    border: none;
+    padding: 0;
+  }
+
+  .dsn {
+    display: none;
+  }
+
+  main p {
+    margin-top: 0;
+  }
+</style>
+
+{% include 
+  image.html 
+  class="is1x1" 
+  image=page.link_image
+  caption=page.product
+  strong=true
+  %}
+<br/>
+
+<form action="" id="checkout_form">
+
+<div class="checkot-block">
+  <p class="mdc-text-field__input fix-text">
+  Если это ваш первый заказ, то вы получите бесплатный набор для заварки.
+  </p>
+  {% include text_field.html name="Имя" id="name" required=true %}
+  <br />
+  {% include text_field.html name="Email" id="email" required=true type="email"%}
+  <br />
+  {% include text_field.html name="Телефон" id="phone" required=true type="tel"%}
+  <br />
+</div>
+<br />
+
+
+<div class="checkot-block">
+  {% include radio_button.html group="city" name="Москва" checked=true%}<br />
+  {% include radio_button.html group="city" name="Москва (экспресс)"%}<br />
+  {% include radio_button.html group="city" name="Санкт-Петербург"%}<br />
+  {% include radio_button.html group="city" name="Другой город" %}<br />
+  {% include text_field.html name="Адрес" id="address" required=true %}<br />
+
+  <p class="time-panel spb-time-panel mdc-text-field__input fix-text dsn">
+  Мы доставим заказ курьером за 1 день.
+  </p>
+
+  <p class="time-panel msk-express-time-panel mdc-text-field__input fix-text dsn">
+  Заказ необходимо разместить <b>до 15:30</b>. Мы доставим заказ курьером в Москву за 1 рабочий день (не доставляем в выходные и праздники).  Гарантирована доставка до 18:00.
+  </p>
+
+  <p class="time-panel msk-time-panel mdc-text-field__input fix-text dsn">
+  Мы доставим заказ курьером в Москву за 2-4 рабочих дня (не доставляем в выходные и праздники).
+  </p>
+
+  <p class="time-panel msk-obl-time-panel mdc-text-field__input fix-text dsn">
+  Мы доставим заказ курьером в Московскую область за 1-2 рабочих дня (не доставляем в выходные и праздники).
+  </p>
+
+  <p class="time-panel other-time-panel mdc-text-field__input fix-text dsn">
+  Мы доставим заказ Почтой России за 1-2 недели. Для заказа укажите свое имя и <b>фамилию</b>.
+  </p>
+
+</div>
+<br />
+
+
+<div class="checkot-block mdc-text-field__input" id="price-panel">
+  <table style="width:100%">
+    <tr id="price_panel">
+      <td>Цена</td>
+      <td align="right" id="order_cost"></td>
+    </tr>
+    <tr id="discount_panel" class="new-price">
+        <td>Цена со скидкой <span id="discount_value"></span></td>
+        <td align="right" id="discount"></td>
+    </tr>
+    <tr id="expiration_panel" class="new-price">
+        <td>действительна <span id="priceduration"></span></td>
+        <td align="right"></td>
+    </tr>
+    <tr>
+      <td>Доставка</td>
+      <td align="right" id="shipping_cost"></td>
+    </tr>
+    <tr>
+      <td><strong>Итого</strong></td>
+      <td align="right"><strong id="total_cost"></strong></td>
+    </tr>
+  </table>
+
+  <p id="footer" class="mdc-text-field__input fix-text">
+    <br />
+    Вы можете оплатить заказ после получения. Оплата банковским переводом на
+    карту Сбербанка или Тинькофф.
+  </p>
+</div>
+
+<br />
+{% include text_field.html name="Промокод" id="coupon" %}
+<br />
+{% include text_field.html name="Комментарий" id="comment" %}
+<br />
+<br />
+
+<div class="checkout-buttons">
+  <a href="/" class="mdc-button">Назад</a>
+  <button id="buy" class="checkout-buy mdc-button mdc-button--raised"><i class="fa fa-spinner fa-spin"></i> <span class="buy-button-text">Купить</span></button>
+</div>
+
+</form>
+
+<script>
+  product = {{ product | jsonify }};
+
+  function read_coupon() {
+    var coupon = $('#coupon').val();
+    if (!coupon) {
+      coupon = "";
+    }
+    return coupon.trim().toUpperCase();
+  }
+
+  function price_to_str(price) {
+    return price.toString();
+  }
+
+  function update_state() {
+    var price = product.price;
+
+    var coupon = read_coupon();
+    var discount = process_coupon(coupon);
+    var expiration = promocode_expiration_in_hours(coupon);
+
+    var shipping = 0;
+    var city = $('input[name=city]:checked').attr('label');
+
+    $(".time-panel").hide();
+    if (city == "Москва") {
+      $(".msk-time-panel").show();
+    } else if (city == "Москва (экспресс)") {
+      $(".msk-express-time-panel").show();
+      shipping = product.shipping;
+    } else if (city == "Московская область") {
+      $(".msk-obl-time-panel").show();
+      shipping = product.shipping;
+    } else if (city == "Санкт-Петербург") {
+      $(".spb-time-panel").show();
+    } else  {
+      $(".other-time-panel").show();
+      shipping = product.shipping;
+    }
+
+    var discounted_price = (1.0 - discount) * price;
+    var revenue = discounted_price + shipping;
+
+    if (discount > 0.0) {
+      $("#discount_panel").show();
+      $("#price_panel").addClass("crossed");
+    } else {
+      $("#discount_panel").hide();
+      $("#price_panel").removeClass("crossed");
+    }
+
+    $("#order_cost").html(price_to_str(price));
+    $("#discount").html(price_to_str(discounted_price));
+    $("#shipping_cost").html(price_to_str(shipping));
+    $("#total_cost").html(price_to_str(revenue));
+    $("#discount_value").html(
+      (discount * 100.0).toString() + "%"
+      );
+
+    if (expiration > 0) {
+      $("#expiration_panel").show();
+      $('#priceduration').html(int_to_hours(expiration));
+    } else {
+      $("#expiration_panel").hide();
+    }
+
+    return {
+      price: price,
+      shipping: shipping,
+      discount: discount,
+      coupon: coupon,
+      revenue: revenue,
+      expiration: expiration
+      };
+  }
+
+  $('input[type=radio]').change(function() {
+      update_state();
+  });
+
+  function on_coupon_update() {
+    set_promocode(read_coupon());
+    update_state();
+  } 
+  $('#coupon').change(on_coupon_update);
+  $('#coupon').keyup(on_coupon_update);
+
+  // BUY
+
+  function randomIntFromInterval(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+  function disablebutton() {
+    $('#buy').addClass("busy");
+    $('#buy').attr("disabled", true);
+  }
+
+  function enablebutton() {
+    $('#buy').removeClass("busy");
+    $('#buy').attr("disabled", false);
+  }
+
+  function checkout() {
+    var isValid = document.forms['checkout_form'].reportValidity();
+
+    if (!isValid) {
+      enablebutton();
+      return;
+    }
+
+    ec_checkout_d(product, 3);
+
+    var state = update_state();
+    state.product = product;
+    state.t_id = randomIntFromInterval(100, 9999).toString();
+
+    try {
+      $.ajax({
+        url: "https://5m2slo47c2.execute-api.us-east-2.amazonaws.com/default/checkout",
+        type: "POST",
+        data: JSON.stringify({
+            name: $('#name').val(),
+            email: $('#email').val(),
+            phone: $('#phone').val(),
+            city: $('input[name=city]:checked').attr('label'),
+            address: $('#address').val(),
+            comment: $('#comment').val(),
+            product_id: state.product.id,
+            revenue: state.revenue + ' ' + state.product.currency,
+            transaction_id: state.t_id,
+            coupon: state.coupon,
+            discount: state.discount,
+            expiration: state.expiration
+          }),
+        dataType: "json",
+        crossDomain: true,
+        error: function() {
+          enablebutton();
+          window.location = '/ошибка';
+        },
+        success: function(response) {
+          ec_purchase(
+            state.t_id, 
+            state.product, 
+            state.revenue, 
+            state.shipping,
+            1,
+            state.coupon,
+            function () {
+              enablebutton();
+              window.location = "/спасибо";
+            }
+            );
+        }
+      });
+    } catch (e) {
+      enablebutton();
+      window.location = '/ошибка';
+    }
+  }
+
+  $('#buy').universalClick(function (event) {
+    event.preventDefault();
+    disablebutton();
+    checkout(); 
+  });
+
+  function init_form_reader(product) {
+    $("#name").focusout(function() {
+      ec_checkout_d(product, 2);
+    });
+
+    $(".mdc-text-field__input").focusout(function() {
+      form_input(
+        $(this).attr("id"), 
+        $(this).val()
+        );
+    });
+    
+    $("input[type=radio]").change(function() {
+      form_input(
+        $(this).attr("name"), 
+        $(this).attr("label")
+        );
+    });
+  }
+
+  var code = promocode();
+  var discount = process_coupon(code);	
+  if (discount > 0.0) {
+    mdc_set_textfield('#coupon', code);
+  }
+
+  update_state();
+  init_form_reader(product);
+
+  ec_checkout_d(product, 1);
+
+</script>

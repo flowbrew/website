@@ -1,0 +1,47 @@
+<style>
+  .hero-wrap {
+    height: 100%;
+    min-height: 500px;
+  }
+  .hero-text-wrapper h1,
+  .hero-text-wrapper p {
+    text-align: center;
+    color: black;
+  }
+  .hero-image-wrapper {
+    grid-area: hero-image;
+  }
+  .hero-text-wrapper {
+    grid-area: hero-text;
+  }
+  .cn {
+    position: relative;
+  }
+  .inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .hero-panel {
+    height: 100%;
+  }
+</style>
+
+<div style="height:30px;"></div>
+
+<div class="bg-img hero-wrap cn">
+  <div class="inner">
+    <section class="grid hero-panel">
+      <div class="hero-image-wrapper">
+        <div class="red hero-image"></div>
+      </div>
+
+      <div class="hero-text-wrapper">
+        <h1 class="hfancy">Чай Матча</h1>
+        <p>Наполните 2020 энергией и настроением!</p>
+        <img class="arrow_down" src="{{ '/assets/img/arrow_down.gif' | relative_url}}"/>
+      </div>
+    </section>
+  </div>
+</div>

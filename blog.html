@@ -1,0 +1,37 @@
+---
+layout: page
+light_page: true
+title: Блог
+---
+
+{% assign filtered_posts = site.posts | where: 'visible', true %}
+{% for post in filtered_posts  %}
+<p>
+  <a href="{{ post.url | relative_url }}">
+    {% include image.html 
+      class="i3x2" 
+      image=post.image.image 
+      alt=post.image.alt
+      %}
+  <h2>{{ post.title }}</h2>
+  <p>{{ post.description }}</p>
+</a>
+<div class="author">
+  <div class="avatar">
+    <a href="{{ post.author.url | relative_url }}">
+      {% include image_variant.html class='author-avatar' image=post.author.image alt=post.author.name %}
+    </a>
+  </div>
+  <div class="side-text">
+    <div class="ct">
+      <a class="tdn" href="{{ post.author.url | relative_url }}">{{ post.author.name }}</a>
+    </div>
+    <div class="lct">
+      {{ post.date | date: "%d.%m.%Y" }}
+    </div>
+  </div>
+</div>
+</p>
+<hr/>
+{% endfor %}
+

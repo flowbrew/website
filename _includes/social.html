@@ -1,0 +1,7 @@
+{% assign full_path = site.url | append: page.url %}
+
+<div class="social-wrapper">
+    <a href="https://twitter.com/share?text={{ page.title }} @flow_brew&url={{ full_path }}&related=flow_brew"><i class="fab fa-twitter"></i></a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u={{ full_path }}"><i class="fab fa-facebook-square"></i></a>
+    <a href="https://vk.com/share.php?url={{ full_path }}"><i class="fab fa-vk"></i></a>
+</div>

@@ -1,0 +1,46 @@
+﻿<div class="footer-bg">
+  <footer class="grid">
+    <nav class="footer-nav">
+      <ul>
+        <li>
+          <a href="{{ '/blog' | relative_url }}">{{ site.footer.blog }}</a>
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <a href="{{ '/' | relative_url }}">{{ site.footer.shop }}</a>
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <a href="{{ site.footer.contacts | downcase | url_encode | relative_url }}"
+            >{{ site.footer.contacts }}</a
+          >
+        </li>
+        <li>
+          <a href="{{ site.footer.shipment | downcase | url_encode | relative_url }}"
+            >{{ site.footer.shipment }}</a
+          >
+        </li>
+        <li>
+          <a href="{{ site.footer.payment | downcase | url_encode | relative_url }}"
+            >{{ site.footer.payment }}</a
+          >
+        </li>
+        <li>
+          <a href="{{ site.footer.privacypolicy | downcase | url_encode | relative_url }}"
+            >{{ site.footer.privacypolicy }}</a
+          >
+        </li>
+        <li>
+          <a href="{{ site.footer.refund | downcase | url_encode | relative_url }}"
+            >{{ site.footer.refund }}</a
+          >
+        </li>
+      </ul>
+    </nav>
+    <p class="footer-signature">
+      {{ site.footer.signature }}
+    </p>
+  </footer>
+</div>

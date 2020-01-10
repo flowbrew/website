@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# local deployment
+killall jekyll
+# jekyll serve --skip-initial-build &
+# jekyll serve --incremental --watch  &
+
+SCRIPT=./.github/workflows/scripts/run_locally
+$SCRIPT
+fswatch -E --latency=3 --exclude="DS_Store|_site|cache|vscode|jekyll-metadata" -o ./ | xargs -n1 -I{} $SCRIPT

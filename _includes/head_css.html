@@ -1,0 +1,17 @@
+{% capture fontawesome %} {% include css/fa/fontawesome.min.css %} {% endcapture %}
+{% capture brands %} {% include css/fa/brands.min.css %} {% endcapture %}
+{% capture solid %} {% include css/fa/solid.min.css %} {% endcapture %}
+{% capture material_components_web %} {% include css/material-components-web.min.css %} {% endcapture %}
+{% capture mdc_icon %} {% include css/mdc-icon.css %} {% endcapture %}
+{% capture styles %} {% include css/styles.scss %} {% endcapture %}
+{% capture roboto %} {% include css/roboto.css %} {% endcapture %}
+
+<style>
+    {{ fontawesome  }}
+    {{ brands  }}
+    {{ solid  }}
+    {{ material_components_web }}
+    {{ mdc_icon }}
+    {{ styles | scssify }}
+    {{ roboto }}
+</style>

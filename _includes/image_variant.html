@@ -1,0 +1,28 @@
+{% assign image = include.image | split: '/' | where_exp: "item", "item.size > 0" | join: '/' %}
+{% assign pair = image | split: '.' %}
+{% assign name = pair | first %}
+{% assign extension = pair | last %}
+{% assign resolutions = '2048,1024,512,256' | split: ',' %}
+
+{% if extension == 'svg' %}
+{% include image_fixed.html 
+    id=include.id 
+    class=include.class 
+    alt=include.alt
+    title=include.title
+    style=include.style
+    image=image
+    %}
+{% else %}
+<img
+ {% if include.id %}id="{{ include.id }}"{% endif %}
+ {% if include.class %}class="{{ include.class }}"{% endif %}
+ {% if include.alt %}alt="{{ include.alt }}"{% endif %}
+ {% if include.title %}title="{{ include.title }}"{% endif %}
+ {% if include.style %}style="{{ include.style }}"{% endif %}
+ srcset="{% for resolution in resolutions %}
+ {{ '/assets/img_gen/' | append: name | relative_url }}_{{resolution}}.{{extension}} {{resolution}}w,{% endfor %}
+    "
+ src="{{ '/assets/img_gen/' | append: image | relative_url }}">
+{% endif %}
+

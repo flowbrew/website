@@ -1,0 +1,27 @@
+#!/bin/bash
+
+echo "---> Deploy Jekyll"
+
+# Install dependencies
+pip install awscli
+
+# Configure credentials
+aws configure --profile s3-sync-action <<-EOF > /dev/null 2>&1
+${AWS_ACCESS_KEY_ID}
+${AWS_SECRET_ACCESS_KEY}
+${AWS_REGION}
+text
+EOF
+
+# Deleting a bucket
+aws s3 rb s3://${AWS_S3_BUCKET} \
+    --force \
+    --profile s3-sync-action
+
+# Cleaning credentials
+aws configure --profile s3-sync-action <<-EOF > /dev/null 2>&1
+null
+null
+null
+text
+EOF

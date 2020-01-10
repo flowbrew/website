@@ -1,0 +1,35 @@
+﻿exclude: ['checkout/', 'watch', 'bake_images', 'README.md']
+
+title: Flow Brew
+email: ak@flowbrew.ru
+baseurl: /
+
+products:
+  matcha:
+    id: flowbrew60
+    price: 3880
+    currency: "RUB"
+    shipping: 500
+    weight: 60
+    quantity: 0
+
+plugins:
+  - jekyll-redirect-from
+whitelist:
+  - jekyll-redirect-from
+
+sass:
+  style: compressed
+  sass_dir: _sass
+
+permalink: /blog/:title
+  
+footer:
+  contacts: контакты
+  shipment: доставка
+  payment: оплата
+  privacypolicy: политика конфиденциальности
+  refund: гарантии и возврат
+  signature: © 2019, Flow Brew
+  blog: блог
+  shop: магазин чая матча

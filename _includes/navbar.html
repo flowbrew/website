@@ -1,0 +1,59 @@
+<aside class="mdc-drawer mdc-drawer--modal">
+  <div class="mdc-drawer__content">
+    <nav class="mdc-list">
+      <a
+        class="mdc-list-item mdc-list-item--activated"
+        href="{{ '/' | relative_url }}"
+        aria-current="page"
+      >
+        <span class="mdc-list-item__text">Магазин</span>
+      </a>
+      <a class="mdc-list-item" href="{{ '/blog' | relative_url }}">
+        <span class="mdc-list-item__text">{{
+          site.footer.blog | capitalize
+        }}</span>
+      </a>
+      <li class="mdc-list-divider" role="separator"></li>
+      <a
+        class="mdc-list-item"
+        href="{{ site.footer.contacts | downcase | url_encode | relative_url }}"
+      >
+        <span class="mdc-list-item__text">{{
+          site.footer.contacts | capitalize
+        }}</span>
+      </a>
+      <a
+        class="mdc-list-item"
+        href="{{ site.footer.shipment | downcase | url_encode | relative_url }}"
+      >
+        <span class="mdc-list-item__text">{{
+          site.footer.shipment | capitalize
+        }}</span>
+      </a>
+      <a
+        class="mdc-list-item"
+        href="{{ site.footer.payment | downcase | url_encode | relative_url }}"
+      >
+        <span class="mdc-list-item__text">{{
+          site.footer.payment | capitalize
+        }}</span>
+      </a>
+      <a
+        class="mdc-list-item"
+        href="{{ site.footer.privacypolicy | downcase | url_encode | relative_url }}"
+      >
+        <span class="mdc-list-item__text">{{
+          site.footer.privacypolicy | capitalize
+        }}</span>
+      </a>
+      <a
+        class="mdc-list-item"
+        href="{{ site.footer.refund | downcase | url_encode | relative_url }}"
+      >
+        <span class="mdc-list-item__text">{{
+          site.footer.refund | capitalize
+        }}</span>
+      </a>
+    </nav>
+  </div>
+</aside>

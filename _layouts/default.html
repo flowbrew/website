@@ -1,0 +1,64 @@
+{% assign full_path = site.url | append: page.url %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>{{ page.title }}</title>
+    <meta name="description" content="{{ page.description }}" />
+    <link rel="shortcut icon" type="image/png" href="{{ 'favicon.png' | absolute_url }}" />
+    
+    <meta property="og:url" content="{{ full_path }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ page.title }}" />
+    <meta property="og:description" content="{{ page.description }}" />
+    <meta property="og:image" content="{{ '/assets/img/' | append: page.link_image | absolute_url }}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@flow_brew" />
+    <meta name="twitter:creator" content="@flow_brew" />
+    <meta name="twitter:title" content="{{ page.title }}" />
+    <meta name="twitter:description" content="{{ page.description }}" />
+    <meta name="twitter:url" content="{{ full_path }}" />
+    <meta name="twitter:image" content="{{ '/assets/img/' | append: page.link_image | absolute_url }}" />
+
+    <meta name="yandex-verification" content="a37366d53e5bb5b6" />
+
+    {% include head_script.html %}
+    {% include tags.html %}
+
+    {% unless page.light_page %}
+    <link rel="preload" href="{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}" as="font" type="font/ttf" crossorigin />
+    {% endunless %}
+
+    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMwf7I_FMl_GW8g.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMw77I_FMl_GW8g.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMwT7I_FMl_GW8g.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMwr7I_FMl_E.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
+
+    {% include head_css.html %}
+  </head>
+
+  <body>
+    {% include body_tags.html %}
+    <noscript>
+      <div class="error">
+        Для работы сайта необходим Javascript. Пожалуйста, включите его в
+        настройках вашего браузера.
+      </div>
+    </noscript>
+    {% include scripts.html %}
+    {% include navbar.html %} 
+    {% include header.html invert_header_color=page.invert_header_color %}
+
+    {% unless page.no_skipper %}
+    <div class="skipper"></div>
+    {% endunless %}
+
+    {{ content }}
+    {% include footer.html %}
+    {% include footer_script.html %}
+  </body>
+</html>

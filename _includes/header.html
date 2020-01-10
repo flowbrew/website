@@ -1,0 +1,38 @@
+<div class="mdc-drawer-scrim"></div>
+<div class="mdc-drawer-app-content">
+  <header class="mdc-top-app-bar mdc-top-app-bar--fixed {% if include.invert_header_color %}invert-color{% endif %}">
+    <div class="mdc-top-app-bar__row">
+      <div
+        class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start"
+      >
+        <button
+          class="mdc-icon-button material-icons mdc-top-app-bar__navigation-icon--unbounded"
+        >
+          menu
+        </button>
+      </div>
+
+      <div
+        class="mdc-top-app-bar__section mdc-top-app-bar__section--align-center"
+      >
+        <a href="{{ '/' | relative_url }}" class="logo-href">
+          <img
+            src="{{ '/assets/img/logo_text.svg' | relative_url }}"
+            alt="Flow Brew"
+            class="ntrk"
+          />
+        </a>
+      </div>
+
+      <div class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+        <button
+          id="bookmarkme"
+          class="mdc-icon-button material-icons mdc-top-app-bar__action-item--unbounded"
+          aria-label="Bookmark this page"
+        >
+          bookmark
+        </button>
+      </div>
+    </div>
+  </header>
+</div>

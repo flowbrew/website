@@ -1,0 +1,12 @@
+_site/
+.sass-cache/
+.DS_Store
+.DS_Store/
+.jekyll-metadata
+checkout/function.zip
+.DS_Store
+assets/.DS_Store
+assets/img/.DS_Store
+assets/.DS_Store
+Gemfile.lock
+.jekyll-cache

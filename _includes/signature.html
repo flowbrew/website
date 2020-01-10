@@ -1,0 +1,21 @@
+{% if include.text %}
+<h2>Здравствуйте</h2>
+<p>Меня зовут Алексей Козин. Я директор Flow Brew. Спасибо за ваш выбор!</p>
+{% endif %}
+<div class="grid signature">
+
+    <div class="" style="grid-area: photo;">
+        <figure>
+            {% include image_variant.html image='kozin_aleksey.jpg' alt='Алексей Козин' %}
+            <figcaption class="">Алексей Козин</figcaption>
+        </figure>
+            
+    </div>
+
+    <div class="" style="grid-area: signature;">
+        <figure>
+            {% include image_variant.html image='signature.jpg' alt='Подпись Алексея Козина' %}
+        </figure>
+    </div>
+
+</div>

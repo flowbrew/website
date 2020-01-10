@@ -1,0 +1,19 @@
+{% assign image = include.image | split: '/' | where_exp: "item", "item.size > 0" | join: '/' %}
+
+{% if extension == 'svg' %}
+<img
+ {% if include.id %}id="{{ include.id }}"{% endif %}
+ {% if include.class %}class="{{ include.class }}"{% endif %}
+ {% if include.alt %}alt="{{ include.alt }}"{% endif %}
+ {% if include.title %}title="{{ include.title }}"{% endif %}
+ {% if include.style %}style="{{ include.style }}"{% endif %}
+ src="{{ '/assets/img/' | append: image | relative_url }}">
+{% else %}
+<img
+ {% if include.id %}id="{{ include.id }}"{% endif %}
+ {% if include.class %}class="{{ include.class }}"{% endif %}
+ {% if include.alt %}alt="{{ include.alt }}"{% endif %}
+ {% if include.title %}title="{{ include.title }}"{% endif %}
+ {% if include.style %}style="{{ include.style }}"{% endif %}
+ src="{{ '/assets/img_gen/' | append: image | relative_url }}">
+{% endif %}
