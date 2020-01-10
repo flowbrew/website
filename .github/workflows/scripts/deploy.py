@@ -7,13 +7,29 @@ import pathlib
 import fileinput
 import shlex
 import subprocess
+import time
+import urllib.request
 from subprocess import check_output, CalledProcessError
 from path import Path
+from bs4 import BeautifulSoup
 
 
 def run(command_line):
     return subprocess.check_output(shlex.split(command_line))
 
+def wait_until_deployed(domain, branch, sha):
+    url = f'https://{domain}/branch_{branch}'
+    for _ in range(0, 60):
+        with urllib.request.urlopen(url) as response:
+            html = str(response.read())
+            soup = BeautifulSoup(html)
+            sha_ = soup.find(
+                'meta', {'name': 'github-commit-sha'}
+                ).get('content')
+            if sha == sha_:
+                return True
+        time.sleep(2)
+    raise Exception("Can't detect deployment on {url}")
 
 def main(args):
     git = f'https://{args.username}:{args.token}@github.com/{args.repo}.git'
@@ -47,6 +63,8 @@ def main(args):
                 -m "Add changes to branch {args.branch}"''')
         run(f'git push')
 
+    wait_until_deployed('flowbrew.ru', args.branch, args.sha)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--token', help='GITHUB_TOKEN')
@@ -54,4 +72,5 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--repo', help='Deploy repo')
     parser.add_argument('-s', '--source', help='Source')
     parser.add_argument('-b', '--branch', help='Branch')
+    parser.add_argument('-S', '--sha', help='GitHub commit sha')
     main(parser.parse_args())
