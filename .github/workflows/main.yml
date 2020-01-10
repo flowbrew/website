@@ -26,6 +26,8 @@ jobs:
         run: |
           .github/workflows/scripts/build.py \
               -d ${{ env.BUILD_PATH }} \
+              -r ${{ github.repository }} \
+              -s ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
 
       - name: Deploy Jekyll

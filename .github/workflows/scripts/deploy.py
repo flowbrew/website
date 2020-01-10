@@ -42,14 +42,7 @@ def main(args):
     # deploying
     with Path(website_path):
         run(f'git add --all')
-        try:
-            run(f'git commit -m "Add changes to branch {args.branch}"')
-        except CalledProcessError as e:
-            if 'nothing to commit, working tree clean' in str(e.output):
-                return
-            raise
-        run(f'git push')
-
+        run(f'git commit --allow-empty -m "Add changes to branch {args.branch}"')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
