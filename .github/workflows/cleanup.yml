@@ -2,19 +2,23 @@ name: Cleanup Branch
 
 on: [delete]
 
+env:
+  WEBSITE_REPO: flowbrew/website-deployment
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     container: 
-      image: python:3.7
+      image: ntoss/builder:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
-      # - name: Delete bucket
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     AWS_REGION: ${{ secrets.AWS_REGION }}
-      #     AWS_S3_BUCKET: ${{ github.event.ref }}.${{ secrets.DOMAIN }}
-      #   run: .github/workflows/scripts/cleanup
+      - name: Ckeanup Jekyll
+        run: |
+          pip install path
+          .github/workflows/scripts/cleanup.py \
+              -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
+              -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
+              -r ${{ env.WEBSITE_REPO }} \
+              -b ${{ env.BRANCH_NAME }}
