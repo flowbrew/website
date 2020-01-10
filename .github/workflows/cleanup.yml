@@ -21,4 +21,4 @@ jobs:
               -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
               -r ${{ env.WEBSITE_REPO }} \
-              -b ${{ env.BRANCH_NAME }}
+              -b ${{ github.event.ref }}
