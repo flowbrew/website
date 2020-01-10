@@ -19,6 +19,7 @@ def run(command_line):
 
 def wait_until_deployed(domain, branch, sha):
     url = f'https://{domain}/branch_{branch}'
+    print('wait_until_deployed on', url)
     for _ in range(0, 60):
         with urllib.request.urlopen(url) as response:
             html = str(response.read())
