@@ -7,11 +7,12 @@ import pathlib
 import fileinput
 import shlex
 import subprocess
+from subprocess import check_output, CalledProcessError
 from path import Path
 
 
 def run(command_line):
-    return subprocess.run(shlex.split(command_line), check=True)
+    return subprocess.check_output(shlex.split(command_line))
 
 
 def main(args):
@@ -41,7 +42,12 @@ def main(args):
     # deploying
     with Path(website_path):
         run(f'git add --all')
-        run(f'git commit -m "Add changes to branch {args.branch}"')
+        try:
+            run(f'git commit -m "Add changes to branch {args.branch}"')
+        except CalledProcessError as e:
+            if 'nothing to commit, working tree clean' in str(e.output):
+                return
+            raise
         run(f'git push')
 
 
