@@ -40,6 +40,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--dest', help='Where to build website')
     parser.add_argument('-r', '--repo', help='GitHub repo')
-    parser.add_argument('-s', '--sha', help='GitHub commit sha')
+    parser.add_argument('-S', '--sha', help='GitHub commit sha')
     parser.add_argument('-b', '--branch', help='GitHub branch')
     main(parser.parse_args())

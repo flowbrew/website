@@ -28,15 +28,17 @@ jobs:
           .github/workflows/scripts/build.py \
               -d ${{ env.BUILD_PATH }} \
               -r ${{ github.repository }} \
-              -s ${{ github.sha }} \
+              -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
 
       - name: Deploy Jekyll
         run: |
+          pip install beautifulsoup4
           pip install path
           .github/workflows/scripts/deploy.py \
               -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
               -r ${{ env.WEBSITE_REPO }} \
               -s ${{ env.BUILD_PATH }} \
+              -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
