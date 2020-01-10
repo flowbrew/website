@@ -7,20 +7,31 @@ import pathlib
 import fileinput
 import shlex
 import subprocess
+import yaml
 
 
 def run(command_line):
     return subprocess.run(shlex.split(command_line), check=True)
 
+def load_yaml(path):
+    with open(path, 'r') as file:
+        return yaml.safe_load(file)
+
+def save_yaml(path, data):
+    with open(path, 'w') as file:
+        yaml.safe_dump(data, file)
 
 def main(args):
     run(f'mkdir -p {args.dest}')
 
-    for line in fileinput.input(['_config.yml'], inplace=True):
-        if args.branch != 'master' and 'baseurl: /' in line:
-            print('baseurl: /branch_' + args.branch, end='')
-        else:
-            print(line, end='')
+    config = load_yaml('_config.yml')
+    config['baseurl'] = (
+        '/' if args.branch == 'master' else '/branch_' + args.branch
+        )
+    config['github-repo'] = args.repo
+    config['github-branch'] = args.branch
+    config['github-commit-sha'] = args.sha
+    save_yaml('_config.yml', config)
 
     run(f'jekyll build --trace -d {args.dest}')
 
@@ -28,5 +39,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--dest', help='Where to build website')
-    parser.add_argument('-b', '--branch', help='Set base url')
+    parser.add_argument('-r', '--repo', help='GitHub repo')
+    parser.add_argument('-s', '--sha', help='GitHub commit sha')
+    parser.add_argument('-b', '--branch', help='GitHub branch')
     main(parser.parse_args())

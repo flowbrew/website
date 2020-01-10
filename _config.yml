@@ -1,8 +1,12 @@
 ﻿exclude: ['checkout/', 'watch', 'bake_images', 'README.md']
 
+baseurl: /
+github-repo:
+github-branch:
+github-commit-sha: 
+
 title: Flow Brew
 email: ak@flowbrew.ru
-baseurl: /
 
 products:
   matcha:
