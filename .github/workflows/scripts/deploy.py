@@ -17,22 +17,29 @@ from bs4 import BeautifulSoup
 def run(command_line):
     return subprocess.check_output(shlex.split(command_line))
 
+
 def wait_until_deployed(domain, branch, sha):
     url = f'https://{domain}/branch_{branch}/'
     print('wait_until_deployed on', url)
     for _ in range(0, 60):
         try:
-            html = str(urllib.request.urlopen(url).read())
+            html = urllib.request.urlopen(
+                urllib.request.Request(
+                    url,
+                    headers={'User-Agent': 'Github Action'}
+                )
+            ).read().decode('utf-8')
             soup = BeautifulSoup(html)
             sha_ = soup.find(
                 'meta', {'name': 'github-commit-sha'}
-                ).get('content')
+            ).get('content')
             if sha == sha_:
                 return True
         except Exception as e:
             print(e)
         time.sleep(2)
     raise Exception("Can't detect deployment on {url}")
+
 
 def main(args):
     git = f'https://{args.username}:{args.token}@github.com/{args.repo}.git'
@@ -67,6 +74,7 @@ def main(args):
         run(f'git push')
 
     wait_until_deployed('flowbrew.ru', args.branch, args.sha)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
