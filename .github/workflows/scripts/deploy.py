@@ -41,8 +41,10 @@ def main(args):
 
     # deploying
     with Path(website_path):
+        print('commiting..')
         run(f'git add --all')
-        run(f'git commit --allow-empty -m "Add changes to branch {args.branch}"')
+        out = run(f'git commit --allow-empty -m "Add changes to branch {args.branch}"')
+        print('out:', out)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
