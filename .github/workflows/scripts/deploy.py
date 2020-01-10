@@ -17,8 +17,8 @@ def run(command_line):
 def main(args):
     git = f'https://{args.username}:{args.token}@github.com/{args.repo}.git'
     website_path = './github_website_hosting'
-    website_branch_path = f'{website_path}/{args.branch}'
-    website_master_path = f'{website_path}/master'
+    website_branch_path = f'{website_path}/branch_{args.branch}'
+    website_master_path = f'{website_path}/branch_master'
 
     run('git config --global user.email "action@flowbrew.ru"')
     run('git config --global user.name "GitHub Action"')
@@ -26,6 +26,8 @@ def main(args):
     # loading website
     run(f'mkdir -p {website_path}')
     run(f'git clone {git} {website_path}')
+    with Path(website_path):
+        run(f'rm -rf !(branch_*)')
 
     # updating current branch
     run(f'rm -rf {website_branch_path}')

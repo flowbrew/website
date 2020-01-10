@@ -18,7 +18,7 @@ def main(args):
 
     for line in fileinput.input(['_config.yml'], inplace=True):
         if args.branch != 'master' and 'baseurl: /' in line:
-            print('baseurl: /' + args.branch, end='')
+            print('baseurl: /branch_' + args.branch, end='')
         else:
             print(line, end='')
 

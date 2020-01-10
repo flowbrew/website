@@ -1,5 +1,0 @@
-#!/bin/bash
-clear
-
-.github/workflows/scripts/build
-.github/workflows/scripts/test
