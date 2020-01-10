@@ -32,6 +32,7 @@ def main(args):
     config['github-branch'] = args.branch
     config['github-commit-sha'] = args.sha
     save_yaml('_config.yml', config)
+    run('cat _config.yml')
 
     run(f'jekyll build --trace -d {args.dest}')
 
