@@ -21,13 +21,16 @@ def wait_until_deployed(domain, branch, sha):
     url = f'https://{domain}/branch_{branch}/'
     print('wait_until_deployed on', url)
     for _ in range(0, 60):
-        html = str(urllib.request.urlopen(url).read())
-        soup = BeautifulSoup(html)
-        sha_ = soup.find(
-            'meta', {'name': 'github-commit-sha'}
-            ).get('content')
-        if sha == sha_:
-            return True
+        try:
+            html = str(urllib.request.urlopen(url).read())
+            soup = BeautifulSoup(html)
+            sha_ = soup.find(
+                'meta', {'name': 'github-commit-sha'}
+                ).get('content')
+            if sha == sha_:
+                return True
+        except Exception as e:
+            print(e)
         time.sleep(2)
     raise Exception("Can't detect deployment on {url}")
 
