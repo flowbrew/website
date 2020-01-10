@@ -45,7 +45,7 @@ def main(args):
         try:
             run(f'git commit -m "Add changes to branch {args.branch}"')
         except CalledProcessError as e:
-            if 'nothing to commit, working tree clean' in e.output:
+            if 'nothing to commit, working tree clean' in str(e.output):
                 return
             raise
         run(f'git push')
