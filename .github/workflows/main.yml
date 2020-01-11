@@ -18,6 +18,13 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
+      - name: Notify slack
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{\"channel\":\"CS6U3AL7M\",\"text\":\"Hello world\"}'
+
       # Saving branch name to ${BRANCH_NAME}
       - uses: nelonoel/branch-name@v1
 
