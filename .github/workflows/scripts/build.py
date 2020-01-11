@@ -31,6 +31,7 @@ def main(args):
     config['github-repo'] = args.repo
     config['github-branch'] = args.branch
     config['github-commit-sha'] = args.sha
+    config['no-index'] = args.branch != 'master'
     save_yaml('_config.yml', config)
 
     run(f'jekyll build --trace -d {args.dest}')

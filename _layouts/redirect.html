@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <meta charset="utf-8">
+  {% if site.no-index %}<meta name="robots" content="noindex">{% endif %}
   <title>Redirecting&hellip;</title>
   <link rel="canonical" href="{{ page.redirect.to }}">
   <script>location="{{ page.redirect.to }}"</script>
