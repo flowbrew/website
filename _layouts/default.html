@@ -6,7 +6,9 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-
+    {% if site.no-index %}
+    <meta name="robots" content="noindex">
+    {% endif %}
     <meta name="github-repo" content="{{ site.github-repo }}" />
     <meta name="github-branch" content="{{ site.github-branch }}" />
     <meta name="github-commit-sha" content="{{ site.github-commit-sha }}" />

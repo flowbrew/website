@@ -1,10 +1,13 @@
 ﻿exclude: ['checkout/', 'watch', 'bake_images', 'README.md']
 
+# Dynamic params
 baseurl: /
 github-repo:
 github-branch:
 github-commit-sha: 
+no-index: false
 
+# Regular params
 title: Flow Brew
 email: ak@flowbrew.ru
 
