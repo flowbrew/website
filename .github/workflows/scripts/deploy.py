@@ -39,9 +39,9 @@ def wait_until_deployed(domain, branch, sha):
             if sha == sha_:
                 return True
         except Exception as e:
-            print(e)
-        time.sleep(2)
-    raise Exception("Can't detect deployment on {url}")
+            print(url, e)
+        time.sleep(5)
+    raise Exception(f"Can't detect deployment on {url}")
 
 
 def main(args):
