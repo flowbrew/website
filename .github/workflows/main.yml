@@ -42,3 +42,24 @@ jobs:
               -s ${{ env.BUILD_PATH }} \
               -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
+
+      - name: Notify success build
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{
+            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
+            \"text\": \"Successfully ✅ deployed branch ${{ env.BRANCH_NAME }}\"
+            }'
+
+      - name: Notify failed build
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{
+            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
+            \"text\": \"FAILED 😡 to deploy branch ${{ env.BRANCH_NAME }}\"
+            }'

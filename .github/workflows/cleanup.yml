@@ -22,3 +22,24 @@ jobs:
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
               -r ${{ env.WEBSITE_REPO }} \
               -b ${{ github.event.ref }}
+
+      - name: Notify success cleanup
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{
+            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
+            \"text\": \"Successfully cleanup 🧹 branch ${{ github.event.ref }}\"
+            }'
+
+      - name: Notify failed cleanup
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{
+            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
+            \"text\": \"FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}\"
+            }'
