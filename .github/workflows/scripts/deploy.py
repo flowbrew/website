@@ -59,6 +59,7 @@ def main(args):
     with Path(website_path):
         run(f'rm -rf !(branch_*|.git)')
         os.system('rm -rf !(branch_*|.git)')
+        os.system('echo $?')
         os.system('ls -a')
 
     # updating current branch
