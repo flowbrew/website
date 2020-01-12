@@ -35,6 +35,6 @@ jobs:
 
       - name: Notify
         env:
-          FAILURE: ${{ failure() }}
+          FAILURE: failure()
           SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         run: ${{ env.SCRIPTS_PATH }}/notifier.py
