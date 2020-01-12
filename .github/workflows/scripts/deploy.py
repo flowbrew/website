@@ -22,22 +22,22 @@ def wait_until_deployed(domain, branch, sha):
     url = (
         f'https://{domain}/branch_{branch}/' if branch != 'master' else
         f'https://{domain}/'
-        )
+    )
     print('wait_until_deployed on', url)
     for _ in range(0, 60):
         try:
-            html = urllib.request.urlopen(
-                urllib.request.Request(
-                    url,
-                    headers={'User-Agent': 'Github Action'}
-                )
-            ).read().decode('utf-8')
-            soup = BeautifulSoup(html)
-            sha_ = soup.find(
-                'meta', {'name': 'github-commit-sha'}
-            ).get('content')
-            if sha == sha_:
-                return True
+            request = urllib.request.Request(
+                url,
+                headers={'User-Agent': 'Github Action'}
+            )
+            with urllib.request.urlopen(request) as f:
+                html = f.read().decode('utf-8')
+                soup = BeautifulSoup(html)
+                sha_ = soup.find(
+                    'meta', {'name': 'github-commit-sha'}
+                ).get('content')
+                if sha == sha_:
+                    return True
         except Exception as e:
             print(url, e)
         time.sleep(10)

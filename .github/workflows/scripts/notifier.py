@@ -5,7 +5,7 @@ from pybrew import notification
 
 
 def make_message(
-    FAILURE,
+    JOB_STATUS,
     WORKFLOW,
     REPOSITORY,
     BRANCH_NAME,
@@ -15,7 +15,7 @@ def make_message(
 ):
     where_str = f"{WORKFLOW} of {REPOSITORY}, branch '{BRANCH_NAME}'"
 
-    what_str = f"{'FAILURE ❌' if FAILURE else 'SUCCESS ✅'} on event '{EVENT_NAME}'"
+    what_str = f"{'SUCCESS ✅' if JOB_STATUS == 'success' else 'FAILURE ❌'} on event '{EVENT_NAME}'"
 
     last_commit_str = (
         f"Last commit was '{HEAD_COMMIT_MESSAGE}'\n{HEAD_COMMIT_URL}"
@@ -30,7 +30,7 @@ def main(environ):
     notification(
         channel='#website',
         text=make_message(
-            FAILURE=environ.get('FAILURE', 'true').lower().strip() == 'true',
+            JOB_STATUS=environ.get('JOB_STATUS', 'failure').lower(),
             WORKFLOW=environ.get('WORKFLOW', 'Unknown workflow'),
             REPOSITORY=environ.get('REPOSITORY', 'unknown repository'),
             BRANCH_NAME=environ.get('BRANCH_NAME', 'unknown branch'),
