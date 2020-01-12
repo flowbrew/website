@@ -19,7 +19,9 @@ def make_message(environ):
 
 
 def main(environ):
-    environ['FAILURE'] = bool(environ.get('FAILURE', True))
+    environ['FAILURE'] = (
+        environ.get('FAILURE', 'true').lower().strip() == 'true'
+    )
     notification(
         channel='#website',
         text=make_message(environ),
