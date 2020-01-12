@@ -29,7 +29,7 @@ jobs:
       - name: Notify success build
         shell: python
         run: |
-          import pybrew
+          from pybrew import *
           notification(
             channel='#website',
             text='Successfully cleanup 🧹 branch ${{ github.event.ref }}',
@@ -40,7 +40,7 @@ jobs:
         if: failure()
         shell: python
         run: |
-          import pybrew
+          from pybrew import *
           notification(
             channel='#website',
             text='FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}}',

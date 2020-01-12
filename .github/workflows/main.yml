@@ -49,7 +49,7 @@ jobs:
       - name: Notify success build
         shell: python
         run: |
-          import pybrew
+          from pybrew import *
           notification(
             channel='#website',
             text='Successfully ✅ deployed branch ${{ env.BRANCH_NAME }}',
@@ -60,7 +60,7 @@ jobs:
         if: failure()
         shell: python
         run: |
-          import pybrew
+          from pybrew import *
           notification(
             channel='#website',
             text='FAILED 😡 to deploy branch ${{ env.BRANCH_NAME }}',
