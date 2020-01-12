@@ -11,12 +11,14 @@ jobs:
     container: 
       image: ntoss/builder:latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v1
+      - name: Install pybrew
+        run: |
+          pip install ./pybrew
+          pytest --pyargs pybrew
 
       - name: Ckeanup Jekyll
         run: |
-          pip install path
           .github/workflows/scripts/cleanup.py \
               -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \

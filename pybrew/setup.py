@@ -22,7 +22,12 @@ setup(
     author_email="cirnotoss@gmail.com",
     description="Flow Brew python tools",
     packages=find_packages(exclude=('tests',)),
-    install_requires=[],
+    install_requires=[
+        'pytest',
+        'pyyaml',
+        'beautifulsoup4',
+        'path',
+    ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: MIT License',

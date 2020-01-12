@@ -22,7 +22,6 @@ jobs:
       - uses: nelonoel/branch-name@v1
 
       - uses: actions/checkout@v1
-
       - name: Install pybrew
         run: |
           pip install ./pybrew
@@ -30,7 +29,6 @@ jobs:
 
       - name: Build Jekyll
         run: |
-          pip install pyyaml
           .github/workflows/scripts/build.py \
               -d ${{ env.BUILD_PATH }} \
               -r ${{ github.repository }} \
@@ -39,8 +37,6 @@ jobs:
 
       - name: Deploy Jekyll
         run: |
-          pip install beautifulsoup4
-          pip install path
           .github/workflows/scripts/deploy.py \
               -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
