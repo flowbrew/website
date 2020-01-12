@@ -50,7 +50,7 @@ jobs:
         with:
           args: '{
             \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"Successfully deployed branch ${{ env.BRANCH_NAME }}\"
+            \"text\": \"Successfully ✅ deployed branch ${{ env.BRANCH_NAME }}\"
             }'
 
       - name: Notify failed build
