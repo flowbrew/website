@@ -34,6 +34,7 @@ jobs:
               -b ${{ env.BRANCH_NAME }}
 
       - name: Notify
+        if: always()
         env:
           FAILURE: failure()
           SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
