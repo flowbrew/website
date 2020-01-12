@@ -34,7 +34,8 @@ jobs:
               -b ${{ env.BRANCH_NAME }}
 
       - name: Notify
+        if: always()
         env:
-          FAILURE: failure()
+          JOB_STATUS: ${{ job.status }}
           SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         run: ${{ env.SCRIPTS_PATH }}/notifier.py
