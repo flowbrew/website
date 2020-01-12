@@ -23,7 +23,7 @@ def make_message(
         ''
     )
 
-    return f'---\n{where_str} {what_str}.\n{last_commit_str}'
+    return f'{where_str} {what_str}.\n{last_commit_str}\n---'
 
 
 def main(environ):
