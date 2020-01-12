@@ -4,7 +4,6 @@ on: [push]
 
 env:
   WEBSITE_REPO: flowbrew/website-deployment
-  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
 jobs:
   build-deploy:
@@ -26,7 +25,8 @@ jobs:
       - name: Install pybrew
         run: |
           pip install ./pybrew
-          pytest --pyargs pybrew
+          pytest --pyargs pybrew \
+            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Build Jekyll
         run: |
@@ -47,22 +47,22 @@ jobs:
               -b ${{ env.BRANCH_NAME }}
 
       - name: Notify success build
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{
-            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"Successfully ✅ deployed branch ${{ env.BRANCH_NAME }}\"
-            }'
+        shell: python
+        run: |
+          import pybrew
+          notification(
+            channel='#website',
+            text='Successfully ✅ deployed branch ${{ env.BRANCH_NAME }}',
+            token=${{ secrets.SLACK_BOT_TOKEN }}
+            )
 
       - name: Notify failed build
         if: failure()
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{
-            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"FAILED 😡 to deploy branch ${{ env.BRANCH_NAME }}\"
-            }'
+        shell: python
+        run: |
+          import pybrew
+          notification(
+            channel='#website',
+            text='FAILED 😡 to deploy branch ${{ env.BRANCH_NAME }}',
+            token=${{ secrets.SLACK_BOT_TOKEN }}
+            )

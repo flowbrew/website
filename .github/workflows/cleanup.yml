@@ -4,7 +4,6 @@ on: [delete]
 
 env:
   WEBSITE_REPO: flowbrew/website-deployment
-  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
 jobs:
   cleanup:
@@ -16,7 +15,8 @@ jobs:
       - name: Install pybrew
         run: |
           pip install ./pybrew
-          pytest --pyargs pybrew
+          pytest --pyargs pybrew \
+            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Ckeanup Jekyll
         run: |
@@ -26,23 +26,23 @@ jobs:
               -r ${{ env.WEBSITE_REPO }} \
               -b ${{ github.event.ref }}
 
-      - name: Notify success cleanup
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{
-            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"Successfully cleanup 🧹 branch ${{ github.event.ref }}\"
-            }'
+      - name: Notify success build
+        shell: python
+        run: |
+          import pybrew
+          notification(
+            channel='#website',
+            text='Successfully cleanup 🧹 branch ${{ github.event.ref }}',
+            token=${{ secrets.SLACK_BOT_TOKEN }}
+            )
 
-      - name: Notify failed cleanup
+      - name: Notify failed build
         if: failure()
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{
-            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}\"
-            }'
+        shell: python
+        run: |
+          import pybrew
+          notification(
+            channel='#website',
+            text='FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}}',
+            token=${{ secrets.SLACK_BOT_TOKEN }}
+            )
