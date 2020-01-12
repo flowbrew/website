@@ -57,7 +57,7 @@ def main(args):
     run(f'mkdir -p {website_path}')
     run(f'git clone {git} {website_path}')
     with Path(website_path):
-        run(f'rm -rf !(branch_*)')
+        print(run(f'rm -rf !(branch_*)'))
         print('--> ls results', run('ls -a'))
 
     # updating current branch
