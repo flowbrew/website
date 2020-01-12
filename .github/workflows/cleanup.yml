@@ -11,35 +11,38 @@ jobs:
     container: 
       image: ntoss/builder:latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v1
+      - name: Install pybrew
+        run: |
+          pip install ./pybrew
+          pytest --pyargs pybrew \
+            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Ckeanup Jekyll
         run: |
-          pip install path
           .github/workflows/scripts/cleanup.py \
               -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
               -r ${{ env.WEBSITE_REPO }} \
               -b ${{ github.event.ref }}
 
-      - name: Notify success cleanup
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{
-            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"Successfully cleanup 🧹 branch ${{ github.event.ref }}\"
-            }'
+      - name: Notify success build
+        shell: python
+        run: |
+          from pybrew import *
+          notification(
+            channel='#website',
+            text='Successfully cleanup 🧹 branch ${{ github.event.ref }}',
+            token='${{ secrets.SLACK_BOT_TOKEN }}'
+            )
 
-      - name: Notify failed cleanup
+      - name: Notify failed build
         if: failure()
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        uses: pullreminders/slack-action@master
-        with:
-          args: '{
-            \"channel\": \"${{ secrets.SLACK_BOT_CHANNEL }}\",
-            \"text\": \"FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}\"
-            }'
+        shell: python
+        run: |
+          from pybrew import *
+          notification(
+            channel='#website',
+            text='FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}}',
+            token='${{ secrets.SLACK_BOT_TOKEN }}'
+            )

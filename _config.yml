@@ -1,4 +1,4 @@
-﻿exclude: ['checkout/', 'watch', 'bake_images', 'README.md']
+﻿exclude: ['checkout/', 'watch', 'bake_images', 'README.md', 'pybrew']
 
 # Dynamic params
 baseurl: /
