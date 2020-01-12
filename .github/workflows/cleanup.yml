@@ -33,7 +33,7 @@ jobs:
           notification(
             channel='#website',
             text='Successfully cleanup 🧹 branch ${{ github.event.ref }}',
-            token=${{ secrets.SLACK_BOT_TOKEN }}
+            token='${{ secrets.SLACK_BOT_TOKEN }}'
             )
 
       - name: Notify failed build
@@ -44,5 +44,5 @@ jobs:
           notification(
             channel='#website',
             text='FAILED 😡 to 🧹 cleanup branch ${{ github.event.ref }}}',
-            token=${{ secrets.SLACK_BOT_TOKEN }}
+            token='${{ secrets.SLACK_BOT_TOKEN }}'
             )
