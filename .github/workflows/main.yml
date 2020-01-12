@@ -8,8 +8,8 @@ env:
   REPOSITORY: ${{ github.repository }}
   WORKFLOW: ${{ github.workflow }}
   EVENT_NAME: ${{ github.event_name }}
-  HEAD_COMMIT_MESSAGE: ${{ github.head_commit.message }}
-  HEAD_COMMIT_URL: ${{ github.head_commit.url }}
+  HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+  HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
 
 jobs:
   build-deploy:
@@ -51,11 +51,6 @@ jobs:
               -s ${{ env.BUILD_PATH }} \
               -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
-
-      - name: Debuging HEAD_COMMIT_MESSAGE
-        run: |
-          echo "${{ github.head_commit.message }}"
-          echo "${{ env.HEAD_COMMIT_MESSAGE }}"
 
       - name: Notify
         env:

@@ -9,8 +9,8 @@ env:
   REPOSITORY: ${{ github.repository }}
   WORKFLOW: ${{ github.workflow }}
   EVENT_NAME: ${{ github.event_name }}
-  HEAD_COMMIT_MESSAGE: ${{ github.head_commit.message }}
-  HEAD_COMMIT_URL: ${{ github.head_commit.url }}
+  HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+  HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
 
 jobs:
   cleanup:
