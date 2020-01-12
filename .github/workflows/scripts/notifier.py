@@ -17,7 +17,11 @@ def make_message(
 
     what_str = f"returned {'FAILURE ❌' if FAILURE else 'SUCCESS ✅'} on event '{EVENT_NAME}'"
 
-    last_commit_str = f"Last commit was '{HEAD_COMMIT_MESSAGE}' {HEAD_COMMIT_URL}"
+    last_commit_str = (
+        f"Last commit was '{HEAD_COMMIT_MESSAGE}' {HEAD_COMMIT_URL}"
+        if HEAD_COMMIT_MESSAGE else
+        ''
+    )
 
     return f'{where_str} {what_str}. {last_commit_str}'
 

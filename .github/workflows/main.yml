@@ -52,6 +52,11 @@ jobs:
               -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
 
+      - name: Debuging HEAD_COMMIT_MESSAGE
+        run: |
+          echo "${{ github.head_commit.message }}"
+          echo "${{ env.HEAD_COMMIT_MESSAGE }}"
+
       - name: Notify
         env:
           FAILURE: failure()
