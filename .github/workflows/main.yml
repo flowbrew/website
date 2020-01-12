@@ -4,6 +4,12 @@ on: [push]
 
 env:
   WEBSITE_REPO: flowbrew/website-deployment
+  SCRIPTS_PATH: .github/workflows/scripts
+  REPOSITORY: ${{ github.repository }}
+  WORKFLOW: ${{ github.workflow }}
+  EVENT_NAME: ${{ github.event_name }}
+  HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+  HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
 
 jobs:
   build-deploy:
@@ -30,7 +36,7 @@ jobs:
 
       - name: Build Jekyll
         run: |
-          .github/workflows/scripts/build.py \
+          ${{ env.SCRIPTS_PATH }}/build.py \
               -d ${{ env.BUILD_PATH }} \
               -r ${{ github.repository }} \
               -S ${{ github.sha }} \
@@ -38,7 +44,7 @@ jobs:
 
       - name: Deploy Jekyll
         run: |
-          .github/workflows/scripts/deploy.py \
+          ${{ env.SCRIPTS_PATH }}/deploy.py \
               -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
               -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
               -r ${{ env.WEBSITE_REPO }} \
@@ -46,23 +52,8 @@ jobs:
               -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
 
-      - name: Notify success build
-        shell: python
-        run: |
-          from pybrew import *
-          notification(
-            channel='#website',
-            text='Successfully ✅ deployed branch ${{ env.BRANCH_NAME }}',
-            token='${{ secrets.SLACK_BOT_TOKEN }}'
-            )
-
-      - name: Notify failed build
-        if: failure()
-        shell: python
-        run: |
-          from pybrew import *
-          notification(
-            channel='#website',
-            text='FAILED 😡 to deploy branch ${{ env.BRANCH_NAME }}',
-            token='${{ secrets.SLACK_BOT_TOKEN }}'
-            )
+      - name: Notify
+        env:
+          FAILURE: failure()
+          SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: ${{ env.SCRIPTS_PATH }}/notifier.py
