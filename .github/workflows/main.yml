@@ -22,6 +22,12 @@ jobs:
       - uses: nelonoel/branch-name@v1
 
       - uses: actions/checkout@v1
+
+      - name: Install pybrew
+        run: |
+          pip install ./pybrew
+          pytest --pyargs pybrew
+
       - name: Build Jekyll
         run: |
           pip install pyyaml

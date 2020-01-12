@@ -11,3 +11,9 @@ assets/.DS_Store
 Gemfile.lock
 .jekyll-cache
 temp
+
+*.egg-info/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
