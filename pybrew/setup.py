@@ -27,6 +27,7 @@ setup(
         'pyyaml',
         'beautifulsoup4',
         'path',
+        'slackclient'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

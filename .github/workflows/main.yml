@@ -4,6 +4,7 @@ on: [push]
 
 env:
   WEBSITE_REPO: flowbrew/website-deployment
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
 jobs:
   build-deploy:
