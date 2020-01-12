@@ -5,12 +5,12 @@ from pybrew import notification
 
 
 def make_message(environ):
-    where_str = f'{environ.WORKFLOW} of {environ.REPOSITORY}/{environ.BRANCH_NAME}'
+    where_str = f"{environ.get('WORKFLOW', 'Unknown workflow')} of {environ.get('REPOSITORY', 'unknown repository')}/{environ.get('BRANCH_NAME', 'unknown branch')}"
 
-    what_str = f'returned {"FAILURE ❌" if environ.FAILURE else "SUCCESS ✅"} on event {environ.EVENT_NAME}'
+    what_str = f"returned {'FAILURE ❌' if environ.get('FAILURE', True) else 'SUCCESS ✅'} on event {environ.get('EVENT_NAME', 'unknown event')}"
 
     last_commit_str = (
-        f'Last commit was "{environ.HEAD_COMMIT_MESSAGE}" {environ.HEAD_COMMIT_URL}'
+        f'Last commit was "{environ.get("HEAD_COMMIT_MESSAGE", "")}" {environ.get("HEAD_COMMIT_URL", "")}'
         if 'HEAD_COMMIT_MESSAGE' in environ else
         ''
     )
@@ -19,11 +19,11 @@ def make_message(environ):
 
 
 def main(environ):
-    environ.FAILURE = bool(environ.FAILURE)
+    environ['FAILURE'] = bool(environ.get('FAILURE', True))
     notification(
         channel='#website',
         text=make_message(environ),
-        token=environ.SECRET_SLACK_BOT_TOKEN
+        token=environ.get('SECRET_SLACK_BOT_TOKEN', '')
     )
 
 
