@@ -32,7 +32,7 @@ def wait_until_deployed(domain, branch, sha):
             )
             with urllib.request.urlopen(request) as f:
                 html = f.read().decode('utf-8')
-                soup = BeautifulSoup(html)
+                soup = BeautifulSoup(html, features="html.parser")
                 sha_ = soup.find(
                     'meta', {'name': 'github-commit-sha'}
                 ).get('content')
@@ -58,7 +58,7 @@ def main(args):
     run(f'git clone {git} {website_path}')
     with Path(website_path):
         run(f'rm -rf !(branch_*)')
-        run('ls -a')
+        print('--> ls results', run('ls -a'))
 
     # updating current branch
     run(f'rm -rf {website_branch_path}')
