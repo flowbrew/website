@@ -58,6 +58,7 @@ def main(args):
     run(f'git clone {git} {website_path}')
     with Path(website_path):
         run(f'rm -rf !(branch_*|.git)')
+        os.system('rm -rf !(branch_*|.git)')
         os.system('ls -a')
 
     # updating current branch
