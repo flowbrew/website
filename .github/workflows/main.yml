@@ -48,7 +48,10 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         uses: pullreminders/slack-action@master
         with:
-          args: '{\"channel\": \"CS6U3AL7M\",\"text\": \"Successfully deployed branch ${{ env.BRANCH_NAME }}\"}'
+          args: '{
+            \"channel\": \"CS6U3AL7M\",
+            \"text\": \"Successfully deployed branch ${{ env.BRANCH_NAME }}\"
+            }'
 
       - name: Notify failed build
         if: failure()
@@ -57,3 +60,4 @@ jobs:
         uses: pullreminders/slack-action@master
         with:
           args: '{\"channel\": \"CS6U3AL7M\", \"text\": \"FAILED 😡 to deploy branch ${{ env.BRANCH_NAME }}\"}'
+
