@@ -13,9 +13,9 @@ def make_message(
     HEAD_COMMIT_MESSAGE,
     HEAD_COMMIT_URL
 ):
-    where_str = f"{WORKFLOW} of {REPOSITORY}, branch '{BRANCH_NAME}',"
+    where_str = f"{WORKFLOW} of {REPOSITORY}, branch '{BRANCH_NAME}'"
 
-    what_str = f"returned {'FAILURE ❌' if FAILURE else 'SUCCESS ✅'} on event '{EVENT_NAME}'"
+    what_str = f"{'FAILURE ❌' if FAILURE else 'SUCCESS ✅'} on event '{EVENT_NAME}'"
 
     last_commit_str = (
         f"Last commit was '{HEAD_COMMIT_MESSAGE}'\n{HEAD_COMMIT_URL}"
@@ -23,7 +23,7 @@ def make_message(
         ''
     )
 
-    return f'{where_str} {what_str}.\n{last_commit_str}\n---'
+    return f'{what_str} on {where_str}\n{last_commit_str}\n---'
 
 
 def main(environ):
