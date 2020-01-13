@@ -31,7 +31,7 @@ jobs:
       - name: Install pybrew
         run: |
           pip install ./pybrew
-          pytest --pyargs pybrew \
+          pytest --color=yes --pyargs pybrew \
             --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Build Jekyll

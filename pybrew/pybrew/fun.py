@@ -10,7 +10,7 @@ def my_fun(x):
 
 def run(command_line):
     print('>', command_line)
-    result = str(check_output(shlex.split(command_line)))
+    result = check_output(shlex.split(command_line)).decode("utf-8") 
     print(result)
     return result
 

@@ -1,5 +1,5 @@
 import pytest
-from pybrew import *
+from pybrew import my_fun, notification, run
 
 
 def test_my_fun():
@@ -13,15 +13,24 @@ def test_notification(SLACK_BOT_TOKEN):
         token=SLACK_BOT_TOKEN
     )
 
+
 def test_run():
-    assert run('echo hello') == 'hello'
+    assert run('echo hello').starts_with('hello')
     with pytest.raises(Exception):
         run('echo23423 hello')
 
+
 # def test_parallel_branching_deployment(tmp_path):
 #     mk branches
+
 #     def generate_site_content(path):
 #         run()
+    
+#     branches = ['a', 'b', 'master']
+
+#     a_branch = 'a'
+#     b_branch = 'b'
+#     master_branch = 'master'
 
 #     deploy('./a')
 #     deploy('./master')
@@ -29,4 +38,3 @@ def test_run():
 
 #     assert reqest_html('https://') != reqest_html('https://')
 #     assert reqest_html('https://') == reqest_html('https://')
-    
