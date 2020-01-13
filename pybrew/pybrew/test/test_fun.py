@@ -15,18 +15,18 @@ def test_notification(SLACK_BOT_TOKEN):
 
 
 def test_run():
-    assert run('echo hello').starts_with('hello')
+    assert run('echo hello').startswith('hello')
     with pytest.raises(Exception):
         run('echo23423 hello')
 
 
 # def test_parallel_branching_deployment(tmp_path):
-#     mk branches
-
-#     def generate_site_content(path):
-#         run()
+#     def generate_site_content(branch):
+#         run(f'mkdir -p ./{tmp_path}/{branch}')
+    
     
 #     branches = ['a', 'b', 'master']
+#     [generate_site_content(x) for x in branches]
 
 #     a_branch = 'a'
 #     b_branch = 'b'
