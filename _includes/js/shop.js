@@ -168,7 +168,7 @@ function init_accordion() {
 function we_have_stock(quantity) {
   $(".buy-button").universalClick(function() {
     buy_button_pressed($(this).attr("id"));
-    window.location = "/checkout.html";
+    window.location = "./checkout.html";
   });
 
   var word = quantity == 1 ? "Остался" : "Осталось";
