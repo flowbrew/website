@@ -786,6 +786,8 @@ function process_coupon(coupon_str) {
     return 0.1;
   } else if (coupon === WELCOME_PROMOCODE10.toUpperCase()) {
     return 0.1;
+  } else if (coupon === "flow15".toUpperCase()) {
+    return 0.15;
   }
 
   return 0.0;
