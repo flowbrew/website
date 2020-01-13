@@ -38,6 +38,8 @@ def wait_until_deployed(domain, branch, sha):
                 ).get('content')
                 if sha == sha_:
                     return True
+                else:
+                    raise Exception('Wrong sha')
         except Exception as e:
             print(url, e)
         time.sleep(10)
