@@ -1,6 +1,7 @@
 import pytest
 import tempfile
 import os
+import glob
 from path import Path
 from pybrew import my_fun, notification, run, pipe, map, comp, force
 
@@ -37,95 +38,131 @@ def branch_folder(branch):
     return branch_suffix() + branch
 
 
+def remove_from(wd, pattern):
+    for p in Path(wd).glob(pattern):
+        p.unlink()
+
+def copy_from(from_path, to_path):
+    run(f'mkdir -p {to_path}')
+    run(f'cp -r {from_path}/. {to_path}')
+
 class FilesystemDeployProvider:
     @staticmethod
-    def _repo_to_path(dest_repo):
-        return os.path.join('./', dest_repo)
+    def _repo_to_path(repo):
+        return os.path.join('/repos/', repo)
 
     @staticmethod
     def config(name, email):
         pass
 
     @staticmethod
-    def create_repo_if_not_exists(dest_repo):
-        path = FilesystemDeployProvider._repo_to_path(dest_repo)
-        if not os.path.isdir(path):
-            run(f'mkdir -p {path}')
+    def create_repo_if_not_exists(repo):
+        repo_path = FilesystemDeployProvider._repo_to_path(repo)
+        if not os.path.isdir(repo_path):
+            run(f'mkdir -p {repo_path}')
 
     @staticmethod
-    def clone(website_path, dest_repo):
-        with Path(website_path):
-            pass
+    def clone(wd, repo):
+        repo_path = FilesystemDeployProvider._repo_to_path(repo)
+        copy_from(repo_path, wd)
 
     @staticmethod
-    def remove(website_path, pattern):
-        with Path(website_path):
-            pass
-
-    @staticmethod
-    def copy(source_path, dest_path):
-        pass
-
-    @staticmethod
-    def push(website_path):
-        with Path(website_path):
-            pass
+    def push(wd, repo):
+        repo_path = FilesystemDeployProvider._repo_to_path(repo)
+        copy_from(wd, repo_path)
 
 
-def deploy(dp, source_path, branch, dest_repo):
-    dp.config()
-    dp.create_repo_if_not_exists(dest_repo)
+def deploy(dp, source_path, branch, repo):
+    dp.config() # IO
+    dp.create_repo_if_not_exists(repo) # IO
 
-    with tempfile.TemporaryDirectory() as website_path:
-        new_branch_path = os.path.join(
-            website_path, branch_folder(branch)
-        )
-        master_branch_path = os.path.join(
-            website_path, branch_folder(master())
-        )
+    with tempfile.TemporaryDirectory() as wd: # IO
+        new_branch_path = os.path.join(wd, branch_folder(branch))
+        master_branch_path = os.path.join(wd, branch_folder(master()))
 
-        dp.clone(website_path, dest_repo)
-        dp.remove(website_path, f'^(?!{branch_suffix()}.*)$')
-        dp.remove(website_path, f'^({branch_folder(branch)})$')
+        dp.clone(wd, repo) # IO
 
-        dp.copy(source_path, new_branch_path)
-        dp.copy(master_branch_path, website_path)
+        dp.remove_from(wd, f'!(/{branch_suffix()}*)') # IO
+        dp.remove_from(wd, f'/{branch_folder(branch)}/*') # IO
 
-        dp.push(website_path)
+        dp.copy_from(source_path, new_branch_path) # IO
+        dp.copy_from(master_branch_path, wd) # IO
+
+        dp.push(wd, repo) # IO
 
 
-def test_parallel_branching_deployment(
+def test_remove_from(tmp_path):
+    with Path(tmp_path):
+        run('mkdir ./test')
+        run('echo 123 > ./test/123.txt')
+
+        run('mkdir ./lol')
+        run('echo 123 > ./lol/test.txt')
+
+        run('mkdir ./nn')
+        run('echo 123 > ./nn/test.txt')
+
+        run('mkdir ./test2')
+        run('echo 123 > ./test2/123.txt')
+
+    remove_from(tmp_path, '!(/test*)')
+
+    assert Path('./test/123.txt').read_text() == '123'
+    assert Path('./test2/123.txt').read_text() == '123'
+
+def test_copy_from(tmp_path):
+    (tmp_path / 'a').mkdir()
+    (tmp_path / 'b').mkdir()
+
+    with Path(tmp_path / 'a'):
+        run('mkdir ./test')
+        run('echo 123 > ./test/123.txt')
+
+        run('mkdir ./lol')
+        run('echo 123 > ./lol/test.txt')
+
+    copy_from(tmp_path / 'a', tmp_path / 'b')
+
+    assert (tmp_path / 'b/test/123.txt').read_text() == '123'
+    assert (tmp_path / 'b/lol/test.txt').read_text() == '123'
+
+def test_branching_deployment(
     SECRET_SLACK_BOT_TOKEN,
     SECRET_GITHUB_WEBSITE_USERNAME,
     SECRET_GITHUB_WEBSITE_TOKEN,
     tmp_path
 ):
-    # domain = ''
     branches = ['a', 'b', 'master']
 
-    def branch_content(data):
+    def init_source_here(branch):
+        def init_branch_content():
+            return pipe(
+                ['1.html', '2.html', '3.html'],
+                map(lambda x: run(f'echo {branch} > {x}'))
+            )
+
+        def init_branches_content(local_branch_path):
+            run(f'mkdir {local_branch_path}')
+            with Path(local_branch_path):
+                return init_branch_content()
+
         return pipe(
-            ['1.html', '2.html', '3.html'],
-            map(lambda x: run(f'echo {data} > {x}'))
+            branches,
+            map(comp(lambda x: f'./{x}', branch_folder)),
+            map(init_branches_content)
         )
 
-    def website_content(payload):
-        def proc(branch):
-            run(f'mkdir ./{branch}')
-            with Path(f'./{branch}'):
-                return payload(branch)
-
-        return map(proc, branches)
-
     def make_and_deploy(branch):
-        with tempfile.TemporaryDirectory() as wd:
-            with Path(wd):
-                force(website_content(lambda _: branch_content(branch)))
-                deploy(
-                    FilesystemDeployProvider(), 
-                    source_path='./', 
-                    branch=branch,
-                    dest_repo='flowbrew/website-deployment'
-                    )
+        with tempfile.TemporaryDirectory() as source_dir:
+            with Path(source_dir):
+                comp(force, init_source_here)(branch)
+            deploy(
+                FilesystemDeployProvider(),
+                source_path=source_dir,
+                branch=branch,
+                repo='flowbrew/website-deployment'
+            )
 
-    map(make_and_deploy, branches)
+    comp(force, map)(make_and_deploy, branches)
+
+
