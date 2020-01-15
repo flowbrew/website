@@ -13,7 +13,7 @@ def pytest_addoption(parser):
 
 @pytest.fixture
 def SECRET_SLACK_BOT_TOKEN(request):
-    return request.config.getoption("--SLACK_BOT_TOKEN")
+    return request.config.getoption("--SECRET_SLACK_BOT_TOKEN")
 
 
 @pytest.fixture
