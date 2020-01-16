@@ -42,16 +42,18 @@ filter = curry(filter)
 get = curry(get)
 
 
-def try_n_times(f, attempts=5, timeout=5):
-    for n in range(attempts):
-        try:
-            f()
-            return
-        except Exception as e:
-            print(e)
-            if n >= attempts - 1:
-                raise
-            time.sleep(timeout)
+def try_n_times_decorator(n=5, timeout=5):
+    def helper1(f):
+        def helper2(*args, **kwargs):
+            for i in range(n):
+                try:
+                    return f(*args, **kwargs)
+                except:
+                    if i >= n - 1:
+                        raise
+                    time.sleep(timeout)
+        return helper2
+    return helper1
 
 
 def bottom(x):
@@ -193,7 +195,6 @@ b2p = branch_to_prefix
 #     run('git config --global user.name "GitHub Action"')
 
 
-
 def random_str(size=16, chars=string.ascii_lowercase):
     return ''.join(random.choice(chars) for x in range(size))
 
@@ -202,8 +203,8 @@ def http_get_io(url):
     s = requests.session()
     headers = {
         'User-Agent': 'Github Action',
-        # 'Cache-Control': 'no-cache'
-        }
+        'Cache-Control': 'no-cache'
+    }
     r = s.get(url, headers=headers).text
     s.cookies.clear()
     return r
@@ -284,6 +285,7 @@ def github_clone_url(
     )
 
 
+@try_n_times_decorator(n=5, timeout=10)
 def deploy_to_github_io(
     username: str,
     token: str,

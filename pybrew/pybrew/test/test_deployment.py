@@ -1,9 +1,8 @@
 import pytest
 import tempfile
 import os
-import glob
 from path import Path
-from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, try_n_times, branch_to_prefix
+from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator
 
 
 def test_inject_branch_to_deployment__injecting_regular():
@@ -125,7 +124,7 @@ def test_filesystem_to_dict_io():
 
 
 @pytest.fixture(scope="module")
-def GITHUB_REPO(request):
+def TEMP_GITHUB_REPO(request):
     SECRET_GITHUB_WEBSITE_USERNAME = \
         request.config.getoption("--SECRET_GITHUB_WEBSITE_USERNAME")
     SECRET_GITHUB_WEBSITE_TOKEN = \
@@ -178,6 +177,7 @@ def GITHUB_REPO(request):
                     path=td
                 )
 
+        @try_n_times_decorator(n=20, timeout=10)
         def check_if_online():
             assert http_get_io(
                 'https://' + organization + '.github.io/' +
@@ -186,14 +186,15 @@ def GITHUB_REPO(request):
             ) == data
 
         # there was agithub bug when touch a fresh path it will be 404 forever
+        @try_n_times_decorator(n=20, timeout=10)
         def check_if_fresh_path_working():
             assert http_get_io(
                 'https://' + organization + '.github.io/' +
                 repo_name + '/freshly/created'
             ) == data
 
-        try_n_times(check_if_fresh_path_working, attempts=20, timeout=10)
-        try_n_times(check_if_online, attempts=20, timeout=10)
+        check_if_fresh_path_working()
+        check_if_online()
 
         yield {
             'organization': organization,
@@ -209,5 +210,5 @@ def GITHUB_REPO(request):
 
 
 @pytest.mark.slow
-def test_deploy_to_github_io(GITHUB_REPO):
-    assert GITHUB_REPO
+def test_deploy_to_github_io(TEMP_GITHUB_REPO):
+    assert TEMP_GITHUB_REPO
