@@ -2,7 +2,51 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator
+from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment
+
+
+def test_remove_branch_from_deployment__remove_regular():
+    branch_name = 'test'
+
+    deployment_state = {
+        b2p("master") + b2p("test") + 'index.html': 'overwritten index',
+        b2p("master") + 'index.html': 'master index',
+        b2p("test") + 'index.html': 'overwritten index',
+        b2p("test") + 'delete.html': '2 delete',
+        'index.html': 'master index',
+    }
+
+    result_state = {
+        b2p("master") + b2p("test") + 'index.html': 'overwritten index',
+        b2p("master") + 'index.html': 'master index',
+        b2p("test") + 'index.html': 'overwritten index',
+        'index.html': 'master index',
+    }
+
+    assert remove_branch_from_deployment(
+        branch_name, deployment_state
+    ) == result_state
+
+
+def test_remove_branch_from_deployment__remove_master():
+    branch_name = 'master'
+
+    deployment_state = {
+        b2p("master") + b2p("test") + 'index.html': 'overwritten index',
+        b2p("master") + 'index.html': 'master index',
+        b2p("test") + 'index.html': 'overwritten index',
+        b2p("test") + 'delete.html': '2 delete',
+        'index.html': 'master index',
+    }
+
+    result_state = {
+        b2p("test") + 'index.html': 'overwritten index',
+        b2p("test") + 'delete.html': '2 delete',
+    }
+
+    assert remove_branch_from_deployment(
+        branch_name, deployment_state
+    ) == result_state
 
 
 def test_inject_branch_to_deployment__injecting_regular():
@@ -159,6 +203,7 @@ def TEMP_GITHUB_REPO(request):
             {
                 p1_: data,
                 'freshly/created': data,
+                'delete/test': 'file123',
                 '404.html': 'master: page not found!',
             }
         ),
@@ -198,7 +243,8 @@ def TEMP_GITHUB_REPO(request):
 
         yield {
             'organization': organization,
-            'repo_name': repo_name
+            'repo_name': repo_name,
+            'url': 'https://' + organization + '.github.io/' + repo_name + '/',
         }
     finally:
         delete_github_repo_io(
@@ -211,4 +257,28 @@ def TEMP_GITHUB_REPO(request):
 
 @pytest.mark.slow
 def test_deploy_to_github_io(TEMP_GITHUB_REPO):
+    assert TEMP_GITHUB_REPO
+
+
+@pytest.mark.slow
+def test_remove_from_github_io(TEMP_GITHUB_REPO):
+
+    @try_n_times_decorator(n=20, timeout=10)
+    def check_if_present():
+        assert http_get_io(
+            TEMP_GITHUB_REPO['url'] + 'delete/test',
+        ) == 'file123'
+
+    check_if_present()
+
+
+    remove_from_github_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+    branch: str,
+)
+    
+
     assert TEMP_GITHUB_REPO

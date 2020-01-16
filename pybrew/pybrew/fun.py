@@ -67,6 +67,29 @@ def my_fun(x):
     return x + 1
 
 
+def master_branch() -> str:
+    return 'master'
+
+
+def branch_prefix() -> str:
+    return 'branch_'
+
+
+def branch_to_prefix(branch: str) -> str:
+    return branch_prefix() + branch + '/'
+
+
+def add_prefix(branch: str, x: str) -> str:
+    return branch_to_prefix(branch) + x
+
+
+def remove_prefix(x: str) -> str:
+    return x.split('/', 1)[1]
+
+
+b2p = branch_to_prefix
+
+
 def run(command_line):
     print('>', command_line)
     result = check_output(shlex.split(command_line)).decode("utf-8")
@@ -83,27 +106,56 @@ def notification(channel, text, token):
     return response["ok"]
 
 
+startswith_ = flip(str.startswith)
+is_any_branch = comp(startswith_, branch_prefix)()
+is_specific_branch = comp(startswith_, b2p)
+is_git = startswith_('.git')
+is_master_branch = is_specific_branch(master_branch())
+
+
+def clean_deployment_state(state: dict, branch_to_delete: str):
+    is_target_branch = is_specific_branch(branch_to_delete)
+    return {
+        k: v
+        for k, v in state.items()
+        if (is_any_branch(k) and not is_target_branch(k)) or is_git(k)
+    }
+
+
+def extract_master_state(state: dict):
+    return {
+        remove_prefix(k): v
+        for k, v in state.items()
+        if is_master_branch(k)
+    }
+
+
+def remove_branch_from_deployment(
+    branch_name: str,
+    deployment_state: dict,
+) -> dict:
+    cleaned_deployment_state = clean_deployment_state(
+        deployment_state, branch_name
+    )
+
+    return {
+        **cleaned_deployment_state,
+        **extract_master_state(cleaned_deployment_state)
+    }
+
+
 def inject_branch_to_deployment(
     branch_name: str,
     branch_state: dict,
     deployment_state: dict,
 ) -> dict:
-    startswith_ = flip(str.startswith)
-    is_any_branch = comp(startswith_, branch_prefix)()
-    is_specific_branch = comp(startswith_, b2p)
-    is_master_branch = is_specific_branch(master_branch())
-    is_target_branch = is_specific_branch(branch_name)
-    is_git = startswith_('.git')
+    cleaned_deployment_state = clean_deployment_state(
+        deployment_state, branch_name
+    )
 
     branch_state_ = {
         add_prefix(branch_name, k): v
         for k, v in branch_state.items()
-    }
-
-    cleaned_deployment_state = {
-        k: v
-        for k, v in deployment_state.items()
-        if (is_any_branch(k) and not is_target_branch(k)) or is_git(k)
     }
 
     injected_state = {
@@ -111,15 +163,9 @@ def inject_branch_to_deployment(
         **branch_state_
     }
 
-    master_state = {
-        remove_prefix(k): v
-        for k, v in injected_state.items()
-        if is_master_branch(k)
-    }
-
     return {
         **injected_state,
-        **master_state
+        **extract_master_state(injected_state)
     }
 
 
@@ -165,29 +211,6 @@ def dict_to_filesystem_io(mount_path: str, data: dict) -> str:
         kv_to_filesystem_io(os.path.join(mount_path, k), v)
         for k, v in data.items()
     )
-
-
-def master_branch() -> str:
-    return 'master'
-
-
-def branch_prefix() -> str:
-    return 'branch_'
-
-
-def branch_to_prefix(branch: str) -> str:
-    return branch_prefix() + branch + '/'
-
-
-def add_prefix(branch: str, x: str) -> str:
-    return branch_to_prefix(branch) + x
-
-
-def remove_prefix(x: str) -> str:
-    return x.split('/', 1)[1]
-
-
-b2p = branch_to_prefix
 
 
 # def git_confing_io():
@@ -285,6 +308,47 @@ def github_clone_url(
     )
 
 
+def validate_github_operation(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+):
+    if not username or not token:
+        raise Exception('Empty credential')
+
+    if not repo_name.startswith(api_repo_prefix()):
+        raise Exception(
+            f'Repo name should starts with "{api_repo_prefix()}". \
+            Its not safe to modify repo {organization}/{repo_name} from API.')
+
+
+def github_push_io(path, message):
+    with Path(path):
+        os.system(f'git add --all')
+        os.system(f'git commit --allow-empty -m "{message}"')
+        os.system(f'git push')
+
+
+def github_clone_io(username, token, organization, repo_name, path):
+    clone_url = github_clone_url(username, token, organization, repo_name)
+    os.system(f'git clone {clone_url} {path}')
+
+
+def github_modify_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+    message: str,
+    f
+):
+    with tmp() as repo_path, tmp() as new_repo_path:
+        github_clone_io(username, token, organization, repo_name, repo_path)
+        f(repo_path, new_repo_path)
+        github_push_io(new_repo_path, message)
+
+
 @try_n_times_decorator(n=5, timeout=10)
 def deploy_to_github_io(
     username: str,
@@ -294,33 +358,48 @@ def deploy_to_github_io(
     branch: str,
     path: str,
 ):
-    if not username or not token:
-        raise Exception('Empty credential')
+    params = [username, token, organization, repo_name]
 
-    if not repo_name.startswith(api_repo_prefix()):
-        raise Exception(
-            f'Repo name should starts with "{api_repo_prefix()}". Its not safe to delete repo {organization}/{repo_name} from API.')
+    validate_github_operation(*params)
 
-    github_create_repo_io(username, token, organization, repo_name)
-    github_enable_pages_site_io(username, token, organization, repo_name)
+    github_create_repo_io(*params)
+    github_enable_pages_site_io(*params)
 
-    with tmp() as repo_path, tmp() as new_repo_path:
-        clone_url = github_clone_url(username, token, organization, repo_name)
-        os.system(f'git clone {clone_url} {repo_path}')
-
-        data = inject_branch_to_deployment(
-            branch,
-            filesystem_to_dict_io(path),
-            filesystem_to_dict_io(repo_path)
+    def _modify(repo_path, new_repo_path):
+        dict_to_filesystem_io(
+            new_repo_path,
+            inject_branch_to_deployment(
+                branch,
+                filesystem_to_dict_io(path),
+                filesystem_to_dict_io(repo_path)
+            )
         )
-        dict_to_filesystem_io(new_repo_path, data)
 
-        with Path(new_repo_path):
-            os.system(f'git add --all')
-            os.system(f'git commit \
-                --allow-empty \
-                -m "Updated branch {branch}"')
-            os.system(f'git push')
+    github_modify_io(*params, f'Updated branch {branch}', _modify)
+
+
+@try_n_times_decorator(n=5, timeout=10)
+def remove_from_github_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+    branch: str,
+):
+    params = [username, token, organization, repo_name]
+
+    validate_github_operation(*params)
+
+    def _modify(repo_path, new_repo_path):
+        dict_to_filesystem_io(
+            new_repo_path,
+            remove_branch_from_deployment(
+                branch,
+                filesystem_to_dict_io(repo_path)
+            )
+        )
+
+    github_modify_io(*params, f'Deleted branch {branch}', _modify)
 
 
 def delete_github_repo_io(
@@ -329,16 +408,6 @@ def delete_github_repo_io(
     organization: str,
     repo_name: str,
 ):
-    if not username or not token:
-        raise Exception('Empty credential')
-
-    if not repo_name.startswith('API_'):
-        raise Exception(
-            f'Repo name should starts with "{api_repo_prefix()}". Its not safe to delete repo {organization}/{repo_name} from API.')
-
-    github_delete_repo_io(
-        username,
-        token,
-        organization,
-        repo_name
-    )
+    params = [username, token, organization, repo_name]
+    validate_github_operation(*params)
+    github_delete_repo_io(*params)
