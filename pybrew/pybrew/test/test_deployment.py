@@ -3,7 +3,7 @@ import tempfile
 import os
 import glob
 from path import Path
-from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, inject_branch_to_deployment
+from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, try_n_times, branch_to_prefix
 
 
 def test_inject_branch_to_deployment__injecting_regular():
@@ -47,6 +47,8 @@ def test_inject_branch_to_deployment__injecting_master():
     }
 
     deployment_state = {
+        '.git/something': 'do not delete',
+        '.git/empty/dir': None,
         b2p("master") + 'index.html': 'master index',
         b2p("master") + 'some/old/data': 'old data',
         b2p("master") + 'something': '123',
@@ -58,6 +60,8 @@ def test_inject_branch_to_deployment__injecting_master():
     }
 
     result_state = {
+        '.git/something': 'do not delete',
+        '.git/empty/dir': None,
         b2p("master") + b2p("test") + 'index.html': 'overwritten index',
         b2p("master") + 'index.html': 'master index new',
         b2p("master") + 'some/data': 'some new master data',
@@ -70,3 +74,140 @@ def test_inject_branch_to_deployment__injecting_master():
     assert inject_branch_to_deployment(
         branch_name, branch_state, deployment_state
     ) == result_state
+
+
+def test_dict_to_filesystem_io():
+    filesystem = {
+        '.git/empty/dir': None,
+        'hello/world/file1': '123123',
+        'hello/world/file2': b'\x1231231232',
+        'something': '16',
+    }
+
+    def validate_file_io(path, content):
+        if content is None:
+            return os.path.isdir(path)
+        with open(path, 'rb') as f:
+            t = type(content)
+            if t == str:
+                return f.read().decode('utf-8') == content
+            elif t == bytes:
+                return f.read() == content
+            else:
+                return False
+
+    def validate_filesystem_io(root, fs):
+        return pipe(
+            fs.items(),
+            map(lambda x: (
+                os.path.join(root, x[0]), x[1]
+            )),
+            map(applyw(validate_file_io)),
+            all,
+        )
+
+    with tempfile.TemporaryDirectory() as td:
+        dict_to_filesystem_io(td, filesystem)
+        assert validate_filesystem_io(td, filesystem)
+
+
+def test_filesystem_to_dict_io():
+    filesystem = {
+        '.git/empty/dir': None,
+        'hello/world/file1': b'123123',
+        'hello/world/file2': b'\x1231231232',
+        'something': b'16',
+    }
+
+    with tempfile.TemporaryDirectory() as td:
+        dict_to_filesystem_io(td, filesystem)
+        assert filesystem_to_dict_io(td) == filesystem
+
+
+@pytest.fixture(scope="module")
+def GITHUB_REPO(request):
+    SECRET_GITHUB_WEBSITE_USERNAME = \
+        request.config.getoption("--SECRET_GITHUB_WEBSITE_USERNAME")
+    SECRET_GITHUB_WEBSITE_TOKEN = \
+        request.config.getoption("--SECRET_GITHUB_WEBSITE_TOKEN")
+
+    organization = 'flowbrew'
+    repo_name = api_repo_prefix() + random_str()
+
+    data = f'''<!DOCTYPE html>
+        <html>
+        <body>
+        {repo_name}
+        </body>
+        </html>'''
+
+    p1 = f'hello/{random_str()}.html'
+    p1_ = branch_to_prefix('test') + p1
+
+    deployment = [
+        (
+            'test',
+            {
+                p1: 'wrong data',
+                'hello/world/file2': 'lol, internet',
+                'something': '16',
+                'index.html': repo_name + ' is working',
+                '404.html': 'page not found!',
+            }
+        ),
+        (
+            'master',
+            {
+                p1_: data,
+                'freshly/created': data,
+                '404.html': 'master: page not found!',
+            }
+        ),
+    ]
+
+    try:
+        for br, fs in deployment:
+            with tmp() as td:
+                dict_to_filesystem_io(td, fs)
+                deploy_to_github_io(
+                    username=SECRET_GITHUB_WEBSITE_USERNAME,
+                    token=SECRET_GITHUB_WEBSITE_TOKEN,
+                    organization=organization,
+                    repo_name=repo_name,
+                    branch=br,
+                    path=td
+                )
+
+        def check_if_online():
+            assert http_get_io(
+                'https://' + organization + '.github.io/' +
+                repo_name + '/' +
+                p1_.replace('.html', '')
+            ) == data
+
+        # there was agithub bug when touch a fresh path it will be 404 forever
+        def check_if_fresh_path_working():
+            assert http_get_io(
+                'https://' + organization + '.github.io/' +
+                repo_name + '/freshly/created'
+            ) == data
+
+        try_n_times(check_if_fresh_path_working, attempts=20, timeout=10)
+        try_n_times(check_if_online, attempts=20, timeout=10)
+
+        yield {
+            'organization': organization,
+            'repo_name': repo_name
+        }
+    finally:
+        delete_github_repo_io(
+            username=SECRET_GITHUB_WEBSITE_USERNAME,
+            token=SECRET_GITHUB_WEBSITE_TOKEN,
+            organization=organization,
+            repo_name=repo_name
+        )
+
+
+@pytest.mark.slow
+def test_deploy_to_github_io(GITHUB_REPO):
+    assert GITHUB_REPO

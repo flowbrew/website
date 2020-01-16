@@ -2,13 +2,28 @@ import os
 import slack
 import shlex
 from subprocess import check_output, CalledProcessError
+import random
+import string
+import tempfile
+import requests
+import time
+
+from path import Path
 
 from toolz import compose, curry, pipe
 from toolz.curried import map
 from toolz.itertoolz import get
 from functools import partial
 
+from fn.iters import flatten
+from itertools import chain
+
+
+def chain_(x): return chain(*x)
+
+
 apply = curry(lambda f, x: f(x))
+applyw = curry(lambda f, x: f(*x))
 
 
 def flip(f): return lambda *a: f(*reversed(a))
@@ -25,6 +40,18 @@ def nt(x): return not (x)
 
 filter = curry(filter)
 get = curry(get)
+
+
+def try_n_times(f, attempts=5, timeout=5):
+    for n in range(attempts):
+        try:
+            f()
+            return
+        except Exception as e:
+            print(e)
+            if n >= attempts - 1:
+                raise
+            time.sleep(timeout)
 
 
 def bottom(x):
@@ -64,6 +91,7 @@ def inject_branch_to_deployment(
     is_specific_branch = comp(startswith_, b2p)
     is_master_branch = is_specific_branch(master_branch())
     is_target_branch = is_specific_branch(branch_name)
+    is_git = startswith_('.git')
 
     branch_state_ = {
         add_prefix(branch_name, k): v
@@ -73,7 +101,7 @@ def inject_branch_to_deployment(
     cleaned_deployment_state = {
         k: v
         for k, v in deployment_state.items()
-        if is_any_branch(k) and not is_target_branch(k)
+        if (is_any_branch(k) and not is_target_branch(k)) or is_git(k)
     }
 
     injected_state = {
@@ -93,12 +121,48 @@ def inject_branch_to_deployment(
     }
 
 
-def filesystem_to_dict(path):
-    pass
+def filesystem_to_dict_io(path: str) -> dict:
+    def clean_key(path, key):
+        return key.replace(path, '', 1).strip('/')
+
+    def extract_data_io(path):
+        for dirpath, dirs, files in os.walk(path):
+            if not dirs and not files:
+                yield (clean_key(path, dirpath), None)
+            else:
+                for x in files:
+                    key = os.path.join(dirpath, x)
+                    with open(key, 'rb') as f:
+                        yield (clean_key(path, key), f.read())
+
+    return pipe(
+        extract_data_io(path),
+        dict
+    )
 
 
-def dict_to_filesystem(path, data):
-    pass
+def dict_to_filesystem_io(mount_path: str, data: dict) -> str:
+    def kv_to_filesystem_io(file_path, file_data):
+        if file_data is None:
+            os.makedirs(file_path, exist_ok=True)
+            return
+        tail, _ = os.path.split(file_path)
+        os.makedirs(tail, exist_ok=True)
+        with open(file_path, 'wb') as f:
+            t = type(file_data)
+            if t == str:
+                f.write(file_data.encode('utf-8'))
+            elif t == bytes:
+                f.write(file_data)
+            else:
+                raise Exception(
+                    'Dont know how to write {file_path} to filesystem'
+                )
+
+    force(
+        kv_to_filesystem_io(os.path.join(mount_path, k), v)
+        for k, v in data.items()
+    )
 
 
 def master_branch() -> str:
@@ -122,3 +186,157 @@ def remove_prefix(x: str) -> str:
 
 
 b2p = branch_to_prefix
+
+
+# def git_confing_io():
+#     run('git config --global user.email "action@flowbrew.ru"')
+#     run('git config --global user.name "GitHub Action"')
+
+
+
+def random_str(size=16, chars=string.ascii_lowercase):
+    return ''.join(random.choice(chars) for x in range(size))
+
+
+def http_get_io(url):
+    s = requests.session()
+    headers = {
+        'User-Agent': 'Github Action',
+        # 'Cache-Control': 'no-cache'
+        }
+    r = s.get(url, headers=headers).text
+    s.cookies.clear()
+    return r
+
+
+def api_repo_prefix():
+    return 'API_'
+
+
+tmp = tempfile.TemporaryDirectory
+
+
+def github_endpoint():
+    return 'https://api.github.com'
+
+
+def github_enable_pages_site_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+    branch: str = 'master',
+    path: str = ''
+):
+    url = f"{github_endpoint()}/repos/{organization}/{repo_name}/pages"
+    headers = {'Accept': 'application/vnd.github.switcheroo-preview+json'}
+    content = {
+        "source": {
+            "branch": branch,
+            "path": path,
+            "auto_init": True
+        }
+    }
+    r = requests.post(
+        url,
+        json=content,
+        headers=headers,
+        auth=(username, token)
+    ).json()
+    print(r)
+    return r
+
+
+def github_create_repo_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+):
+    url = f"{github_endpoint()}/orgs/{organization}/repos"
+    content = {
+        "name": repo_name,
+        "private": False,
+    }
+    r = requests.post(url, json=content, auth=(username, token)).json()
+    return r
+
+
+def github_delete_repo_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+):
+    url = f"{github_endpoint()}/repos/{organization}/{repo_name}"
+    requests.delete(url, auth=(username, token))
+
+
+def github_clone_url(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+):
+    return (
+        'https://' + username + ':' + token + '@github.com/' +
+        organization + '/' + repo_name + '.git'
+    )
+
+
+def deploy_to_github_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+    branch: str,
+    path: str,
+):
+    if not username or not token:
+        raise Exception('Empty credential')
+
+    if not repo_name.startswith(api_repo_prefix()):
+        raise Exception(
+            f'Repo name should starts with "{api_repo_prefix()}". Its not safe to delete repo {organization}/{repo_name} from API.')
+
+    github_create_repo_io(username, token, organization, repo_name)
+    github_enable_pages_site_io(username, token, organization, repo_name)
+
+    with tmp() as repo_path, tmp() as new_repo_path:
+        clone_url = github_clone_url(username, token, organization, repo_name)
+        os.system(f'git clone {clone_url} {repo_path}')
+
+        data = inject_branch_to_deployment(
+            branch,
+            filesystem_to_dict_io(path),
+            filesystem_to_dict_io(repo_path)
+        )
+        dict_to_filesystem_io(new_repo_path, data)
+
+        with Path(new_repo_path):
+            os.system(f'git add --all')
+            os.system(f'git commit \
+                --allow-empty \
+                -m "Updated branch {branch}"')
+            os.system(f'git push')
+
+
+def delete_github_repo_io(
+    username: str,
+    token: str,
+    organization: str,
+    repo_name: str,
+):
+    if not username or not token:
+        raise Exception('Empty credential')
+
+    if not repo_name.startswith('API_'):
+        raise Exception(
+            f'Repo name should starts with "{api_repo_prefix()}". Its not safe to delete repo {organization}/{repo_name} from API.')
+
+    github_delete_repo_io(
+        username,
+        token,
+        organization,
+        repo_name
+    )
