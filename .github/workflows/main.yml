@@ -3,6 +3,8 @@ name: CICD
 on: [push]
 
 env:
+  ORGANIZATION: ${{ github.event.organization.login }}
+  REPOSITORY_NAME: ${{ github.event.repository.name }}
   WEBSITE_REPO: flowbrew/website-deployment
   SCRIPTS_PATH: .github/workflows/scripts
   REPOSITORY: ${{ github.repository }}
@@ -31,8 +33,11 @@ jobs:
       - name: Install pybrew
         run: |
           pip install ./pybrew
-          pytest --color=yes --pyargs pybrew \
-            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
+          pytest -vv --color=yes --pyargs pybrew \
+            --runslow \
+            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
+            --SECRET_GITHUB_WEBSITE_USERNAME=${{secrets.GITHUB_WEBSITE_USERNAME}} \
+            --SECRET_GITHUB_WEBSITE_TOKEN=${{secrets.GITHUB_WEBSITE_TOKEN}}
 
       - name: Build Jekyll
         run: |
@@ -42,15 +47,28 @@ jobs:
               -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
 
-      - name: Deploy Jekyll
+      - name: Deploy Jekyll         
+        shell: python
         run: |
-          ${{ env.SCRIPTS_PATH }}/deploy.py \
-              -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
-              -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
-              -r ${{ env.WEBSITE_REPO }} \
-              -s ${{ env.BUILD_PATH }} \
-              -S ${{ github.sha }} \
-              -b ${{ env.BRANCH_NAME }}
+          from pybrew import deploy_to_github_io
+          deploy_to_github_io(
+              username: '${{ secrets.GITHUB_WEBSITE_USERNAME }}',
+              token: '${{ secrets.GITHUB_WEBSITE_TOKEN }}',
+              organization: '${{ env.ORGANIZATION }}',
+              repo_name: '${{ env.REPOSITORY_NAME }}',
+              branch: '${{ env.BRANCH_NAME }}',
+              path: '${{ env.BUILD_PATH }}',
+          )
+
+      # - name: Deploy Jekyll
+      #   run: |
+      #     ${{ env.SCRIPTS_PATH }}/deploy.py \
+      #         -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
+      #         -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
+      #         -r ${{ env.WEBSITE_REPO }} \
+      #         -s ${{ env.BUILD_PATH }} \
+      #         -S ${{ github.sha }} \
+      #         -b ${{ env.BRANCH_NAME }}
 
       - name: Notify
         if: always()

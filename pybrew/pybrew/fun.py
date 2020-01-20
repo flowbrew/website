@@ -8,6 +8,7 @@ import tempfile
 import requests
 import time
 
+from bs4 import BeautifulSoup
 from path import Path
 
 from toolz import compose, curry, pipe
@@ -411,3 +412,12 @@ def delete_github_repo_io(
     params = [username, token, organization, repo_name]
     validate_github_operation(*params)
     github_delete_repo_io(*params)
+
+
+@try_n_times_decorator(n=20, timeout=10)
+def wait_until_deployed_io(url: str, branch: str, sha: str):
+    html = http_get_io(url + '/' + branch)
+    soup = BeautifulSoup(html, features="html.parser")
+    sha_ = soup.find('meta', {'name': 'github-commit-sha'}).get('content')
+    if sha != sha_:
+        raise Exception('Invalid sha')

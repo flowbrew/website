@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment
+from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, remove_from_github_io
 
 
 def test_remove_branch_from_deployment__remove_regular():
@@ -177,10 +177,41 @@ def TEMP_GITHUB_REPO(request):
     organization = 'flowbrew'
     repo_name = api_repo_prefix() + random_str()
 
+    try:
+        yield {
+            'username': SECRET_GITHUB_WEBSITE_USERNAME,
+            'token': SECRET_GITHUB_WEBSITE_TOKEN,
+            'organization': organization,
+            'repo_name': repo_name,
+            'url': 'https://' + organization + '.github.io/' + repo_name + '/',
+        }
+    finally:
+        delete_github_repo_io(
+            username=SECRET_GITHUB_WEBSITE_USERNAME,
+            token=SECRET_GITHUB_WEBSITE_TOKEN,
+            organization=organization,
+            repo_name=repo_name
+        )
+
+def apply_deployment(repo_info, deployment):
+    for br, fs in deployment:
+        with tmp() as td:
+            dict_to_filesystem_io(td, fs)
+            deploy_to_github_io(
+                username=repo_info['username'],
+                token=repo_info['token'],
+                organization=repo_info['organization'],
+                repo_name=repo_info['repo_name'],
+                branch=br,
+                path=td
+            )
+
+@pytest.mark.slow
+def test_deploy_to_github_io(TEMP_GITHUB_REPO):
     data = f'''<!DOCTYPE html>
         <html>
         <body>
-        {repo_name}
+        {TEMP_GITHUB_REPO['repo_name']}
         </body>
         </html>'''
 
@@ -194,7 +225,7 @@ def TEMP_GITHUB_REPO(request):
                 p1: 'wrong data',
                 'hello/world/file2': 'lol, internet',
                 'something': '16',
-                'index.html': repo_name + ' is working',
+                'index.html': TEMP_GITHUB_REPO['repo_name'] + ' is working',
                 '404.html': 'page not found!',
             }
         ),
@@ -209,76 +240,20 @@ def TEMP_GITHUB_REPO(request):
         ),
     ]
 
-    try:
-        for br, fs in deployment:
-            with tmp() as td:
-                dict_to_filesystem_io(td, fs)
-                deploy_to_github_io(
-                    username=SECRET_GITHUB_WEBSITE_USERNAME,
-                    token=SECRET_GITHUB_WEBSITE_TOKEN,
-                    organization=organization,
-                    repo_name=repo_name,
-                    branch=br,
-                    path=td
-                )
-
-        @try_n_times_decorator(n=20, timeout=10)
-        def check_if_online():
-            assert http_get_io(
-                'https://' + organization + '.github.io/' +
-                repo_name + '/' +
-                p1_.replace('.html', '')
-            ) == data
-
-        # there was agithub bug when touch a fresh path it will be 404 forever
-        @try_n_times_decorator(n=20, timeout=10)
-        def check_if_fresh_path_working():
-            assert http_get_io(
-                'https://' + organization + '.github.io/' +
-                repo_name + '/freshly/created'
-            ) == data
-
-        check_if_fresh_path_working()
-        check_if_online()
-
-        yield {
-            'organization': organization,
-            'repo_name': repo_name,
-            'url': 'https://' + organization + '.github.io/' + repo_name + '/',
-        }
-    finally:
-        delete_github_repo_io(
-            username=SECRET_GITHUB_WEBSITE_USERNAME,
-            token=SECRET_GITHUB_WEBSITE_TOKEN,
-            organization=organization,
-            repo_name=repo_name
-        )
-
-
-@pytest.mark.slow
-def test_deploy_to_github_io(TEMP_GITHUB_REPO):
-    assert TEMP_GITHUB_REPO
-
-
-@pytest.mark.slow
-def test_remove_from_github_io(TEMP_GITHUB_REPO):
+    apply_deployment(TEMP_GITHUB_REPO, deployment)
 
     @try_n_times_decorator(n=20, timeout=10)
-    def check_if_present():
+    def check_if_online():
         assert http_get_io(
-            TEMP_GITHUB_REPO['url'] + 'delete/test',
-        ) == 'file123'
+            TEMP_GITHUB_REPO['url'] + p1_.replace('.html', '')
+        ) == data
 
-    check_if_present()
+    # there was agithub bug when touch a fresh path it will be 404 forever
+    @try_n_times_decorator(n=20, timeout=10)
+    def check_if_fresh_path_working():
+        assert http_get_io(
+            TEMP_GITHUB_REPO['url'] + '/freshly/created'
+        ) == data
 
-
-    remove_from_github_io(
-    username: str,
-    token: str,
-    organization: str,
-    repo_name: str,
-    branch: str,
-)
-    
-
-    assert TEMP_GITHUB_REPO
+    check_if_fresh_path_working()
+    check_if_online()
