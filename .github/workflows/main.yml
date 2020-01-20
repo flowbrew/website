@@ -59,7 +59,7 @@ jobs:
               branch: '${{ env.BRANCH_NAME }}',
               path: '${{ env.BUILD_PATH }}',
           )
-\
+
       # - name: Deploy Jekyll
       #   run: |
       #     ${{ env.SCRIPTS_PATH }}/deploy.py \
