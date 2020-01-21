@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, remove_from_github_io
+from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, remove_from_github_io, wait_until_deployed_by_sha_io
 
 
 def test_remove_branch_from_deployment__remove_regular():
@@ -208,8 +208,13 @@ def apply_deployment(repo_info, deployment):
 
 @pytest.mark.slow
 def test_deploy_to_github_io(TEMP_GITHUB_REPO):
+    sha = TEMP_GITHUB_REPO['repo_name']
+
     data = f'''<!DOCTYPE html>
         <html>
+        <head>
+        <meta name="github-commit-sha" content="{sha}" />
+        </head>
         <body>
         {TEMP_GITHUB_REPO['repo_name']}
         </body>
@@ -242,18 +247,7 @@ def test_deploy_to_github_io(TEMP_GITHUB_REPO):
 
     apply_deployment(TEMP_GITHUB_REPO, deployment)
 
-    @try_n_times_decorator(n=20, timeout=10)
-    def check_if_online():
-        assert http_get_io(
-            TEMP_GITHUB_REPO['url'] + p1_.replace('.html', '')
-        ) == data
-
-    # there was agithub bug when touch a fresh path it will be 404 forever
-    @try_n_times_decorator(n=20, timeout=10)
-    def check_if_fresh_path_working():
-        assert http_get_io(
-            TEMP_GITHUB_REPO['url'] + '/freshly/created'
-        ) == data
-
-    check_if_fresh_path_working()
-    check_if_online()
+    wait_until_deployed_by_sha_io(
+        TEMP_GITHUB_REPO['url'] + p1_.replace('.html', ''),
+        sha
+    )

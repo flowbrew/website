@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd ./pybrew
+ptw -c --runner="pytest -vv --color=yes --pyargs pybrew \
+    --runslow \
+    --SECRET_SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN \
+    --SECRET_GITHUB_WEBSITE_USERNAME=$SECRET_GITHUB_WEBSITE_USERNAME \
+    --SECRET_GITHUB_WEBSITE_TOKEN=$SECRET_GITHUB_WEBSITE_TOKEN"

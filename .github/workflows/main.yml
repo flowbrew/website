@@ -3,6 +3,7 @@ name: CICD
 on: [push]
 
 env:
+  DOMAIN: flowbrew.ru
   ORGANIZATION: ${{ github.event.organization.login }}
   REPOSITORY_NAME: ${{ github.event.repository.name }}
   WEBSITE_REPO: flowbrew/website-deployment
@@ -16,7 +17,7 @@ env:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: ntoss/builder:latest
     env:
       BUILD_PATH: ./_site
@@ -35,7 +36,7 @@ jobs:
           pip install ./pybrew
           pytest -vv --color=yes --pyargs pybrew \
             --runslow \
-            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
+            --SECRET_SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
             --SECRET_GITHUB_WEBSITE_USERNAME=${{secrets.GITHUB_WEBSITE_USERNAME}} \
             --SECRET_GITHUB_WEBSITE_TOKEN=${{secrets.GITHUB_WEBSITE_TOKEN}}
 
@@ -47,10 +48,12 @@ jobs:
               -S ${{ github.sha }} \
               -b ${{ env.BRANCH_NAME }}
 
-      - name: Deploy Jekyll         
+      - name: Deploy Jekyll
         shell: python
         run: |
-          from pybrew import deploy_to_github_io
+          from pybrew import \
+            deploy_to_github_io, url_, wait_until_deployed_by_sha_io
+
           deploy_to_github_io(
               username: '${{ secrets.GITHUB_WEBSITE_USERNAME }}',
               token: '${{ secrets.GITHUB_WEBSITE_TOKEN }}',
@@ -60,15 +63,10 @@ jobs:
               path: '${{ env.BUILD_PATH }}',
           )
 
-      # - name: Deploy Jekyll
-      #   run: |
-      #     ${{ env.SCRIPTS_PATH }}/deploy.py \
-      #         -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
-      #         -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
-      #         -r ${{ env.WEBSITE_REPO }} \
-      #         -s ${{ env.BUILD_PATH }} \
-      #         -S ${{ github.sha }} \
-      #         -b ${{ env.BRANCH_NAME }}
+          wait_until_deployed_by_sha_io(
+              url_('${{ env.DOMAIN }}', '${{ env.BRANCH_NAME }}', ''),
+              sha
+          )
 
       - name: Notify
         if: always()

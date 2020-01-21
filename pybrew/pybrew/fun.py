@@ -414,10 +414,21 @@ def delete_github_repo_io(
     github_delete_repo_io(*params)
 
 
+def url_(domain: str, branch: str, path: str):
+    return f'https://{domain}/{branch}/{path}'
+
+
+def wait_until_deployed_by_sha_io(url: str, sha: str):
+    wait_until_html_deployed_io(
+        url,
+        lambda soup:
+        soup.find('meta', {'name': 'github-commit-sha'}).get('content') == sha
+    )
+
+
 @try_n_times_decorator(n=20, timeout=10)
-def wait_until_deployed_io(url: str, branch: str, sha: str):
-    html = http_get_io(url + '/' + branch)
+def wait_until_html_deployed_io(url: str, f):
+    html = http_get_io(url)
     soup = BeautifulSoup(html, features="html.parser")
-    sha_ = soup.find('meta', {'name': 'github-commit-sha'}).get('content')
-    if sha != sha_:
-        raise Exception('Invalid sha')
+    if not f(soup):
+        raise Exception('Invalid html')
