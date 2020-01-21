@@ -438,7 +438,7 @@ def cicd_io(
     test_repo_name: str,
 ):
     # Testing pybrew
-    os.system(f'''
+    res = os.system(f'''
     pytest -vv --color=yes --pyargs pybrew \
         --runslow \
         --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
@@ -449,3 +449,6 @@ def cicd_io(
         --TEST_REPOSITORY={test_repo_name} \
         --ORGANIZATION={organization}
     ''')
+    if res != 0:
+        raise Exception('Test failed')
+
