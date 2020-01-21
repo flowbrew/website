@@ -7,7 +7,9 @@ from pybrew import build_jekyll_io, dict_to_filesystem_io, run_io, tmp, files, f
 from bs4 import BeautifulSoup
 
 
-# def test_build_jekyll_io(BRANCH, SHA):
+def test_build_jekyll_io(BRANCH, SHA):
+    assert False
+    
 #     with tmp() as source, tmp() as dest:
 #         run_io(f'jekyll new --blank --force {source}')
 
