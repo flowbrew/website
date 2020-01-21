@@ -215,10 +215,10 @@ def test_deploy_to_github_io(
         with tmp() as td:
             dict_to_filesystem_io(td, fs)
             deploy_to_github_io(
-                username=SECRET_GITHUB_WEBSITE_USERNAME,
-                token=SECRET_GITHUB_WEBSITE_TOKEN,
+                github_username=SECRET_GITHUB_WEBSITE_USERNAME,
+                github_token=SECRET_GITHUB_WEBSITE_TOKEN,
                 organization=ORGANIZATION,
-                repo_name=TEST_REPOSITORY,
+                target_repo_name=TEST_REPOSITORY,
                 branch=br,
                 path=td
             )
