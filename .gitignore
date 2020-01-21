@@ -10,6 +10,7 @@ assets/img/.DS_Store
 assets/.DS_Store
 Gemfile.lock
 .jekyll-cache
+.vscode
 temp
 
 *.egg-info/

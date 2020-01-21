@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd ./pybrew
+ptw -c --runner="pytest -vv --color=yes --pyargs pybrew \
+    --ORGANIZATION=flowbrew \
+    --TEST_REPOSITORY=test-website-deployment \
+    --BRANCH=test-local \
+    --SHA=2d24dbb5a34ae4f89479f9199502644d865b9f7d \
+    --SECRET_SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN \
+    --SECRET_GITHUB_WEBSITE_USERNAME=$SECRET_GITHUB_WEBSITE_USERNAME \
+    --SECRET_GITHUB_WEBSITE_TOKEN=$SECRET_GITHUB_WEBSITE_TOKEN"

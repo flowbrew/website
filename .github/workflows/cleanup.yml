@@ -3,39 +3,38 @@ name: Cleanup Branch
 on: [delete]
 
 env:
-  WEBSITE_REPO: flowbrew/website-deployment
-  SCRIPTS_PATH: .github/workflows/scripts
-  BRANCH_NAME: ${{ github.event.ref }}
-  REPOSITORY: ${{ github.repository }}
-  WORKFLOW: ${{ github.workflow }}
-  EVENT_NAME: ${{ github.event_name }}
+  TEST_REPOSITORY: test-website-deployment
+  TARGET_REPOSITORY: website-deployment
+
+  BRANCH: ${{ github.event.ref }}
   HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-  HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: ntoss/builder:latest
     steps:
+      - run: |
+          git config --global user.email "action@flowbrew.ru"
+          git config --global user.name "GitHub Action"
       - uses: actions/checkout@v1
-      - name: Install pybrew
-        run: |
-          pip install ./pybrew
-          pytest --pyargs pybrew \
-            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
+      - run: pip install ./pybrew
 
-      - name: Ckeanup Jekyll
+      - name: Cleanup
+        shell: python
         run: |
-          .github/workflows/scripts/cleanup.py \
-              -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
-              -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
-              -r ${{ env.WEBSITE_REPO }} \
-              -b ${{ env.BRANCH_NAME }}
-
-      - name: Notify
-        if: always()
-        env:
-          JOB_STATUS: ${{ job.status }}
-          SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        run: ${{ env.SCRIPTS_PATH }}/notifier.py
+          import os
+          from pybrew import cleanup_io
+          cleanup_io(
+              github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
+              github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
+              organization='${{ github.event.organization.login }}',
+              target_repo_name='${{ env.TARGET_REPOSITORY }}',
+              slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
+              branch=os.environ['BRANCH'],
+              workflow='${{ github.workflow }}',
+              head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
+              head_commit_url='${{ github.event.head_commit.url }}',
+              event_name='${{ github.event_name }}',
+          )

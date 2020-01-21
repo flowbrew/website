@@ -1,60 +1,45 @@
-name: CICD
+name: CI/CD
 
 on: [push]
 
 env:
-  WEBSITE_REPO: flowbrew/website-deployment
-  SCRIPTS_PATH: .github/workflows/scripts
-  REPOSITORY: ${{ github.repository }}
-  WORKFLOW: ${{ github.workflow }}
-  EVENT_NAME: ${{ github.event_name }}
+  TEST_REPOSITORY: test-website-deployment
+  TARGET_REPOSITORY: website-deployment
+
+  # we want to load this from env to escape quotes
   HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-  HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: ntoss/builder:latest
-    env:
-      BUILD_PATH: ./_site
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-
       # Saving branch name to ${BRANCH_NAME}
       - uses: nelonoel/branch-name@v1
-
+      - run: |
+          git config --global user.email "action@flowbrew.ru"
+          git config --global user.name "GitHub Action"
       - uses: actions/checkout@v1
-      - name: Install pybrew
-        run: |
-          pip install ./pybrew
-          pytest --pyargs pybrew \
-            --SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}
+      - run: pip install ./pybrew
 
-      - name: Build Jekyll
+      - name: CI/CD
+        shell: python
         run: |
-          ${{ env.SCRIPTS_PATH }}/build.py \
-              -d ${{ env.BUILD_PATH }} \
-              -r ${{ github.repository }} \
-              -S ${{ github.sha }} \
-              -b ${{ env.BRANCH_NAME }}
-
-      - name: Deploy Jekyll
-        run: |
-          ${{ env.SCRIPTS_PATH }}/deploy.py \
-              -t ${{ secrets.GITHUB_WEBSITE_TOKEN }} \
-              -u ${{ secrets.GITHUB_WEBSITE_USERNAME }} \
-              -r ${{ env.WEBSITE_REPO }} \
-              -s ${{ env.BUILD_PATH }} \
-              -S ${{ github.sha }} \
-              -b ${{ env.BRANCH_NAME }}
-
-      - name: Notify
-        if: always()
-        env:
-          JOB_STATUS: ${{ job.status }}
-          SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        run: ${{ env.SCRIPTS_PATH }}/notifier.py
+          import os
+          from pybrew import cicd_io
+          cicd_io(
+            github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
+            github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
+            slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
+            organization='${{ github.event.organization.login }}',
+            target_repo_name='${{ env.TARGET_REPOSITORY }}',
+            branch=os.environ['BRANCH_NAME'],
+            repo_path='./',
+            sha='${{ github.sha }}',
+            test_repo_name='${{ env.TEST_REPOSITORY }}',
+            workflow='${{ github.workflow }}',
+            head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
+            head_commit_url='${{ github.event.head_commit.url }}',
+            event_name='${{ github.event_name }}',
+          )
