@@ -62,27 +62,28 @@ def bake_images_io(tinify_key, images_path, baked_images_path, **kwargs):
     )
 
     def _bake_image_io(image, resolution, dest):
-        dest_image = dest.replace(images_path, baked_images_path, 1)
+        dest_ = os.path.join(baked_images_path, dest)
+        image_ = os.path.join(images_path, image)
 
         if not image:
-            os.remove(dest_image)
-            print('removed unlinked image', dest_image)
+            os.remove(dest_)
+            print('removed unlinked image', dest_)
         else:
             Path(
-                os.path.dirname(dest_image)
+                os.path.dirname(dest_)
             ).mkdir(
                 parents=True,
                 exist_ok=True
             )
 
-            source = tinify.from_file(image)
+            source = tinify.from_file(image_)
 
             if resolution != 0:
                 resized = source.resize(method='scale', width=resolution)
-                resized.to_file(dest_image)
+                resized.to_file(dest_)
             else:
-                source.to_file(dest_image)
+                source.to_file(dest_)
 
-            print('done baking', dest_image)
+            print('done baking', dest_)
 
     force(_bake_image_io(*x) for x in tasks)
