@@ -352,14 +352,15 @@ def github_modify_io(
 
 @try_n_times_decorator(n=5, timeout=10)
 def deploy_to_github_io(
-    github_username: str,
-    github_token: str,
-    organization: str,
-    repo_name: str,
-    branch: str,
-    path: str,
+    github_username,
+    github_token,
+    organization,
+    target_repo_name,
+    branch,
+    path,
+    **kwargs
 ):
-    params = [username, token, organization, repo_name]
+    params = [github_username, github_token, organization, target_repo_name]
 
     validate_github_operation(*params)
 
@@ -426,7 +427,7 @@ def wait_until_deployed_by_sha_io(url: str, sha: str):
     )
 
 
-def wait_until_deployed_by_sha_io_(domain, branch, sha):
+def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
     wait_until_deployed_by_sha_io(
         'https://' + domain + '/' + branch_to_prefix(branch),
         sha
@@ -451,7 +452,7 @@ def save_yaml_io(path, data):
         yaml.safe_dump(data, file)
 
 
-def build_jekyll_io(repo_path: str, dest: str, sha: str, branch: str):
+def build_jekyll_io(repo_path, dest, sha, branch, **kwargs):
     with Path(repo_path):
         save_yaml_io(
             '_config.yml',
@@ -486,6 +487,7 @@ def github_action_notification_io(
     head_commit_message: str,
     head_commit_url: str,
     success: bool,
+    **kwargs
 ):
     where_str = f"{workflow} of {repo_name}, branch '{branch}'"
 
@@ -510,6 +512,7 @@ def test_pybrew_io(
     branch,
     test_repo_name,
     organization,
+    **kwargs
 ):
     run_io(f'''
         pytest -vv --color=yes --pyargs pybrew \

@@ -29,7 +29,7 @@ jobs:
             github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
             slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
             organization='${{ github.event.organization.login }}',
-            repo_name='${{ env.TARGET_REPOSITORY }}',
+            target_repo_name='${{ env.TARGET_REPOSITORY }}',
             branch='${{ env.BRANCH_NAME }}',
             repo_path='./',
             sha='${{ github.sha }}',
