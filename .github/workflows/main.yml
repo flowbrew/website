@@ -34,7 +34,7 @@ jobs:
             slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
             organization='${{ github.event.organization.login }}',
             target_repo_name='${{ env.TARGET_REPOSITORY }}',
-            branch=os.environ['BRANCH'],
+            branch=os.environ['BRANCH_NAME'],
             repo_path='./',
             sha='${{ github.sha }}',
             test_repo_name='${{ env.TEST_REPOSITORY }}',
