@@ -481,7 +481,7 @@ def domain_io(path):
 def github_action_notification_io(
     slack_token: str,
     workflow: str,
-    repo_name: str,
+    target_repo_name: str,
     branch: str,
     event_name: str,
     head_commit_message: str,
@@ -489,7 +489,7 @@ def github_action_notification_io(
     success: bool,
     **kwargs
 ):
-    where_str = f"{workflow} of {repo_name}, branch '{branch}'"
+    where_str = f"{workflow} of {target_repo_name}, branch '{branch}'"
 
     what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name}'"
 
