@@ -109,7 +109,7 @@ def cicd_io(**kwargs):
         with tmp() as ws:
             build_jekyll_io(dest=ws, **kwargs)
             deploy_to_github_io(path=ws, **kwargs)
-            wait_until_deployed_by_sha_io__(**kwargs)
+            wait_until_deployed_by_sha_io_(domain=domain_io(ws), **kwargs)
 
         notify_io_(success=True)
 

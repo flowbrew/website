@@ -432,13 +432,6 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
     )
 
 
-def wait_until_deployed_by_sha_io__(organization, branch, sha, **kwargs):
-    wait_until_deployed_by_sha_io(
-        'https://' + organization + '.github.io/' + branch_to_prefix(branch),
-        sha
-    )
-
-
 @try_n_times_decorator(n=20, timeout=20)
 def wait_until_html_deployed_io(url: str, f):
     html = http_get_io(url)
