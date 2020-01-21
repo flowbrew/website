@@ -5,7 +5,7 @@ on: [push]
 env:
   DOMAIN: flowbrew.ru
   TEST_REPOSITORY: test-website-deployment
-  
+
   ORGANIZATION: ${{ github.event.organization.login }}
   REPOSITORY_NAME: ${{ github.event.repository.name }}
   SCRIPTS_PATH: .github/workflows/scripts
@@ -25,6 +25,11 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
+
+      - name: Init git
+        run: |
+          git config --global user.email "action@flowbrew.ru"
+          git config --global user.name "GitHub Action"
 
       # Saving branch name to ${BRANCH_NAME}
       - uses: nelonoel/branch-name@v1

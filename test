@@ -2,7 +2,6 @@
 
 cd ./pybrew
 ptw -c --runner="pytest -vv --color=yes --pyargs pybrew \
-    --runslow \
     --ORGANIZATION=flowbrew \
     --TEST_REPOSITORY=test-website-deployment \
     --BRANCH=test-local \

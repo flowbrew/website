@@ -420,7 +420,7 @@ def wait_until_html_deployed_io(url: str, f):
         raise Exception('Invalid html')
 
 
-def build_jekyll_io(source: str, path: str, sha: str, branch: str):
+def build_jekyll_io(source: str, dest: str, sha: str, branch: str):
     pass
 
 
