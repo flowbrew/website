@@ -3,14 +3,8 @@ name: CICD
 on: [push]
 
 env:
-  DOMAIN: flowbrew.ru
   TEST_REPOSITORY: test-website-deployment
   TARGET_REPOSITORY: website-deployment
-
-  WORKFLOW: ${{ github.workflow }}
-  EVENT_NAME: ${{ github.event_name }}
-  HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-  HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
 
 jobs:
   build-deploy:
@@ -37,7 +31,11 @@ jobs:
             organization='${{ github.event.organization.login }}',
             repo_name='${{ env.TARGET_REPOSITORY }}',
             branch='${{ env.BRANCH_NAME }}',
-            repo_path='${{ github.repository }}',
+            repo_path='./',
             sha='${{ github.sha }}',
             test_repo_name='${{ env.TEST_REPOSITORY }}',
+            workflow='${{ github.workflow }}',
+            head_commit_message='${{ github.event.head_commit.message }}',
+            head_commit_url='${{ github.event.head_commit.url }}',
+            event_name='${{ github.event_name }}',
           )

@@ -111,7 +111,7 @@ def run_io(command_line):
         raise Exception(f'Exception while executing "{command_line}"')
 
 
-def notification(channel, text, token):
+def notification_io(channel, text, token):
     client = slack.WebClient(token)
     response = client.chat_postMessage(
         channel=channel,
@@ -470,6 +470,32 @@ def domain_io(path):
         return f.read().strip('\r\n').strip()
 
 
+def github_action_notification_io(
+    slack_bot_token: str,
+    workflow: str,
+    repository: str,
+    branch_name: str,
+    event_name: str,
+    head_commit_message: str,
+    head_commit_url: str,
+    success: bool,
+    message: str,
+):
+    where_str = f"{workflow} of {repository}, branch '{branch_name}'"
+
+    what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name}'"
+
+    last_commit_str = (
+        f"Last commit was '{head_commit_message}'\n{head_commit_url}"
+        if head_commit_message else
+        ''
+    )
+
+    text = f'{what_str} on {where_str}\n{last_commit_str}\n{message}\n---'
+
+    notification_io(channel='#website', text=text, token=slack_bot_token)
+
+
 def cicd_io(
     github_username: str,
     github_token: str,
@@ -480,7 +506,22 @@ def cicd_io(
     repo_path: str,
     sha: str,
     test_repo_name: str,
+    workflow: str,
+    head_commit_message: str,
+    head_commit_url: str,
+    event_name: str,
 ):
+    notify_io_ = partial(
+        github_action_notification_io,
+        slack_bot_token=slack_token,
+        workflow=workflow,
+        repository=repo_name,
+        branch_name=branch,
+        event_name=event_name,
+        head_commit_message=head_commit_message,
+        head_commit_url=head_commit_url
+    )
+
     try:
         # Testing pybrew
         run_io(f'''
@@ -519,16 +560,8 @@ def cicd_io(
                 sha
             )
 
-        notification(
-            channel='#website',
-            token=slack_token,
-            text='SUCCESS ✅: CI/CD'
-        )
+        notify_io_(success=True, message='')
 
     except Exception as e:
-        notification(
-            channel='#website',
-            token=slack_token,
-            text='Exception ❌: ' + str(e)
-        )
+        notify_io_(success=False, message=str(e))
         raise

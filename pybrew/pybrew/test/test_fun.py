@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification, run_io, pipe, map, comp, force, try_n_times_decorator
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator
 
 
 def test_my_fun():
