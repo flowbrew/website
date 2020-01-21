@@ -6,6 +6,9 @@ env:
   TEST_REPOSITORY: test-website-deployment
   TARGET_REPOSITORY: website-deployment
 
+  BRANCH: ${{ github.event.ref }}
+  HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -21,6 +24,7 @@ jobs:
       - name: Cleanup
         shell: python
         run: |
+          import os
           from pybrew import cleanup_io
           cleanup_io(
               github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
@@ -28,9 +32,9 @@ jobs:
               organization='${{ github.event.organization.login }}',
               target_repo_name='${{ env.TARGET_REPOSITORY }}',
               slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
-              branch='${{ github.event.ref }}',
+              branch=os.environ['BRANCH'],
               workflow='${{ github.workflow }}',
-              head_commit_message='${{ github.event.head_commit.message }}',
+              head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
               head_commit_url='${{ github.event.head_commit.url }}',
               event_name='${{ github.event_name }}',
           )
