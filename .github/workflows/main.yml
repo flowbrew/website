@@ -5,9 +5,9 @@ on: [push]
 env:
   DOMAIN: flowbrew.ru
   TEST_REPOSITORY: test-website-deployment
+  
   ORGANIZATION: ${{ github.event.organization.login }}
   REPOSITORY_NAME: ${{ github.event.repository.name }}
-  WEBSITE_REPO: flowbrew/website-deployment
   SCRIPTS_PATH: .github/workflows/scripts
   REPOSITORY: ${{ github.repository }}
   WORKFLOW: ${{ github.workflow }}
@@ -32,7 +32,6 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install pybrew
         run: |
-          pip install requests toolz fn
           pip install ./pybrew
           pytest -vv --color=yes --pyargs pybrew \
             --runslow \

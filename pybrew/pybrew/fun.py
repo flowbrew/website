@@ -214,11 +214,6 @@ def dict_to_filesystem_io(mount_path: str, data: dict) -> str:
     )
 
 
-# def git_confing_io():
-#     run('git config --global user.email "action@flowbrew.ru"')
-#     run('git config --global user.name "GitHub Action"')
-
-
 def random_str(size=16, chars=string.ascii_lowercase):
     return ''.join(random.choice(chars) for x in range(size))
 
