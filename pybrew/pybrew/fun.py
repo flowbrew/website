@@ -99,13 +99,6 @@ def files(path):
             yield os.path.join(r, f)
 
 
-# def run(command_line):
-#     print('>', command_line)
-#     result = check_output(shlex.split(command_line)).decode("utf-8")
-#     print(result)
-#     return result
-
-
 def run_io(command_line):
     if os.system(command_line):
         raise Exception(f'Exception while executing "{command_line}"')
@@ -382,13 +375,14 @@ def deploy_to_github_io(
 
 @try_n_times_decorator(n=5, timeout=10)
 def remove_from_github_io(
-    username: str,
-    token: str,
+    github_username: str,
+    github_token: str,
     organization: str,
-    repo_name: str,
+    target_repo_name: str,
     branch: str,
+    **kwargs
 ):
-    params = [username, token, organization, repo_name]
+    params = [github_username, github_token, organization, target_repo_name]
 
     validate_github_operation(*params)
 
@@ -527,19 +521,28 @@ def test_pybrew_io(
         ''')
 
 
+def cleanup_io(**kwargs):
+    notify_io_ = partial(github_action_notification_io, **kwargs)
+
+    try:
+        remove_from_github_io(**kwargs)
+        notify_io_(success=True)
+
+    except:
+        notify_io_(success=False)
+        raise
+
+
 def cicd_io(**kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
 
     try:
         test_pybrew_io(**kwargs)
 
-        with tmp() as website:
-            build_jekyll_io(dest=website, **kwargs)
-            deploy_to_github_io(path=website, **kwargs)
-            wait_until_deployed_by_sha_io_(
-                domain=domain_io(website),
-                **kwargs
-            )
+        with tmp() as ws:
+            build_jekyll_io(dest=ws, **kwargs)
+            deploy_to_github_io(path=ws, **kwargs)
+            wait_until_deployed_by_sha_io_(domain=domain_io(ws), **kwargs)
 
         notify_io_(success=True)
 
