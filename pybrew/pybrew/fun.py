@@ -231,7 +231,9 @@ def http_get_io(url):
     s = requests.session()
     headers = {
         'User-Agent': 'Github Action',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
     }
     r = s.get(url, headers=headers).text
     s.cookies.clear()
@@ -436,4 +438,3 @@ def wait_until_html_deployed_io(url: str, f):
     soup = BeautifulSoup(html, features="html.parser")
     if not f(soup):
         raise Exception(f'Invalid html {url}')
-
