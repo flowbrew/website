@@ -440,19 +440,19 @@ def cicd_io(
 ):
     try:
         # Testing pybrew
-        pytest.main([
-            '-vv',
-            '--color=yes',
-            '--pyargs pybrew',
-            '--runslow',
-            '--SECRET_GITHUB_WEBSITE_USERNAME=' + github_username,
-            '--SECRET_GITHUB_WEBSITE_TOKEN=' + github_token,
-            '--SECRET_SLACK_BOT_TOKEN=' + slack_token,
-            '--SHA=' + sha,
-            '--BRANCH=' + branch,
-            '--TEST_REPOSITORY=' + test_repo_name,
-            '--ORGANIZATION=' + organization
-            ])
+        pytest_error = os.system(f'''
+        pytest -vv --color=yes --pyargs pybrew \
+            --runslow \
+            --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
+            --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
+            --SECRET_SLACK_BOT_TOKEN={slack_token} \
+            --SHA={sha} \
+            --BRANCH={branch} \
+            --TEST_REPOSITORY={test_repo_name} \
+            --ORGANIZATION={organization}
+        ''')
+        if pytest_error:
+            raise Exception('Test failed')
 
         notification(
             channel='#website', 
