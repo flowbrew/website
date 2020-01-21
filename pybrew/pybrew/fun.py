@@ -352,8 +352,8 @@ def github_modify_io(
 
 @try_n_times_decorator(n=5, timeout=10)
 def deploy_to_github_io(
-    username: str,
-    token: str,
+    github_username: str,
+    github_token: str,
     organization: str,
     repo_name: str,
     branch: str,
@@ -426,6 +426,13 @@ def wait_until_deployed_by_sha_io(url: str, sha: str):
     )
 
 
+def wait_until_deployed_by_sha_io_(domain, branch, sha):
+    wait_until_deployed_by_sha_io(
+        'https://' + domain + '/' + branch_to_prefix(branch),
+        sha
+    )
+
+
 @try_n_times_decorator(n=20, timeout=20)
 def wait_until_html_deployed_io(url: str, f):
     html = http_get_io(url)
@@ -444,8 +451,8 @@ def save_yaml_io(path, data):
         yaml.safe_dump(data, file)
 
 
-def build_jekyll_io(source: str, dest: str, sha: str, branch: str):
-    with Path(source):
+def build_jekyll_io(repo_path: str, dest: str, sha: str, branch: str):
+    with Path(repo_path):
         save_yaml_io(
             '_config.yml',
             {
@@ -471,17 +478,16 @@ def domain_io(path):
 
 
 def github_action_notification_io(
-    slack_bot_token: str,
+    slack_token: str,
     workflow: str,
-    repository: str,
-    branch_name: str,
+    repo_name: str,
+    branch: str,
     event_name: str,
     head_commit_message: str,
     head_commit_url: str,
     success: bool,
-    message: str,
 ):
-    where_str = f"{workflow} of {repository}, branch '{branch_name}'"
+    where_str = f"{workflow} of {repo_name}, branch '{branch}'"
 
     what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name}'"
 
@@ -491,77 +497,49 @@ def github_action_notification_io(
         ''
     )
 
-    text = f'{what_str} on {where_str}\n{last_commit_str}\n{message}\n---'
+    text = f'{what_str} on {where_str}\n{last_commit_str}\n---'
 
-    notification_io(channel='#website', text=text, token=slack_bot_token)
+    notification_io(channel='#website', text=text, token=slack_token)
 
 
-def cicd_io(
-    github_username: str,
-    github_token: str,
-    slack_token: str,
-    organization: str,
-    repo_name: str,
-    branch: str,
-    repo_path: str,
-    sha: str,
-    test_repo_name: str,
-    workflow: str,
-    head_commit_message: str,
-    head_commit_url: str,
-    event_name: str,
+def test_pybrew_io(
+    github_username,
+    github_token,
+    slack_token,
+    sha,
+    branch,
+    test_repo_name,
+    organization,
 ):
-    notify_io_ = partial(
-        github_action_notification_io,
-        slack_bot_token=slack_token,
-        workflow=workflow,
-        repository=repo_name,
-        branch_name=branch,
-        event_name=event_name,
-        head_commit_message=head_commit_message,
-        head_commit_url=head_commit_url
-    )
+    run_io(f'''
+        pytest -vv --color=yes --pyargs pybrew \
+            --runslow \
+            --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
+            --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
+            --SECRET_SLACK_BOT_TOKEN={slack_token} \
+            --SHA={sha} \
+            --BRANCH={branch} \
+            --TEST_REPOSITORY={test_repo_name} \
+            --ORGANIZATION={organization}
+        ''')
+
+
+def cicd_io(**kwargs):
+    notify_io_ = partial(github_action_notification_io, **kwargs)
 
     try:
-        # Testing pybrew
-        run_io(f'''
-            pytest -vv --color=yes --pyargs pybrew \
-                --runslow \
-                --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
-                --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
-                --SECRET_SLACK_BOT_TOKEN={slack_token} \
-                --SHA={sha} \
-                --BRANCH={branch} \
-                --TEST_REPOSITORY={test_repo_name} \
-                --ORGANIZATION={organization}
-            ''')
+        test_pybrew_io(**kwargs)
 
         with tmp() as website:
-            build_jekyll_io(
-                source=repo_path,
-                dest=website,
-                sha=sha,
-                branch=branch,
+            build_jekyll_io(dest=website, **kwargs)
+            deploy_to_github_io(path=website, **kwargs)
+            wait_until_deployed_by_sha_io_(
+                domain=domain_io(website),
+                **kwargs
             )
 
-            deploy_to_github_io(
-                username=github_username,
-                token=github_token,
-                organization=organization,
-                repo_name=repo_name,
-                branch=branch,
-                path=website
-            )
+        notify_io_(success=True)
 
-            domain = domain_io(website)
-
-            wait_until_deployed_by_sha_io(
-                'https://' + domain + '/' + branch_to_prefix(branch),
-                sha
-            )
-
-        notify_io_(success=True, message='')
-
-    except Exception as e:
-        notify_io_(success=False, message=str(e))
+    except:
+        notify_io_(success=False)
         raise
