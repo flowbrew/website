@@ -8,6 +8,7 @@ import string
 import tempfile
 import requests
 import time
+import yaml
 
 from bs4 import BeautifulSoup
 from path import Path
@@ -92,11 +93,22 @@ def remove_prefix(x: str) -> str:
 b2p = branch_to_prefix
 
 
-def run(command_line):
-    print('>', command_line)
-    result = check_output(shlex.split(command_line)).decode("utf-8")
-    print(result)
-    return result
+def files(path):
+    for r, _, fs in os.walk(path):
+        for f in fs:
+            yield os.path.join(r, f)
+
+
+# def run(command_line):
+#     print('>', command_line)
+#     result = check_output(shlex.split(command_line)).decode("utf-8")
+#     print(result)
+#     return result
+
+
+def run_io(command_line):
+    if os.system(command_line):
+        raise Exception(f'Exception while executing "{command_line}"')
 
 
 def notification(channel, text, token):
@@ -228,7 +240,6 @@ def http_get_io(url):
     }
     r = s.get(url, headers=headers).text
     s.cookies.clear()
-    print(r)
     return r
 
 
@@ -315,14 +326,14 @@ def validate_github_operation(
 
 def github_push_io(path, message):
     with Path(path):
-        os.system(f'git add --all')
-        os.system(f'git commit --allow-empty -m "{message}"')
-        os.system(f'git push')
+        run_io(f'git add --all')
+        run_io(f'git commit --allow-empty -m "{message}"')
+        run_io(f'git push')
 
 
 def github_clone_io(username, token, organization, repo_name, path):
     clone_url = github_clone_url(username, token, organization, repo_name)
-    os.system(f'git clone {clone_url} {path}')
+    run_io(f'git clone {clone_url} {path}')
 
 
 def github_modify_io(
@@ -415,7 +426,7 @@ def wait_until_deployed_by_sha_io(url: str, sha: str):
     )
 
 
-@try_n_times_decorator(n=20, timeout=10)
+@try_n_times_decorator(n=20, timeout=20)
 def wait_until_html_deployed_io(url: str, f):
     html = http_get_io(url)
     soup = BeautifulSoup(html, features="html.parser")
@@ -423,8 +434,40 @@ def wait_until_html_deployed_io(url: str, f):
         raise Exception(f'Invalid html {url}')
 
 
+def load_yaml_io(path):
+    with open(path, 'r') as file:
+        return yaml.safe_load(file)
+
+
+def save_yaml_io(path, data):
+    with open(path, 'w') as file:
+        yaml.safe_dump(data, file)
+
+
 def build_jekyll_io(source: str, dest: str, sha: str, branch: str):
-    pass
+    with Path(source):
+        save_yaml_io(
+            '_config.yml',
+            {
+                **load_yaml_io('_config.yml'),
+                **{
+                    'baseurl': (
+                        '/' if branch == master_branch()
+                        else branch_to_prefix(branch)
+                    ),
+                    'github-branch': branch,
+                    'github-commit-sha': sha,
+                    'no-index': branch != master_branch(),
+                }
+            }
+        )
+
+        run_io(f'jekyll build --trace -d {dest}')
+
+
+def domain_io(path):
+    with open('CNAME', 'r') as f:
+        return f.read().strip('\r\n').strip()
 
 
 def cicd_io(
@@ -440,30 +483,52 @@ def cicd_io(
 ):
     try:
         # Testing pybrew
-        pytest_error = os.system(f'''
-        pytest -vv --color=yes --pyargs pybrew \
-            --runslow \
-            --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
-            --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
-            --SECRET_SLACK_BOT_TOKEN={slack_token} \
-            --SHA={sha} \
-            --BRANCH={branch} \
-            --TEST_REPOSITORY={test_repo_name} \
-            --ORGANIZATION={organization}
-        ''')
-        if pytest_error:
-            raise Exception('Test failed')
+        run_io(f'''
+            pytest -vv --color=yes --pyargs pybrew \
+                --runslow \
+                --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
+                --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
+                --SECRET_SLACK_BOT_TOKEN={slack_token} \
+                --SHA={sha} \
+                --BRANCH={branch} \
+                --TEST_REPOSITORY={test_repo_name} \
+                --ORGANIZATION={organization}
+            ''')
+
+        with tmp() as website:
+            build_jekyll_io(
+                source=repo_path,
+                dest=website,
+                sha=sha,
+                branch=branch,
+            )
+
+            deploy_to_github_io(
+                username=github_username,
+                token=github_token,
+                organization=organization,
+                repo_name=repo_name,
+                branch=branch,
+                path=website
+            )
+
+            domain = domain_io(website)
+
+            wait_until_deployed_by_sha_io(
+                'https://' + domain + '/' + branch_to_prefix(branch),
+                sha
+            )
 
         notification(
-            channel='#website', 
-            token=slack_token, 
+            channel='#website',
+            token=slack_token,
             text='SUCCESS ✅: CI/CD'
-            )
+        )
 
     except Exception as e:
         notification(
-            channel='#website', 
-            token=slack_token, 
-            text='Exception ❌: ' + e
-            )
+            channel='#website',
+            token=slack_token,
+            text='Exception ❌: ' + str(e)
+        )
         raise

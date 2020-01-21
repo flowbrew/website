@@ -3,15 +3,10 @@ name: CICD
 on: [push]
 
 env:
-  GITHUB_CONTEXT: ${{ toJson(github) }}
-
   DOMAIN: flowbrew.ru
   TEST_REPOSITORY: test-website-deployment
+  TARGET_REPOSITORY: website-deployment
 
-  ORGANIZATION: ${{ github.event.organization.login }}
-  REPOSITORY_NAME: ${{ github.event.repository.name }}
-  SCRIPTS_PATH: .github/workflows/scripts
-  REPOSITORY: ${{ github.repository }}
   WORKFLOW: ${{ github.workflow }}
   EVENT_NAME: ${{ github.event_name }}
   HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -25,28 +20,22 @@ jobs:
     steps:
       # Saving branch name to ${BRANCH_NAME}
       - uses: nelonoel/branch-name@v1
-
-      - name: Init git
-        run: |
+      - run: |
           git config --global user.email "action@flowbrew.ru"
           git config --global user.name "GitHub Action"
-
       - uses: actions/checkout@v1
-
-      - name: Installing pybrew
-        run: pip install ./pybrew
+      - run: pip install ./pybrew
 
       - name: CI/CD
         shell: python
         run: |
           from pybrew import cicd_io
-
           cicd_io(
             github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
             github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
             slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
-            organization='${{ env.ORGANIZATION }}',
-            repo_name='${{ env.REPOSITORY_NAME }}',
+            organization='${{ github.event.organization.login }}',
+            repo_name='${{ env.TARGET_REPOSITORY }}',
             branch='${{ env.BRANCH_NAME }}',
             repo_path='${{ github.repository }}',
             sha='${{ github.sha }}',

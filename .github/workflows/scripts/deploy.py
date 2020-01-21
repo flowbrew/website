@@ -14,8 +14,8 @@ from path import Path
 from bs4 import BeautifulSoup
 
 
-def run(command_line):
-    return subprocess.check_output(shlex.split(command_line))
+# def run(command_line):
+#     return subprocess.check_output(shlex.split(command_line))
 
 
 def wait_until_deployed(domain, branch, sha):
@@ -59,27 +59,27 @@ def main(args):
     run(f'mkdir -p {website_path}')
     run(f'git clone {git} {website_path}')
     with Path(website_path):
-        run(f'rm -rf !(branch_*|.git)')
-        os.system('rm -rf !(branch_*|.git)')
-        os.system('echo $?')
-        os.system('ls -a')
+        run_io(f'rm -rf !(branch_*|.git)')
+        run_io('rm -rf !(branch_*|.git)')
+        run_io('echo $?')
+        run_io('ls -a')
 
     # updating current branch
-    run(f'rm -rf {website_branch_path}')
-    run(f'mkdir -p {website_branch_path}')
-    run(f'cp -r {args.source}/. {website_branch_path}')
+    run_io(f'rm -rf {website_branch_path}')
+    run_io(f'mkdir -p {website_branch_path}')
+    run_io(f'cp -r {args.source}/. {website_branch_path}')
 
     # applying master branch
     if os.path.isdir(website_master_path):
-        run(f'cp -r {website_master_path}/. {website_path}')
+        run_io(f'cp -r {website_master_path}/. {website_path}')
 
     # deploying
     with Path(website_path):
-        run(f'git add --all')
-        run(f'''git commit \
+        run_io(f'git add --all')
+        run_io(f'''git commit \
                 --allow-empty \
                 -m "Add changes to branch {args.branch}"''')
-        run(f'git push')
+        run_io(f'git push')
 
     wait_until_deployed('flowbrew.ru', args.branch, args.sha)
 
