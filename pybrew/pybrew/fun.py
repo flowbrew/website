@@ -1,6 +1,7 @@
 import os
 import slack
 import shlex
+import pytest
 from subprocess import check_output, CalledProcessError
 import random
 import string
@@ -437,18 +438,32 @@ def cicd_io(
     sha: str,
     test_repo_name: str,
 ):
-    # Testing pybrew
-    res = os.system(f'''
-    pytest -vv --color=yes --pyargs pybrew \
-        --runslow \
-        --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
-        --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
-        --SECRET_SLACK_BOT_TOKEN={slack_token} \
-        --SHA={sha} \
-        --BRANCH={branch} \
-        --TEST_REPOSITORY={test_repo_name} \
-        --ORGANIZATION={organization}
-    ''')
-    if res != 0:
-        raise Exception('Test failed')
+    try:
+        # Testing pybrew
+        pytest.main([
+            '-vv',
+            '--color=yes',
+            '--pyargs pybrew',
+            '--runslow',
+            '--SECRET_GITHUB_WEBSITE_USERNAME=' + github_username,
+            '--SECRET_GITHUB_WEBSITE_TOKEN=' + github_token,
+            '--SECRET_SLACK_BOT_TOKEN=' + slack_token,
+            '--SHA=' + sha,
+            '--BRANCH=' + branch,
+            '--TEST_REPOSITORY=' + test_repo_name,
+            '--ORGANIZATION=' + organization
+            ])
 
+        notification(
+            channel='#website', 
+            token=slack_token, 
+            text='SUCCESS ✅: CI/CD'
+            )
+
+    except Exception as e:
+        notification(
+            channel='#website', 
+            token=slack_token, 
+            text='Exception ❌: ' + e
+            )
+        raise

@@ -23,9 +23,6 @@ jobs:
     container:
       image: ntoss/builder:latest
     steps:
-      - name: Dump GitHub context
-        run: echo "$GITHUB_CONTEXT"
-
       # Saving branch name to ${BRANCH_NAME}
       - uses: nelonoel/branch-name@v1
 
@@ -55,10 +52,3 @@ jobs:
             sha='${{ github.sha }}',
             test_repo_name='${{ env.TEST_REPOSITORY }}',
           )
-
-      - name: Notify
-        if: always()
-        env:
-          JOB_STATUS: ${{ job.status }}
-          SECRET_SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        run: ${{ env.SCRIPTS_PATH }}/notifier.py
