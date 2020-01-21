@@ -227,6 +227,7 @@ def http_get_io(url):
     }
     r = s.get(url, headers=headers).text
     s.cookies.clear()
+    print(r)
     return r
 
 

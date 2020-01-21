@@ -29,10 +29,10 @@ jobs:
       # Saving branch name to ${BRANCH_NAME}
       - uses: nelonoel/branch-name@v1
 
-      - name: Init git
-        run: |
-          git config --global user.email "action@flowbrew.ru"
-          git config --global user.name "GitHub Action"
+      # - name: Init git
+      #   run: |
+      #     git config --global user.email "action@flowbrew.ru"
+      #     git config --global user.name "GitHub Action"
 
       - uses: actions/checkout@v1
 
