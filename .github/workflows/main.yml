@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install pybrew
         run: |
-          pip install requests
+          pip install requests toolz
           pip install ./pybrew
           pytest -vv --color=yes --pyargs pybrew \
             --runslow \
