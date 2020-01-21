@@ -104,11 +104,7 @@ def cicd_io(**kwargs):
 
     try:
         test_pybrew_io(**kwargs)
-
-        bake_images_io(
-            images_path='./assets/img',
-            baked_images_path='/assets/img_gen'
-        )
+        bake_images_io(**kwargs)
 
         with tmp() as ws:
             build_jekyll_io(dest=ws, **kwargs)

@@ -42,4 +42,7 @@ jobs:
             head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
             head_commit_url='${{ github.event.head_commit.url }}',
             event_name='${{ github.event_name }}',
+            tinify_key='${{ secrets.TINIFY_KEY }}',
+            images_path='./assets/img',
+            baked_images_path='./assets/img_gen',
           )

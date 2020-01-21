@@ -10,7 +10,7 @@ from PIL import Image
 from pathlib import Path
 
 
-from .fun import curry, chain_, pipe, filter, filesystem_to_dict_io, comp, map, chain
+from .fun import curry, chain_, pipe, filter, filesystem_to_dict_io, comp, map, chain, force
 
 
 def bake_images_tasks(
@@ -50,7 +50,9 @@ def bake_images_tasks(
     return comp(list, chain)(to_add, to_delete)
 
 
-def bake_images_io(images_path, baked_images_path):
+def bake_images_io(tinify_key, images_path, baked_images_path, **kwargs):
+    tinify.key = tinify_key
+
     tasks = bake_images_tasks(
         images=filesystem_to_dict_io(
             images_path, index_only=True
