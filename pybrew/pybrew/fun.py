@@ -427,3 +427,15 @@ def wait_until_html_deployed_io(url: str, f):
 
 def build_jekyll_io(source: str, path: str, sha: str, branch: str):
     pass
+
+
+def cicd_io(
+    github_username: str,
+    github_token: str,
+    organization: str,
+    repo_name: str,
+    branch: str,
+    repo_path: str,
+    sha: str,
+):
+    pass

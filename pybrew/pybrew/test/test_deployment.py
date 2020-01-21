@@ -187,11 +187,11 @@ def test_deploy_to_github_io(
         </html>'''
 
     p1 = f'hello/{random_str()}.html'
-    p1_ = branch_to_prefix(BRANCH + '_test') + p1
+    p1_ = branch_to_prefix('test') + p1
 
     deployment = [
         (
-            BRANCH + '_test',
+            'test',
             {
                 p1: 'wrong data',
                 'hello/world/file2': 'lol, internet',

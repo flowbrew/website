@@ -20,8 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ntoss/builder:latest
-    env:
-      BUILD_PATH: ./_site
     steps:
       - name: Dump GitHub context
         env:
@@ -44,34 +42,21 @@ jobs:
             --SHA=${{ github.sha }} \
             --BRANCH=${{ env.BRANCH_NAME }} \
             --TEST_REPOSITORY=${{ env.TEST_REPOSITORY }} \
-            --ORGANIZATION=${{ github.organization.login }}
-
-      - name: Build Jekyll
-        run: |
-          ${{ env.SCRIPTS_PATH }}/build.py \
-              -d ${{ env.BUILD_PATH }} \
-              -r ${{ github.repository }} \
-              -S ${{ github.sha }} \
-              -b ${{ env.BRANCH_NAME }}
+            --ORGANIZATION=${{ env.ORGANIZATION }}
 
       - name: Deploy Jekyll
         shell: python
         run: |
-          from pybrew import \
-            deploy_to_github_io, url_, wait_until_deployed_by_sha_io
+          from pybrew import cicd_io
 
-          deploy_to_github_io(
-              username: '${{ secrets.GITHUB_WEBSITE_USERNAME }}',
-              token: '${{ secrets.GITHUB_WEBSITE_TOKEN }}',
-              organization: '${{ env.ORGANIZATION }}',
-              repo_name: '${{ env.REPOSITORY_NAME }}',
-              branch: '${{ env.BRANCH_NAME }}',
-              path: '${{ env.BUILD_PATH }}',
-          )
-
-          wait_until_deployed_by_sha_io(
-              url_('${{ env.DOMAIN }}', '${{ env.BRANCH_NAME }}', ''),
-              '${{ github.sha }}'
+          cicd_io(
+            github_username: '${{ secrets.GITHUB_WEBSITE_USERNAME }}',
+            github_token: '${{ secrets.GITHUB_WEBSITE_TOKEN }}',
+            organization: '${{ env.ORGANIZATION }}',
+            repo_name: '${{ env.REPOSITORY_NAME }}',
+            branch: '${{ env.BRANCH_NAME }}',
+            repo_path: '${{ github.repository }}',
+            sha: '${{ github.sha }}',
           )
 
       - name: Notify
