@@ -7,12 +7,15 @@ def pytest_addoption(parser):
                      action="store_true", default=False,
                      help="run slow tests"
                      )
-    parser.addoption("--SECRET_SLACK_BOT_TOKEN",
-                     action="store", default="")
+    parser.addoption("--SECRET_SLACK_BOT_TOKEN", action="store", default="")
     parser.addoption("--SECRET_GITHUB_WEBSITE_USERNAME",
                      action="store", default="")
     parser.addoption("--SECRET_GITHUB_WEBSITE_TOKEN",
                      action="store", default="")
+    parser.addoption("--ORGANIZATION", action="store", default="")
+    parser.addoption("--TEST_REPOSITORY", action="store", default="")
+    parser.addoption("--BRANCH", action="store", default="")
+    parser.addoption("--SHA", action="store", default="")
 
 
 def pytest_configure(config):
@@ -41,6 +44,26 @@ def SECRET_GITHUB_WEBSITE_USERNAME(request):
 @pytest.fixture
 def SECRET_GITHUB_WEBSITE_TOKEN(request):
     return request.config.getoption("--SECRET_GITHUB_WEBSITE_TOKEN")
+
+
+@pytest.fixture
+def ORGANIZATION(request):
+    return request.config.getoption("--ORGANIZATION")
+
+
+@pytest.fixture
+def TEST_REPOSITORY(request):
+    return request.config.getoption("--TEST_REPOSITORY")
+
+
+@pytest.fixture
+def BRANCH(request):
+    return request.config.getoption("--BRANCH")
+
+
+@pytest.fixture
+def SHA(request):
+    return request.config.getoption("--SHA")
 
 
 @pytest.fixture

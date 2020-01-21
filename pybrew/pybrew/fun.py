@@ -234,10 +234,6 @@ def http_get_io(url):
     return r
 
 
-def api_repo_prefix():
-    return 'API_'
-
-
 tmp = tempfile.TemporaryDirectory
 
 
@@ -317,11 +313,6 @@ def validate_github_operation(
 ):
     if not username or not token:
         raise Exception('Empty credential')
-
-    if not repo_name.startswith(api_repo_prefix()):
-        raise Exception(
-            f'Repo name should starts with "{api_repo_prefix()}". \
-            Its not safe to modify repo {organization}/{repo_name} from API.')
 
 
 def github_push_io(path, message):

@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, api_repo_prefix, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, remove_from_github_io, wait_until_deployed_by_sha_io
+from pybrew import my_fun, notification, run, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, remove_from_github_io, wait_until_deployed_by_sha_io
 
 
 def test_remove_branch_from_deployment__remove_regular():
@@ -167,70 +167,36 @@ def test_filesystem_to_dict_io():
         assert filesystem_to_dict_io(td) == filesystem
 
 
-@pytest.fixture(scope="module")
-def TEMP_GITHUB_REPO(request):
-    SECRET_GITHUB_WEBSITE_USERNAME = \
-        request.config.getoption("--SECRET_GITHUB_WEBSITE_USERNAME")
-    SECRET_GITHUB_WEBSITE_TOKEN = \
-        request.config.getoption("--SECRET_GITHUB_WEBSITE_TOKEN")
-
-    organization = 'flowbrew'
-    repo_name = api_repo_prefix() + random_str()
-
-    try:
-        yield {
-            'username': SECRET_GITHUB_WEBSITE_USERNAME,
-            'token': SECRET_GITHUB_WEBSITE_TOKEN,
-            'organization': organization,
-            'repo_name': repo_name,
-            'url': 'https://' + organization + '.github.io/' + repo_name + '/',
-        }
-    finally:
-        delete_github_repo_io(
-            username=SECRET_GITHUB_WEBSITE_USERNAME,
-            token=SECRET_GITHUB_WEBSITE_TOKEN,
-            organization=organization,
-            repo_name=repo_name
-        )
-
-def apply_deployment(repo_info, deployment):
-    for br, fs in deployment:
-        with tmp() as td:
-            dict_to_filesystem_io(td, fs)
-            deploy_to_github_io(
-                username=repo_info['username'],
-                token=repo_info['token'],
-                organization=repo_info['organization'],
-                repo_name=repo_info['repo_name'],
-                branch=br,
-                path=td
-            )
-
 @pytest.mark.slow
-def test_deploy_to_github_io(TEMP_GITHUB_REPO):
-    sha = TEMP_GITHUB_REPO['repo_name']
-
+def test_deploy_to_github_io(
+    SECRET_GITHUB_WEBSITE_USERNAME,
+    SECRET_GITHUB_WEBSITE_TOKEN,
+    ORGANIZATION,
+    TEST_REPOSITORY,
+    BRANCH,
+    SHA
+):
     data = f'''<!DOCTYPE html>
         <html>
         <head>
-        <meta name="github-commit-sha" content="{sha}" />
+        <meta name="github-commit-sha" content="{SHA}" />
         </head>
         <body>
-        {TEMP_GITHUB_REPO['repo_name']}
+        {SHA}
         </body>
         </html>'''
 
     p1 = f'hello/{random_str()}.html'
-    p1_ = branch_to_prefix('test') + p1
+    p1_ = branch_to_prefix(BRANCH + '_test') + p1
 
     deployment = [
         (
-            'test',
+            BRANCH + '_test',
             {
                 p1: 'wrong data',
                 'hello/world/file2': 'lol, internet',
                 'something': '16',
-                'index.html': TEMP_GITHUB_REPO['repo_name'] + ' is working',
+                'index.html': SHA + ' is working',
                 '404.html': 'page not found!',
             }
         ),
@@ -245,9 +211,20 @@ def test_deploy_to_github_io(TEMP_GITHUB_REPO):
         ),
     ]
 
-    apply_deployment(TEMP_GITHUB_REPO, deployment)
+    for br, fs in deployment:
+        with tmp() as td:
+            dict_to_filesystem_io(td, fs)
+            deploy_to_github_io(
+                username=SECRET_GITHUB_WEBSITE_USERNAME,
+                token=SECRET_GITHUB_WEBSITE_TOKEN,
+                organization=ORGANIZATION,
+                repo_name=TEST_REPOSITORY,
+                branch=br,
+                path=td
+            )
 
     wait_until_deployed_by_sha_io(
-        TEMP_GITHUB_REPO['url'] + p1_.replace('.html', ''),
-        sha
+        'https://' + ORGANIZATION + '.github.io/' +
+        TEST_REPOSITORY + '/' + p1_.replace('.html', ''),
+        SHA
     )

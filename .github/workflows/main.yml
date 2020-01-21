@@ -4,6 +4,7 @@ on: [push]
 
 env:
   DOMAIN: flowbrew.ru
+  TEST_REPOSITORY: test-website-deployment
   ORGANIZATION: ${{ github.event.organization.login }}
   REPOSITORY_NAME: ${{ github.event.repository.name }}
   WEBSITE_REPO: flowbrew/website-deployment
@@ -39,7 +40,11 @@ jobs:
             --runslow \
             --SECRET_SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
             --SECRET_GITHUB_WEBSITE_USERNAME=${{secrets.GITHUB_WEBSITE_USERNAME}} \
-            --SECRET_GITHUB_WEBSITE_TOKEN=${{secrets.GITHUB_WEBSITE_TOKEN}}
+            --SECRET_GITHUB_WEBSITE_TOKEN=${{secrets.GITHUB_WEBSITE_TOKEN}} \
+            --SHA=${{ github.sha }} \
+            --BRANCH=${{ env.BRANCH_NAME }} \
+            --TEST_REPOSITORY=${{ env.TEST_REPOSITORY }} \
+            --ORGANIZATION=${{ github.organization.login }}
 
       - name: Build Jekyll
         run: |
@@ -66,7 +71,7 @@ jobs:
 
           wait_until_deployed_by_sha_io(
               url_('${{ env.DOMAIN }}', '${{ env.BRANCH_NAME }}', ''),
-              sha
+              '${{ github.sha }}'
           )
 
       - name: Notify
