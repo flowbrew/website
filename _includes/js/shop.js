@@ -168,7 +168,7 @@ function init_accordion() {
 function we_have_stock(quantity) {
   $(".buy-button").universalClick(function() {
     buy_button_pressed($(this).attr("id"));
-    window.location = "/checkout.html";
+    window.location = "./checkout.html";
   });
 
   var word = quantity == 1 ? "Остался" : "Осталось";
@@ -786,6 +786,8 @@ function process_coupon(coupon_str) {
     return 0.1;
   } else if (coupon === WELCOME_PROMOCODE10.toUpperCase()) {
     return 0.1;
+  } else if (coupon === "flow15".toUpperCase()) {
+    return 0.15;
   }
 
   return 0.0;
