@@ -417,7 +417,7 @@ def wait_until_html_deployed_io(url: str, f):
     html = http_get_io(url)
     soup = BeautifulSoup(html, features="html.parser")
     if not f(soup):
-        raise Exception('Invalid html')
+        raise Exception(f'Invalid html {url}')
 
 
 def build_jekyll_io(source: str, dest: str, sha: str, branch: str):

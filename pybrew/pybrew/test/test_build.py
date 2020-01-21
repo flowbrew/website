@@ -1,26 +1,15 @@
 import pytest
 import tempfile
 import os
+import yaml
 from path import Path
-from pybrew import build_jekyll_io, dict_to_filesystem_io, run
+from pybrew import build_jekyll_io, dict_to_filesystem_io, run, tmp
 from bs4 import BeautifulSoup
 
 
-def test_build_jekyll_io():
-    return 
-    filesystem = {
-        '.git/empty/dir': None,
-        'hello/world/file1': '123123',
-        'hello/world/file2': b'\x1231231232',
-        'something': '16',
-    }
+def test_build_jekyll_io(BRANCH, SHA):
+    return
+    with tmp() as source, tmp() as dest:
+        run(f'jekyll new --force {source}')
 
-    with tempfile.TemporaryDirectory() as td:
-        dict_to_filesystem_io(td, filesystem)
-
-        with Path(td):
-
-            run('jekyll new .')
-            run('ls -a')
-
-            assert False
+        build_jekyll_io(source, dest, SHA, BRANCH)
