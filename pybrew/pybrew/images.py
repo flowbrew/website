@@ -6,7 +6,6 @@ import os.path
 import tinify
 import shutil
 import re
-from PIL import Image
 from pathlib import Path
 
 
