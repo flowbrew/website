@@ -3,6 +3,8 @@ name: CICD
 on: [push]
 
 env:
+  GITHUB_CONTEXT: ${{ toJson(github) }}
+
   DOMAIN: flowbrew.ru
   TEST_REPOSITORY: test-website-deployment
 
@@ -22,33 +24,22 @@ jobs:
       image: ntoss/builder:latest
     steps:
       - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
+
+      # Saving branch name to ${BRANCH_NAME}
+      - uses: nelonoel/branch-name@v1
 
       - name: Init git
         run: |
           git config --global user.email "action@flowbrew.ru"
           git config --global user.name "GitHub Action"
 
-      # Saving branch name to ${BRANCH_NAME}
-      - uses: nelonoel/branch-name@v1
-
       - uses: actions/checkout@v1
-      - name: Install pybrew
-        run: |
-          pip install ./pybrew
-          pytest -vv --color=yes --pyargs pybrew \
-            --runslow \
-            --SECRET_SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
-            --SECRET_GITHUB_WEBSITE_USERNAME=${{secrets.GITHUB_WEBSITE_USERNAME}} \
-            --SECRET_GITHUB_WEBSITE_TOKEN=${{secrets.GITHUB_WEBSITE_TOKEN}} \
-            --SHA=${{ github.sha }} \
-            --BRANCH=${{ env.BRANCH_NAME }} \
-            --TEST_REPOSITORY=${{ env.TEST_REPOSITORY }} \
-            --ORGANIZATION=${{ env.ORGANIZATION }}
 
-      - name: Deploy Jekyll
+      - name: Installing pybrew
+        run: pip install ./pybrew
+
+      - name: CI/CD
         shell: python
         run: |
           from pybrew import cicd_io
@@ -56,11 +47,13 @@ jobs:
           cicd_io(
             github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
             github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
+            slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
             organization='${{ env.ORGANIZATION }}',
             repo_name='${{ env.REPOSITORY_NAME }}',
             branch='${{ env.BRANCH_NAME }}',
             repo_path='${{ github.repository }}',
             sha='${{ github.sha }}',
+            test_repo_name='${{ env.TEST_REPOSITORY }}',
           )
 
       - name: Notify

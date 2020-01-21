@@ -219,6 +219,7 @@ def random_str(size=16, chars=string.ascii_lowercase):
 
 
 def http_get_io(url):
+    print('get', url)
     s = requests.session()
     headers = {
         'User-Agent': 'Github Action',
@@ -427,10 +428,23 @@ def build_jekyll_io(source: str, dest: str, sha: str, branch: str):
 def cicd_io(
     github_username: str,
     github_token: str,
+    slack_token: str,
     organization: str,
     repo_name: str,
     branch: str,
     repo_path: str,
     sha: str,
+    test_repo_name: str,
 ):
-    pass
+    # Testing pybrew
+    os.system(f'''
+    pytest -vv --color=yes --pyargs pybrew \
+        --runslow \
+        --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
+        --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
+        --SECRET_SLACK_BOT_TOKEN={slack_token} \
+        --SHA={sha} \
+        --BRANCH={branch} \
+        --TEST_REPOSITORY={test_repo_name} \
+        --ORGANIZATION={organization}
+    ''')
