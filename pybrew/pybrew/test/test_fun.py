@@ -2,11 +2,36 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp
 
 
 def test_my_fun():
     assert my_fun(4) == 5
+
+
+# def test_copy_io():
+#     with tmp() as a, tmp() as b:
+#         with Path(a):
+#             run_io('mkdir -p ./lol/internet')
+#             run_io('echo aaa > ./lol/internet/a.txt')
+
+#         copy_io(a, b)
+
+#         with Path(b):
+#             assert open('./lol/internet/a.txt', 'r').read() == 'aaa\n'
+
+
+def test_working_directory_context_manager():
+    with tmp() as a, tmp() as b:
+        with Path(a):
+            run_io('echo aaa > a.txt')
+        with Path(b):
+            run_io('echo bbb > b.txt')
+
+        with Path(a):
+            assert open('a.txt', 'r').read() == 'aaa\n'
+        with Path(b):
+            assert open('b.txt', 'r').read() == 'bbb\n'
 
 
 def test_try_n_times_decorator():

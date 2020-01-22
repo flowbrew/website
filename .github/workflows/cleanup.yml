@@ -37,4 +37,5 @@ jobs:
               head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
               head_commit_url='${{ github.event.head_commit.url }}',
               event_name='${{ github.event_name }}',
+              repo_name='${{ github.event.repository.name }}',
           )
