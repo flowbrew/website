@@ -72,11 +72,12 @@ def test_pybrew_io(
     branch,
     test_repo_name,
     organization,
+    runslow=True,
     **kwargs
 ):
     run_io(f'''
         pytest -vv --color=yes --pyargs pybrew \
-            --runslow \
+            {'--runslow' if runslow else ''} \
             --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
             --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
             --SECRET_SLACK_BOT_TOKEN={slack_token} \
@@ -99,12 +100,28 @@ def cleanup_io(**kwargs):
         raise
 
 
+def bake_images_io_(**kwargs):
+    def _modify_io(_, new_repo_path):
+        with Path(new_repo_path):
+            bake_images_io(**kwargs)
+
+    return github_modify_io(
+        **kwargs,
+        message=f'Baking images for branch {kwargs["branch"]}',
+        allow_empty=False,
+        f=_modify_io
+    )
+
+
 def cicd_io(**kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
 
     try:
-        test_pybrew_io(**kwargs)
-        bake_images_io(**kwargs)
+        test_pybrew_io(runslow=True, **kwargs)
+
+        if bake_images_io_(**kwargs):
+            print('Some images were baked, cancelling CI/CD')
+            return
 
         with tmp() as ws:
             build_jekyll_io(dest=ws, **kwargs)

@@ -321,16 +321,28 @@ def validate_github_operation(
         raise Exception('Empty credential')
 
 
-def github_push_io(path, message):
+def git_has_unstaged_changes_io(path='.'):
+    return check_output(['git', 'status', '-s', '-uall', path]) != b''
+
+
+def github_push_io(path, message, allow_empty):
     with Path(path):
+        if not allow_empty and not git_has_unstaged_changes_io():
+            return False
         run_io(f'git add --all')
-        run_io(f'git commit --allow-empty -m "{message}"')
+        run_io(f'git commit \
+                    {"--allow-empty" if allow_empty else ""} \
+                    -m "{message}"')
         run_io(f'git push')
+        return True
 
 
-def github_clone_io(username, token, organization, repo_name, path):
+def github_clone_io(username, token, organization, repo_name, branch, path):
     clone_url = github_clone_url(username, token, organization, repo_name)
-    run_io(f'git clone {clone_url} {path}')
+    run_io(f'git clone \
+                --single-branch --branch "{branch}" \
+                "{clone_url}" \
+                "{path}"')
 
 
 def github_modify_io(
@@ -338,13 +350,22 @@ def github_modify_io(
     token: str,
     organization: str,
     repo_name: str,
+    branch: str,
     message: str,
+    allow_empty: bool,
     f
 ):
     with tmp() as repo_path, tmp() as new_repo_path:
-        github_clone_io(username, token, organization, repo_name, repo_path)
+        github_clone_io(
+            username,
+            token,
+            organization,
+            repo_name,
+            branch,
+            repo_path
+        )
         f(repo_path, new_repo_path)
-        github_push_io(new_repo_path, message)
+        return github_push_io(new_repo_path, message, allow_empty)
 
 
 @try_n_times_decorator(n=5, timeout=10)
@@ -374,7 +395,13 @@ def deploy_to_github_io(
             )
         )
 
-    github_modify_io(*params, f'Updated branch {branch}', _modify)
+    github_modify_io(
+        *params,
+        'master',
+        f'Updated branch {branch}',
+        True,
+        _modify
+    )
 
 
 @try_n_times_decorator(n=5, timeout=10)
@@ -399,7 +426,13 @@ def remove_from_github_io(
             )
         )
 
-    github_modify_io(*params, f'Deleted branch {branch}', _modify)
+    github_modify_io(
+        *params,
+        'master',
+        f'Deleted branch {branch}',
+        True,
+        _modify
+    )
 
 
 def delete_github_repo_io(
