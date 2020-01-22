@@ -31,48 +31,4 @@ jobs:
         with:
           entrypoint: terraform
           args: apply
-# env:
-#   TEST_REPOSITORY: test-website-deployment
-#   TARGET_REPOSITORY: website-deployment
 
-#   # we want to load this from env to escape quotes
-#   HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-
-# jobs:
-#   build-deploy:
-#     runs-on: ubuntu-latest
-#     container:
-#       image: ntoss/builder:latest
-#     steps:
-#       # Saving branch name to ${BRANCH_NAME}
-#       - uses: nelonoel/branch-name@v1
-#       - run: |
-#           git config --global user.email "action@flowbrew.ru"
-#           git config --global user.name "GitHub Action"
-#       - uses: actions/checkout@v1
-#       - run: pip install ./pybrew
-
-#       - name: CI/CD
-#         shell: python
-#         run: |
-#           import os
-#           from pybrew import cicd_io
-#           cicd_io(
-#             github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
-#             github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
-#             slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
-#             organization='${{ github.event.organization.login }}',
-#             target_repo_name='${{ env.TARGET_REPOSITORY }}',
-#             branch=os.environ['BRANCH_NAME'],
-#             repo_path='./',
-#             repo_name='${{ github.event.repository.name }}',
-#             sha='${{ github.sha }}',
-#             test_repo_name='${{ env.TEST_REPOSITORY }}',
-#             workflow='${{ github.workflow }}',
-#             head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
-#             head_commit_url='${{ github.event.head_commit.url }}',
-#             event_name='${{ github.event_name }}',
-#             tinify_key='${{ secrets.TINIFY_KEY }}',
-#             images_path='./assets/img',
-#             baked_images_path='./assets/img_gen',
-#           )
