@@ -116,10 +116,10 @@ def bake_images_io_(
         with Path(new_repo_path):
             bake_images_io(**kwargs)
             run_io('ls -a ' + repo_path)
-            run_io('ls -a ' + os.path.join(repo_path, '/assets/img_gen'))
+            run_io('ls -a ' + os.path.join(repo_path, './assets/img_gen'))
             print('---<')
             run_io('ls -a ' + new_repo_path)
-            run_io('ls -a ' + os.path.join(new_repo_path, '/assets/img_gen'))
+            run_io('ls -a ' + os.path.join(new_repo_path, './assets/img_gen'))
 
     return github_modify_io(
         github_username=github_username,

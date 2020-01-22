@@ -100,6 +100,7 @@ def files(path):
 
 
 def run_io(command_line):
+    print('>', command_line)
     if os.system(command_line):
         raise Exception(f'Exception while executing "{command_line}"')
 
