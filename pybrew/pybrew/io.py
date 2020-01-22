@@ -132,6 +132,10 @@ def bake_images_io_(
         )
 
 
+class CICDCancelled(Exception):
+    pass
+
+
 def cicd_io(**kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
 
@@ -139,8 +143,7 @@ def cicd_io(**kwargs):
         test_pybrew_io(runslow=True, **kwargs)
 
         if bake_images_io_(**kwargs):
-            print('Some images were baked, cancelling CI/CD')
-            return
+            raise CICDCancelled('Some images were baked, cancelling CI/CD')
 
         with tmp() as ws:
             build_jekyll_io(dest=ws, **kwargs)
@@ -148,6 +151,9 @@ def cicd_io(**kwargs):
             wait_until_deployed_by_sha_io_(domain=domain_io(ws), **kwargs)
 
         notify_io_(success=True)
+
+    except CICDCancelled:
+        pass
 
     except:
         notify_io_(success=False)

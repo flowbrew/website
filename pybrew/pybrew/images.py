@@ -51,7 +51,6 @@ def bake_images_tasks(
 
 def _bake_image_io(images_path, baked_images_path, image, resolution, dest):
     dest_ = os.path.join(baked_images_path, dest)
-    image_ = os.path.join(images_path, image)
 
     if not image:
         os.remove(dest_)
@@ -59,6 +58,7 @@ def _bake_image_io(images_path, baked_images_path, image, resolution, dest):
     else:
         os.makedirs(os.path.dirname(dest_), exist_ok=True)
 
+        image_ = os.path.join(images_path, image)
         source = tinify.from_file(image_)
 
         if resolution != 0:
