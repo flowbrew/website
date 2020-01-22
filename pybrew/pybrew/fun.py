@@ -346,20 +346,19 @@ def github_clone_io(username, token, organization, repo_name, branch, path):
 
 
 def github_modify_io(
-    username: str,
-    token: str,
+    github_username: str,
+    github_token: str,
     organization: str,
     repo_name: str,
     branch: str,
     message: str,
     allow_empty: bool,
-    f,
-    **kwargs
+    f
 ):
     with tmp() as repo_path, tmp() as new_repo_path:
         github_clone_io(
-            username,
-            token,
+            github_username,
+            github_token,
             organization,
             repo_name,
             branch,
@@ -386,7 +385,7 @@ def deploy_to_github_io(
     github_create_repo_io(*params)
     github_enable_pages_site_io(*params)
 
-    def _modify(repo_path, new_repo_path):
+    def _modify_io(repo_path, new_repo_path):
         dict_to_filesystem_io(
             new_repo_path,
             inject_branch_to_deployment(
@@ -397,11 +396,14 @@ def deploy_to_github_io(
         )
 
     github_modify_io(
-        *params,
-        'master',
-        f'Updated branch {branch}',
-        True,
-        _modify
+        github_username=github_username,
+        github_token=github_token,
+        organization=organization,
+        repo_name=target_repo_name,
+        branch='master',
+        message=f'Updated branch {branch}',
+        allow_empty=True,
+        f=_modify_io
     )
 
 
@@ -418,7 +420,7 @@ def remove_from_github_io(
 
     validate_github_operation(*params)
 
-    def _modify(repo_path, new_repo_path):
+    def _modify_io(repo_path, new_repo_path):
         dict_to_filesystem_io(
             new_repo_path,
             remove_branch_from_deployment(
@@ -428,11 +430,14 @@ def remove_from_github_io(
         )
 
     github_modify_io(
-        *params,
-        'master',
-        f'Deleted branch {branch}',
-        True,
-        _modify
+        github_username=github_username,
+        github_token=github_token,
+        organization=organization,
+        repo_name=target_repo_name,
+        branch='master',
+        message=f'Deleted branch {branch}',
+        allow_empty=True,
+        f=_modify_io
     )
 
 

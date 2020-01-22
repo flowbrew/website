@@ -100,14 +100,25 @@ def cleanup_io(**kwargs):
         raise
 
 
-def bake_images_io_(**kwargs):
+def bake_images_io_(
+    github_username,
+    github_token,
+    organization,
+    branch,
+    repo_name,
+    **kwargs
+):
     def _modify_io(_, new_repo_path):
         with Path(new_repo_path):
             bake_images_io(**kwargs)
 
     return github_modify_io(
-        **kwargs,
-        message=f'Baking images for branch {kwargs["branch"]}',
+        github_username=github_username,
+        github_token=github_token,
+        organization=organization,
+        repo_name=repo_name,
+        branch=branch,
+        message=f'Baking images for branch {branch}',
         allow_empty=False,
         f=_modify_io
     )

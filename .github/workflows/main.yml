@@ -36,6 +36,7 @@ jobs:
             target_repo_name='${{ env.TARGET_REPOSITORY }}',
             branch=os.environ['BRANCH_NAME'],
             repo_path='./',
+            repo_name='${{ github.event.repository.name }}',
             sha='${{ github.sha }}',
             test_repo_name='${{ env.TEST_REPOSITORY }}',
             workflow='${{ github.workflow }}',
