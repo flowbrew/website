@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 
-from .fun import curry, chain_, pipe, filter, filesystem_to_dict_io, comp, map, chain, force
+from .fun import curry, chain_, pipe, filter, filesystem_to_dict_io, comp, map, chain, force, run_io
 
 
 def bake_images_tasks(
@@ -88,5 +88,8 @@ def bake_images_io(tinify_key, images_path, baked_images_path, **kwargs):
     )
 
     force(_bake_image_io(images_path, baked_images_path, *x) for x in tasks)
+
+    with Path(baked_images_path):
+        run_io('ls -a')
 
     return tasks
