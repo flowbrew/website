@@ -72,7 +72,7 @@ def _bake_image_io(images_path, baked_images_path, image, resolution, dest):
         else:
             source.to_file(dest_)
 
-        print('done baking', dest_)
+        print('done baking', image_, '->', dest_)
 
 
 def bake_images_io(tinify_key, images_path, baked_images_path, **kwargs):

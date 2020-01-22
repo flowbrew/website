@@ -322,7 +322,9 @@ def validate_github_operation(
 
 
 def git_has_unstaged_changes_io(path='.'):
-    return check_output(['git', 'status', '-s', '-uall', path]) != b''
+    output = check_output(['git', 'status', '-s', '-uall', path])
+    print('git_has_unstaged_changes_io', str(output))
+    return output != b''
 
 
 def github_push_io(path, message, allow_empty):
