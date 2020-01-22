@@ -152,8 +152,8 @@ def cicd_io(**kwargs):
 
         notify_io_(success=True)
 
-    except CICDCancelled:
-        pass
+    except CICDCancelled as e:
+        print('CICDCancelled: ', str(e))
 
     except:
         notify_io_(success=False)
