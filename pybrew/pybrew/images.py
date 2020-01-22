@@ -6,7 +6,7 @@ import os.path
 import tinify
 import shutil
 import re
-from pathlib import Path
+from path import Path
 
 
 from .fun import curry, chain_, pipe, filter, filesystem_to_dict_io, comp, map, chain, force, run_io
