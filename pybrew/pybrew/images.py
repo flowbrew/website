@@ -57,12 +57,7 @@ def _bake_image_io(images_path, baked_images_path, image, resolution, dest):
         os.remove(dest_)
         print('removed unlinked image', dest_)
     else:
-        Path(
-            os.path.dirname(dest_)
-        ).mkdir(
-            parents=True,
-            exist_ok=True
-        )
+        os.makedirs(os.path.dirname(dest_), exist_ok=True)
 
         source = tinify.from_file(image_)
 
@@ -88,9 +83,5 @@ def bake_images_io(tinify_key, images_path, baked_images_path, **kwargs):
     )
 
     force(_bake_image_io(images_path, baked_images_path, *x) for x in tasks)
-
-    with Path(baked_images_path):
-        print('--->', images_path, baked_images_path)
-        run_io('ls -a')
 
     return tasks

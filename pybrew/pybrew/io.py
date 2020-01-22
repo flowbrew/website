@@ -109,10 +109,7 @@ def bake_images_io_(
     **kwargs
 ):
     def _modify_io(repo_path, new_repo_path):
-        dict_to_filesystem_io(
-            new_repo_path,
-            filesystem_to_dict_io(repo_path)
-        )
+        run_io(f'cp -r {repo_path} {new_repo_path}')
         with Path(new_repo_path):
             bake_images_io(**kwargs)
 
