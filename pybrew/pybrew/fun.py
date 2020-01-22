@@ -353,7 +353,8 @@ def github_modify_io(
     branch: str,
     message: str,
     allow_empty: bool,
-    f
+    f,
+    **kwargs
 ):
     with tmp() as repo_path, tmp() as new_repo_path:
         github_clone_io(
