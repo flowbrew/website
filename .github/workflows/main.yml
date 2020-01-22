@@ -5,6 +5,7 @@ on: [push, pull_request]
 env:
   TEST_REPOSITORY: test-website-deployment
   TARGET_REPOSITORY: website-deployment
+  MY_SEC: ${{ secrets.MY_SEC }}
 
   # we want to load this from env to escape quotes
   HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
