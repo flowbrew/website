@@ -9,6 +9,18 @@ def test_my_fun():
     assert my_fun(4) == 5
 
 
+# def test_copy_io():
+#     with tmp() as a, tmp() as b:
+#         with Path(a):
+#             run_io('mkdir -p ./lol/internet')
+#             run_io('echo aaa > ./lol/internet/a.txt')
+
+#         copy_io(a, b)
+
+#         with Path(b):
+#             assert open('./lol/internet/a.txt', 'r').read() == 'aaa\n'
+
+
 def test_working_directory_context_manager():
     with tmp() as a, tmp() as b:
         with Path(a):

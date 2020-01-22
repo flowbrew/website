@@ -100,6 +100,10 @@ def cleanup_io(**kwargs):
         raise
 
 
+# def copy_io(source, dest):
+#     run_io(f'cp -af {source} {dest}')
+
+
 def bake_images_io_(
     github_username,
     github_token,
@@ -108,21 +112,24 @@ def bake_images_io_(
     repo_name,
     **kwargs
 ):
-    def _modify_io(repo_path, new_repo_path):
-        run_io(f'cp -r {repo_path} {new_repo_path}')
+    with tmp() as new_repo_path:
+        github_clone_io(
+            github_username,
+            github_token,
+            organization,
+            repo_name,
+            branch,
+            new_repo_path
+        )
+
         with Path(new_repo_path):
             bake_images_io(**kwargs)
 
-    return github_modify_io(
-        github_username=github_username,
-        github_token=github_token,
-        organization=organization,
-        repo_name=repo_name,
-        branch=branch,
-        message=f'Baking images for branch {branch}',
-        allow_empty=False,
-        f=_modify_io
-    )
+        return github_push_io(
+            path=new_repo_path,
+            message=f'Baking images for branch {branch}',
+            allow_empty=False
+        )
 
 
 def cicd_io(**kwargs):
