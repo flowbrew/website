@@ -97,7 +97,10 @@ def test_pybrew_io(
 
 
 def cleanup_io(deployment_repo, ref_branch, **kwargs):
-    notify_io_ = partial(github_action_notification_io, **kwargs)
+    notify_io_ = partial(
+        github_action_notification_io,
+        **kwargs
+    )
 
     try:
         remove_from_github_io(
@@ -196,12 +199,22 @@ def cicd_io(repo_path, event_name, **kwargs_):
         raise Exception(f'Unknown event "{event_name}""')
 
 
-def ob_branch_deleted_io(repo_path, **kwargs):
-    cleanup_io(**kwargs)
+def ob_branch_deleted_io(**kwargs):
+    cleanup_io(
+        **{
+            **kwargs,
+            **{
+                'local_run': False
+            }
+        }
+    )
 
 
-def on_branch_updated_io(repo_path, **kwargs):
-    notify_io_ = partial(github_action_notification_io, **kwargs)
+def on_branch_updated_io(**kwargs):
+    notify_io_ = partial(
+        github_action_notification_io,
+        **kwargs
+    )
 
     try:
         test_pybrew_io(**kwargs)
