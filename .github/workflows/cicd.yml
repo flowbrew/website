@@ -1,12 +1,16 @@
 name: CI/CD
 
-on: [push]
+on: [push, delete]
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
+      # Saving branch name to ${BRANCH_NAME}
+      - uses: nelonoel/branch-name@v1
       - uses: actions/checkout@v1
+        with:
+          ref: ${{ env.BRANCH_NAME }}
       - name: CI/CD
         env:
           WORKFLOW: ${{ github.workflow }}

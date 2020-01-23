@@ -96,20 +96,16 @@ def test_pybrew_io(
         ''')
 
 
-def cleanup_io(**kwargs):
+def cleanup_io(deployment_repo, **kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
 
     try:
-        remove_from_github_io(**kwargs)
+        remove_from_github_io(target_repo_name=deployment_repo, **kwargs)
         notify_io_(success=True)
 
     except:
         notify_io_(success=False)
         raise
-
-
-# def copy_io(source, dest):
-#     run_io(f'cp -af {source} {dest}')
 
 
 def bake_images_io_(branch, repo_path, local_run, **kwargs):
@@ -163,14 +159,26 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
 
     else:
         deploy_to_github_io(
-            path=path, 
-            target_repo_name=deployment_repo, 
+            path=path,
+            target_repo_name=deployment_repo,
             **kwargs
-            )
+        )
         wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
 
 
-def cicd_io(repo_path, **kwargs_):
+def cicd_io(**kwargs):
+    en = kwargs['event_name']
+    if en == 'push':
+        on_branch_updated_io(**kwargs)
+    elif en == 'delete':
+        ob_branch_deleted_io(**kwargs)
+
+
+def ob_branch_deleted_io(repo_path, **kwargs):
+    cleanup_io(**kwargs)
+
+
+def on_branch_updated_io(repo_path, **kwargs_):
     org, name = extract_repo_name_from_origin(git_origin_io(repo_path))
     sha = git_sha_io(repo_path)
 
