@@ -172,6 +172,8 @@ def cicd_io(**kwargs):
         on_branch_updated_io(**kwargs)
     elif en == 'delete':
         ob_branch_deleted_io(**kwargs)
+    else:
+        raise Exception(f'Unknown event "{en}""')
 
 
 def ob_branch_deleted_io(repo_path, **kwargs):
