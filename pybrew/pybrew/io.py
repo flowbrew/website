@@ -149,7 +149,9 @@ def git_origin_io(path='.'):
 
 
 def git_repo_name_io(path):
-    return re.search(r':(.*)/(.*)\.git', git_origin_io(path)).group(2)
+    origin = git_origin_io(path)
+    print('origin', origin)
+    return re.search(r':(.*)/(.*)\.git', origin).group(2)
 
 
 def git_organization_io(path):
@@ -175,9 +177,6 @@ def deploy_jekyll_io(path, local_run, **kwargs):
 
 
 def cicd_io(repo_path, **kwargs_):
-    run_io('echo $PWD')
-    run_io('ls -a')
-
     name = git_repo_name_io(repo_path)
     org = git_organization_io(repo_path)
     sha = git_sha_io(repo_path)
