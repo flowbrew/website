@@ -9,6 +9,8 @@ import tempfile
 import requests
 import time
 import yaml
+import re
+import more_itertools
 
 from bs4 import BeautifulSoup
 from path import Path
@@ -16,6 +18,7 @@ from path import Path
 from toolz import compose, curry, pipe
 from toolz.curried import map
 from toolz.itertoolz import get
+from toolz.functoolz import identity
 from functools import partial
 
 from fn.iters import flatten
@@ -36,6 +39,9 @@ apply_ = flip(apply)
 comp = compose
 comp_ = flip(compose)
 flip = comp(curry, flip)
+
+filter = curry(filter)
+filterempty = filter(identity)
 
 
 def nt(x): return not (x)
@@ -323,9 +329,7 @@ def validate_github_operation(
 
 
 def git_has_unstaged_changes_io(path='.'):
-    output = check_output(['git', 'status', '-s', '-uall', path])
-    print('git_has_unstaged_changes_io', str(output))
-    return output != b''
+    return check_output(['git', 'status', '-s', '-uall', path]) != b''
 
 
 def github_push_io(path, message, allow_empty):
@@ -479,8 +483,36 @@ def wait_until_html_deployed_io(url: str, f):
     # to retrieve html page via GET in a loop.
     # So, we wait X seconds and try to check deployment only ONCE
     time.sleep(60.0)
-    
+
     html = http_get_io(url)
     soup = BeautifulSoup(html, features="html.parser")
     if not f(soup):
         raise Exception(f'Invalid html {url}')
+
+
+@curry
+def first(default, iterable):
+    """Returns first element of iterable
+    You should also specify default value
+
+    >>> first('none', (1, 2, 3))
+    1
+
+    >>> first('none', ())
+    'none'
+    """
+    return more_itertools.first(iterable, default)
+
+
+def extract_repo_name_from_origin(origin):
+    return pipe(
+        [r':([^/]*?)/([^/]*?)\.git$', r'/([^/]*?)/([^/]*?)$'],
+        map(lambda x: re.search(x, origin)),
+        filterempty,
+        map(lambda x: (x.group(1), x.group(2))),
+        first(None),
+    )
+
+
+# 'git@github.com:flowbrew/website.git',
+# 'https://github.com/flowbrew/website'

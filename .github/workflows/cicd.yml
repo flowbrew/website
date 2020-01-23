@@ -1,0 +1,24 @@
+name: CI/CD
+
+on: [push, delete]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Saving branch name to ${BRANCH_NAME}
+      - uses: nelonoel/branch-name@v1
+      - uses: actions/checkout@v1
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+      - name: CI/CD
+        env:
+          WORKFLOW: ${{ github.workflow }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_WEBSITE_USERNAME: ${{ secrets.GITHUB_WEBSITE_USERNAME }}
+          GITHUB_WEBSITE_TOKEN: ${{ secrets.GITHUB_WEBSITE_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          TINIFY_KEY: ${{ secrets.TINIFY_KEY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: ./cicd

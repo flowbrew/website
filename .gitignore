@@ -12,6 +12,7 @@ Gemfile.lock
 .jekyll-cache
 .vscode
 temp
+temp_config.yml
 
 *.egg-info/
 __pycache__/

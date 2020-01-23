@@ -1,0 +1,63 @@
+#!/bin/bash
+
+BUILDPARAMS=""
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
+
+if [ "$WORKFLOW" = "LOCAL" ]; then
+    LOCAL_RUN=True
+else
+    LOCAL_RUN=False
+fi
+
+DOCKER_COMMAND=$(cat <<-EOF
+git config --global user.email "action@flowbrew.ru"
+git config --global user.name "GitHub Action"
+pip install ./pybrew
+python -c "$(cat <<-PYEOF
+
+# ----- 
+
+import os
+from pybrew import cicd_io
+
+cicd_io(
+    local_run=${LOCAL_RUN},
+    workflow='${WORKFLOW}',
+    event_name='${EVENT_NAME}',
+
+    github_username='${GITHUB_WEBSITE_USERNAME}',
+    github_token='${GITHUB_WEBSITE_TOKEN}',
+
+    slack_token='${SLACK_BOT_TOKEN}',
+    tinify_key='${TINIFY_KEY}',
+
+    repo_path='./',
+
+    deployment_repo='website-deployment',
+    test_deployment_repo='test-website-deployment',
+
+    images_path='./assets/img',
+    baked_images_path='./assets/img_gen',
+    )
+
+# ----- 
+
+PYEOF
+)"
+EOF
+)
+
+echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+
+if docker pull ${DOCKERNAME} 2>/dev/null; then
+    BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
+fi
+
+docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
+docker push "$DOCKERNAME"
+
+docker run --rm --name cicd \
+    -v "$PWD":/usr/src/website \
+    -w /usr/src/website \
+    "$DOCKERNAME" bash -c "$DOCKER_COMMAND"
