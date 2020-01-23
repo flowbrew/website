@@ -1,0 +1,19 @@
+name: CI/CD
+
+on: [push]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    # container:
+    #   image: ntoss/builder:latest
+    steps:
+      - name: CI/CD
+        env:
+          WORKFLOW: ${{ github.workflow }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_WEBSITE_USERNAME: ${{ secrets.GITHUB_WEBSITE_USERNAME }}
+          GITHUB_WEBSITE_TOKEN: ${{ secrets.GITHUB_WEBSITE_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          TINIFY_KEY: ${{ secrets.TINIFY_KEY }}
+        run: ./local_cicd

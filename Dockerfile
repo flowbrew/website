@@ -6,5 +6,20 @@ RUN apt-get -y update && apt-get -y install \
         build-essential \
         zlib1g-dev
 
-RUN gem install jekyll bundler jekyll-redirect-from
-RUN pip install boto3
+RUN gem install \
+        jekyll \
+        bundler \
+        jekyll-redirect-from \
+        public_suffix
+
+RUN pip install \
+        pytest \
+        pyyaml \
+        beautifulsoup4 \
+        path \
+        slackclient \
+        requests \
+        toolz \
+        fn \
+        tinify
+
