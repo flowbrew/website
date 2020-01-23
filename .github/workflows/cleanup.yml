@@ -2,40 +2,54 @@ name: Cleanup Branch
 
 on: [delete]
 
-env:
-  TEST_REPOSITORY: test-website-deployment
-  TARGET_REPOSITORY: website-deployment
-
-  BRANCH: ${{ github.event.ref }}
-  HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-
 jobs:
-  cleanup:
+  build-deploy:
     runs-on: ubuntu-latest
-    container:
-      image: ntoss/builder:latest
     steps:
-      - run: |
-          git config --global user.email "action@flowbrew.ru"
-          git config --global user.name "GitHub Action"
       - uses: actions/checkout@v1
-      - run: pip install ./pybrew
+      - name: CI/CD
+        env:
+          WORKFLOW: ${{ github.workflow }}
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_WEBSITE_USERNAME: ${{ secrets.GITHUB_WEBSITE_USERNAME }}
+          GITHUB_WEBSITE_TOKEN: ${{ secrets.GITHUB_WEBSITE_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          TINIFY_KEY: ${{ secrets.TINIFY_KEY }}
+        run: ./local_cicd
+# env:
+#   TEST_REPOSITORY: test-website-deployment
+#   TARGET_REPOSITORY: website-deployment
 
-      - name: Cleanup
-        shell: python
-        run: |
-          import os
-          from pybrew import cleanup_io
-          cleanup_io(
-              github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
-              github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
-              organization='${{ github.event.organization.login }}',
-              target_repo_name='${{ env.TARGET_REPOSITORY }}',
-              slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
-              branch=os.environ['BRANCH'],
-              workflow='${{ github.workflow }}',
-              head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
-              head_commit_url='${{ github.event.head_commit.url }}',
-              event_name='${{ github.event_name }}',
-              repo_name='${{ github.event.repository.name }}',
-          )
+#   BRANCH: ${{ github.event.ref }}
+#   HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+
+# jobs:
+#   cleanup:
+#     runs-on: ubuntu-latest
+#     container:
+#       image: ntoss/builder:latest
+#     steps:
+#       - run: |
+#           git config --global user.email "action@flowbrew.ru"
+#           git config --global user.name "GitHub Action"
+#       - uses: actions/checkout@v1
+#       - run: pip install ./pybrew
+
+#       - name: Cleanup
+#         shell: python
+#         run: |
+#           import os
+#           from pybrew import cleanup_io
+#           cleanup_io(
+#               github_username='${{ secrets.GITHUB_WEBSITE_USERNAME }}',
+#               github_token='${{ secrets.GITHUB_WEBSITE_TOKEN }}',
+#               organization='${{ github.event.organization.login }}',
+#               target_repo_name='${{ env.TARGET_REPOSITORY }}',
+#               slack_token='${{ secrets.SLACK_BOT_TOKEN }}',
+#               branch=os.environ['BRANCH'],
+#               workflow='${{ github.workflow }}',
+#               head_commit_message=os.environ['HEAD_COMMIT_MESSAGE'],
+#               head_commit_url='${{ github.event.head_commit.url }}',
+#               event_name='${{ github.event_name }}',
+#               repo_name='${{ github.event.repository.name }}',
+#           )

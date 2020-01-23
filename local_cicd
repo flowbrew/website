@@ -1,7 +1,5 @@
 #!/bin/bash
 
-LOCAL_RUN=True
-
 if [ "$WORKFLOW" = "LOCAL" ]; then
     LOCAL_RUN=True
 else
