@@ -1,6 +1,50 @@
 from .fun import *
 from .images import *
 
+import operator
+import math
+import re
+
+
+@lru_cache()
+def glvrd_proofread_io(text):
+    url = 'https://glvrd.ru/api/v0/@proofread/'
+    headers = {}
+    content = {
+        'chunks': text
+    }
+    r = requests.post(
+        url,
+        data=content,
+        headers=headers
+    ).json()
+
+    print(r)
+
+    total_length = comp(len, re.sub)(
+        r'[А-Яа-яA-Za-z0-9-]+([^А-Яа-яA-Za-z0-9-]+)?',
+        '.',
+        text.strip('\n').strip()
+    )
+
+    def _tab(name, hints):
+        penalty, weight_ = pipe(
+            hints.values(),
+            filter(lambda x: x['tab'] == name),
+            map(lambda x: (x['penalty'], x['weight'])),
+            reduce(lambda x, y: (x[0] + y[0], x[1] + y[1]), (0.0, 0.0)),
+            tuple
+        )
+
+        weight = weight_ / 100
+
+        score1 = (
+            math.floor(100.0 * math.pow(1.0 - weight / total_length, 3)) - penalty
+        )
+
+        return min(max(score1, 0.0), 100.0) / 10.0
+
+    return (_tab('red', r['hints']), _tab('blue', r['hints']))
 
 def load_yaml_io(path):
     with open(path, 'r') as file:
