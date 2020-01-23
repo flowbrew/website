@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./cicd local $1 $2

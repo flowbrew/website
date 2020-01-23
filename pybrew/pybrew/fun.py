@@ -420,7 +420,7 @@ def remove_from_github_io(
     github_token: str,
     organization: str,
     target_repo_name: str,
-    branch: str,
+    target_branch_name: str,
     **kwargs
 ):
     params = [github_username, github_token, organization, target_repo_name]
@@ -431,7 +431,7 @@ def remove_from_github_io(
         dict_to_filesystem_io(
             new_repo_path,
             remove_branch_from_deployment(
-                branch,
+                target_branch_name,
                 filesystem_to_dict_io(repo_path)
             )
         )
@@ -442,7 +442,7 @@ def remove_from_github_io(
         organization=organization,
         repo_name=target_repo_name,
         branch='master',
-        message=f'Deleted branch {branch}',
+        message=f'Deleted branch {target_branch_name}',
         allow_empty=True,
         f=_modify_io
     )
@@ -482,7 +482,7 @@ def wait_until_html_deployed_io(url: str, f):
     # There is a some sort of a cache that doesn't allow
     # to retrieve html page via GET in a loop.
     # So, we wait X seconds and try to check deployment only ONCE
-    time.sleep(60.0)
+    time.sleep(120.0)
 
     html = http_get_io(url)
     soup = BeautifulSoup(html, features="html.parser")

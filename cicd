@@ -4,7 +4,7 @@ BUILDPARAMS=""
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
 
-if [ "$WORKFLOW" = "LOCAL" ]; then
+if [ "$1" = "local" ]; then
     LOCAL_RUN=True
 else
     LOCAL_RUN=False
@@ -23,8 +23,8 @@ from pybrew import cicd_io
 
 cicd_io(
     local_run=${LOCAL_RUN},
-    workflow='${WORKFLOW}',
-    event_name='${EVENT_NAME}',
+    workflow='$1',
+    event_name='$2',
 
     github_username='${GITHUB_WEBSITE_USERNAME}',
     github_token='${GITHUB_WEBSITE_TOKEN}',
@@ -39,6 +39,8 @@ cicd_io(
 
     images_path='./assets/img',
     baked_images_path='./assets/img_gen',
+
+    ref_branch='$3',
     )
 
 # ----- 
