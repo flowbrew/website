@@ -15,7 +15,7 @@ jobs:
           GITHUB_WEBSITE_TOKEN: ${{ secrets.GITHUB_WEBSITE_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           TINIFY_KEY: ${{ secrets.TINIFY_KEY }}
-        run: ./local_cicd
+        run: ./cicd
 # env:
 #   TEST_REPOSITORY: test-website-deployment
 #   TARGET_REPOSITORY: website-deployment

@@ -157,12 +157,16 @@ def github_commit_url_io(org, name, sha):
     return f'https://github.com/{org}/{name}/commit/{sha}'
 
 
-def deploy_jekyll_io(path, local_run, **kwargs):
+def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
     if local_run:
         pass
 
     else:
-        deploy_to_github_io(path=path, **kwargs)
+        deploy_to_github_io(
+            path=path, 
+            target_repo_name=deployment_repo, 
+            **kwargs
+            )
         wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
 
 

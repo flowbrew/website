@@ -380,12 +380,12 @@ def deploy_to_github_io(
     github_username,
     github_token,
     organization,
-    deployment_repo,
+    target_repo_name,
     branch,
     path,
     **kwargs
 ):
-    params = [github_username, github_token, organization, deployment_repo]
+    params = [github_username, github_token, organization, target_repo_name]
 
     validate_github_operation(*params)
 
@@ -406,7 +406,7 @@ def deploy_to_github_io(
         github_username=github_username,
         github_token=github_token,
         organization=organization,
-        repo_name=deployment_repo,
+        repo_name=target_repo_name,
         branch='master',
         message=f'Updated branch {branch}',
         allow_empty=True,
