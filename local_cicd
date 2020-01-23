@@ -48,6 +48,8 @@ PYEOF
 EOF
 )
 
+echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+
 if docker pull ${DOCKERNAME} 2>/dev/null; then
     BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
 fi
