@@ -175,6 +175,9 @@ def deploy_jekyll_io(path, local_run, **kwargs):
 
 
 def cicd_io(repo_path, **kwargs_):
+    run_io('echo $PWD')
+    run_io('ls -a')
+
     name = git_repo_name_io(repo_path)
     org = git_organization_io(repo_path)
     sha = git_sha_io(repo_path)
