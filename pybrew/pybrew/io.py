@@ -32,7 +32,7 @@ def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
 
         if local_run:
             run_io('bundle update')
-        
+
         run_io(f'jekyll build --trace -d {dest} --config temp_config.yml')
 
 
@@ -84,7 +84,7 @@ def test_pybrew_io(
     **kwargs
 ):
     run_io(f'''
-        pytest -vv --color=yes --pyargs pybrew \
+        pytest -vv -l --color=yes --pyargs pybrew \
             {'--runslow' if not local_run else ''} \
             --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
             --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
@@ -148,16 +148,6 @@ def git_origin_io(path='.'):
         return _check_output(['git', 'config', '--get', 'remote.origin.url'])
 
 
-def git_repo_name_io(path):
-    origin = git_origin_io(path)
-    print('origin', origin)
-    return re.search(r':(.*)/(.*)\.git', origin).group(2)
-
-
-def git_organization_io(path):
-    return re.search(r':(.*)/(.*)\.git', git_origin_io(path)).group(1)
-
-
 def git_head_commit_message_io(path='.'):
     with Path(path):
         return _check_output(['git', 'log', '-1', '--pretty=%B'])
@@ -170,15 +160,14 @@ def github_commit_url_io(org, name, sha):
 def deploy_jekyll_io(path, local_run, **kwargs):
     if local_run:
         pass
-        
+
     else:
         deploy_to_github_io(path=path, **kwargs)
         wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
 
 
 def cicd_io(repo_path, **kwargs_):
-    name = git_repo_name_io(repo_path)
-    org = git_organization_io(repo_path)
+    org, name = extract_repo_name_from_origin(git_origin_io(repo_path))
     sha = git_sha_io(repo_path)
 
     kwargs = {

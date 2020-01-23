@@ -31,7 +31,8 @@ setup(
         'requests',
         'toolz',
         'fn',
-        'tinify'
+        'tinify',
+        'more-itertools'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

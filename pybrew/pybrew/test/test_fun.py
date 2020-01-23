@@ -2,23 +2,21 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin
 
 
 def test_my_fun():
     assert my_fun(4) == 5
 
 
-# def test_copy_io():
-#     with tmp() as a, tmp() as b:
-#         with Path(a):
-#             run_io('mkdir -p ./lol/internet')
-#             run_io('echo aaa > ./lol/internet/a.txt')
-
-#         copy_io(a, b)
-
-#         with Path(b):
-#             assert open('./lol/internet/a.txt', 'r').read() == 'aaa\n'
+def test_extract_repo_name_from_origin():
+    for origin in [
+        'git@github.com:flowbrew/website.git',
+        'https://github.com/flowbrew/website'
+    ]:
+        org, name = extract_repo_name_from_origin(origin)
+        assert org == 'flowbrew'
+        assert name == 'website'
 
 
 def test_working_directory_context_manager():

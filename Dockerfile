@@ -12,6 +12,7 @@ RUN gem install \
         jekyll-redirect-from \
         public_suffix
 
+RUN pip install --upgrade pip
 RUN pip install \
         pytest \
         pyyaml \
@@ -21,5 +22,6 @@ RUN pip install \
         requests \
         toolz \
         fn \
-        tinify
+        tinify \
+        more-itertools
 
