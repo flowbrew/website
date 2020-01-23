@@ -12,7 +12,7 @@ def save_yaml_io(path, data):
         yaml.safe_dump(data, file)
 
 
-def build_jekyll_io(repo_path, dest, sha, branch, **kwargs):
+def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
     with Path(repo_path):
         save_yaml_io(
             'temp_config.yml',
@@ -30,7 +30,9 @@ def build_jekyll_io(repo_path, dest, sha, branch, **kwargs):
             }
         )
 
-        run_io('bundle update')
+        if local_run:
+            run_io('bundle update')
+        
         run_io(f'jekyll build --trace -d {dest} --config temp_config.yml')
 
 
@@ -49,11 +51,9 @@ def github_action_notification_io(
     head_commit_message: str,
     head_commit_url: str,
     success: bool,
+    local_run: bool,
     **kwargs
 ):
-    if workflow == 'LOCAL':
-        return
-
     where_str = f"{workflow} of {organization}/{repo_name}, branch '{branch}'"
 
     what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name}'"
@@ -66,7 +66,10 @@ def github_action_notification_io(
 
     text = f'{what_str} on {where_str}\n{last_commit_str}\n---'
 
-    notification_io(channel='#website', text=text, token=slack_token)
+    if local_run:
+        print(text)
+    else:
+        notification_io(channel='#website', text=text, token=slack_token)
 
 
 def test_pybrew_io(
@@ -172,8 +175,6 @@ def deploy_jekyll_io(path, local_run, **kwargs):
 
 
 def cicd_io(repo_path, **kwargs_):
-    print('ORIGIN--->', git_origin_io())
-
     name = git_repo_name_io(repo_path)
     org = git_organization_io(repo_path)
     sha = git_sha_io(repo_path)

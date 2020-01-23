@@ -1,5 +1,9 @@
 #!/bin/bash
 
+BUILDPARAMS=""
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
+
 if [ "$WORKFLOW" = "LOCAL" ]; then
     LOCAL_RUN=True
 else
@@ -44,9 +48,14 @@ PYEOF
 EOF
 )
 
-docker build -t flowbrew .
+if docker pull ${DOCKERNAME} 2>/dev/null; then
+    BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
+fi
+
+docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
+docker push "$DOCKERNAME"
 
 docker run --rm --name cicd \
     -v "$PWD":/usr/src/website \
     -w /usr/src/website \
-    flowbrew bash -c "$DOCKER_COMMAND"
+    "$DOCKERNAME" bash -c "$DOCKER_COMMAND"

@@ -15,4 +15,6 @@ jobs:
           GITHUB_WEBSITE_TOKEN: ${{ secrets.GITHUB_WEBSITE_TOKEN }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           TINIFY_KEY: ${{ secrets.TINIFY_KEY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: ./local_cicd
