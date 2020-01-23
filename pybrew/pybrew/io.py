@@ -96,11 +96,15 @@ def test_pybrew_io(
         ''')
 
 
-def cleanup_io(deployment_repo, **kwargs):
+def cleanup_io(deployment_repo, ref_branch, **kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
 
     try:
-        remove_from_github_io(target_repo_name=deployment_repo, **kwargs)
+        remove_from_github_io(
+            target_repo_name=deployment_repo,
+            target_branch_name=ref_branch,
+            **kwargs
+        )
         notify_io_(success=True)
 
     except:
@@ -166,21 +170,7 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
         wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
 
 
-def cicd_io(**kwargs):
-    en = kwargs['event_name']
-    if en == 'push':
-        on_branch_updated_io(**kwargs)
-    elif en == 'delete':
-        ob_branch_deleted_io(**kwargs)
-    else:
-        raise Exception(f'Unknown event "{en}""')
-
-
-def ob_branch_deleted_io(repo_path, **kwargs):
-    cleanup_io(**kwargs)
-
-
-def on_branch_updated_io(repo_path, **kwargs_):
+def cicd_io(repo_path, event_name, **kwargs_):
     org, name = extract_repo_name_from_origin(git_origin_io(repo_path))
     sha = git_sha_io(repo_path)
 
@@ -188,6 +178,7 @@ def on_branch_updated_io(repo_path, **kwargs_):
         **kwargs_,
         **{
             'repo_path': repo_path,
+            'event_name': event_name,
             'repo_name': name,
             'organization': org,
             'sha': sha,
@@ -197,6 +188,19 @@ def on_branch_updated_io(repo_path, **kwargs_):
         }
     }
 
+    if event_name == 'push':
+        on_branch_updated_io(**kwargs)
+    elif event_name == 'delete':
+        ob_branch_deleted_io(**kwargs)
+    else:
+        raise Exception(f'Unknown event "{event_name}""')
+
+
+def ob_branch_deleted_io(repo_path, **kwargs):
+    cleanup_io(**kwargs)
+
+
+def on_branch_updated_io(repo_path, **kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
 
     try:

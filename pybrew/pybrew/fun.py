@@ -420,7 +420,7 @@ def remove_from_github_io(
     github_token: str,
     organization: str,
     target_repo_name: str,
-    branch: str,
+    target_branch_name: str,
     **kwargs
 ):
     params = [github_username, github_token, organization, target_repo_name]
@@ -431,7 +431,7 @@ def remove_from_github_io(
         dict_to_filesystem_io(
             new_repo_path,
             remove_branch_from_deployment(
-                branch,
+                target_branch_name,
                 filesystem_to_dict_io(repo_path)
             )
         )
@@ -442,7 +442,7 @@ def remove_from_github_io(
         organization=organization,
         repo_name=target_repo_name,
         branch='master',
-        message=f'Deleted branch {branch}',
+        message=f'Deleted branch {target_branch_name}',
         allow_empty=True,
         f=_modify_io
     )
