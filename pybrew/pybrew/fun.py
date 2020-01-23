@@ -482,7 +482,7 @@ def wait_until_html_deployed_io(url: str, f):
     # There is a some sort of a cache that doesn't allow
     # to retrieve html page via GET in a loop.
     # So, we wait X seconds and try to check deployment only ONCE
-    time.sleep(60.0)
+    time.sleep(120.0)
 
     html = http_get_io(url)
     soup = BeautifulSoup(html, features="html.parser")
