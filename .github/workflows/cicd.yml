@@ -8,6 +8,7 @@ jobs:
     # container:
     #   image: ntoss/builder:latest
     steps:
+      - uses: actions/checkout@v1
       - name: CI/CD
         env:
           WORKFLOW: ${{ github.workflow }}
