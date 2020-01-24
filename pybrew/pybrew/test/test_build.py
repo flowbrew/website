@@ -36,3 +36,18 @@ def test_baked_images(WEBSITE_BUILD_PATH):
 
     [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
         if x.endswith('.html')]
+
+
+@pytest.mark.build
+def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
+    def __validate(soup):
+        pass
+
+    def _validate(path):
+        with open(path, 'rb') as f:
+            html = f.read().decode('utf-8')
+            soup = BeautifulSoup(html, features="html.parser")
+            __validate(soup)
+
+    [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
+        if x.endswith('.html')]

@@ -2,19 +2,26 @@
 
 BUILDPARAMS=""
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
 
 if [ "$1" = "local" ]; then
     LOCAL_RUN=True
+    DOCKERNAME="flowbrewlocal:${BRANCH_NAME}"
 else
     LOCAL_RUN=False
+    DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
+    
+    echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+
+    if docker pull ${DOCKERNAME} 2>/dev/null; then
+        BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
+    fi
 fi
 
 DOCKER_COMMAND=$(cat <<-EOF
 git config --global user.email "action@flowbrew.ru"
 git config --global user.name "GitHub Action"
 pip install ./pybrew
-python -c "$(cat <<-PYEOF
+python -W ignore::DeprecationWarning -c "$(cat <<-PYEOF
 
 # ----- 
 
@@ -47,14 +54,11 @@ PYEOF
 EOF
 )
 
-echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
-
-if docker pull ${DOCKERNAME} 2>/dev/null; then
-    BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
-fi
-
 docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
-docker push "$DOCKERNAME"
+
+if [ "$1" != "local" ]; then
+    docker push "$DOCKERNAME"
+fi
 
 docker run --rm --name cicd \
     -v "$PWD":/usr/src/website \
