@@ -2,6 +2,8 @@ import pytest
 from pybrew import glvrd_proofread_io
 
 
+@pytest.mark.slow
+@pytest.mark.pybrew
 def test_glvrd_proofread_io():
     tests = (
         ('''

@@ -5,10 +5,12 @@ from path import Path
 from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin
 
 
+@pytest.mark.pybrew
 def test_my_fun():
     assert my_fun(4) == 5
 
 
+@pytest.mark.pybrew
 def test_extract_repo_name_from_origin():
     for origin in [
         'git@github.com:flowbrew/website.git',
@@ -19,6 +21,7 @@ def test_extract_repo_name_from_origin():
         assert name == 'website'
 
 
+@pytest.mark.pybrew
 def test_working_directory_context_manager():
     with tmp() as a, tmp() as b:
         with Path(a):
@@ -32,6 +35,7 @@ def test_working_directory_context_manager():
             assert open('b.txt', 'r').read() == 'bbb\n'
 
 
+@pytest.mark.pybrew
 def test_try_n_times_decorator():
     global n
     n = 5

@@ -36,10 +36,7 @@ cicd_io(
 
     deployment_repo='website-deployment',
     test_deployment_repo='test-website-deployment',
-
-    images_path='./assets/img',
-    baked_images_path='./assets/img_gen',
-
+    
     ref_branch='$3',
     )
 

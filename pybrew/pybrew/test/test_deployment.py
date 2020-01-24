@@ -5,6 +5,7 @@ from path import Path
 from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io
 
 
+@pytest.mark.pybrew
 def test_remove_branch_from_deployment__remove_regular():
     branch_name = 'test'
 
@@ -28,6 +29,7 @@ def test_remove_branch_from_deployment__remove_regular():
     ) == result_state
 
 
+@pytest.mark.pybrew
 def test_remove_branch_from_deployment__remove_master():
     branch_name = 'master'
 
@@ -49,6 +51,7 @@ def test_remove_branch_from_deployment__remove_master():
     ) == result_state
 
 
+@pytest.mark.pybrew
 def test_inject_branch_to_deployment__injecting_regular():
     branch_name = 'test'
 
@@ -80,6 +83,7 @@ def test_inject_branch_to_deployment__injecting_regular():
     ) == result_state
 
 
+@pytest.mark.pybrew
 def test_inject_branch_to_deployment__injecting_master():
     branch_name = 'master'
 
@@ -119,6 +123,7 @@ def test_inject_branch_to_deployment__injecting_master():
     ) == result_state
 
 
+@pytest.mark.pybrew
 def test_dict_to_filesystem_io():
     filesystem = {
         '.git/empty/dir': None,
@@ -154,6 +159,7 @@ def test_dict_to_filesystem_io():
         assert validate_filesystem_io(td, filesystem)
 
 
+@pytest.mark.pybrew
 def test_filesystem_to_dict_io():
     filesystem = {
         '.git/empty/dir': None,
@@ -168,6 +174,7 @@ def test_filesystem_to_dict_io():
 
 
 @pytest.mark.slow
+@pytest.mark.pybrew
 def test_deploy_to_github_io(
     SECRET_GITHUB_WEBSITE_USERNAME,
     SECRET_GITHUB_WEBSITE_TOKEN,

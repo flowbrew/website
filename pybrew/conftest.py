@@ -16,6 +16,7 @@ def pytest_addoption(parser):
     parser.addoption("--TEST_REPOSITORY", action="store", default="")
     parser.addoption("--BRANCH", action="store", default="")
     parser.addoption("--SHA", action="store", default="")
+    parser.addoption("--WEBSITE_BUILD_PATH", action="store", default="")
 
 
 def pytest_configure(config):
@@ -69,3 +70,8 @@ def SHA(request):
 @pytest.fixture
 def REPOSITORY(request):
     return os.environ.get('REPOSITORY')
+
+
+@pytest.fixture
+def WEBSITE_BUILD_PATH(request):
+    return request.config.getoption("--WEBSITE_BUILD_PATH")

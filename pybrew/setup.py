@@ -32,7 +32,8 @@ setup(
         'toolz',
         'fn',
         'tinify',
-        'more-itertools'
+        'more-itertools',
+        'cachier'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

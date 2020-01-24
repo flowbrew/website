@@ -1,12 +1,12 @@
 from .fun import *
-from .images import *
 
 import operator
 import math
 import re
+import tinify
+from cachier import cachier
 
 
-@lru_cache()
 def glvrd_proofread_io(text):
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
@@ -39,12 +39,19 @@ def glvrd_proofread_io(text):
         weight = weight_ / 100
 
         score1 = (
-            math.floor(100.0 * math.pow(1.0 - weight / total_length, 3)) - penalty
+            math.floor(100.0 * math.pow(1.0 - weight /
+                                        total_length, 3)) - penalty
         )
 
         return min(max(score1, 0.0), 100.0) / 10.0
 
     return (_tab('red', r['hints']), _tab('blue', r['hints']))
+
+
+@cachier(cache_dir='.cache/glvrd')
+def glvrd_proofread_io_cached(text):
+    return glvrd_proofread_io(text)
+
 
 def load_yaml_io(path):
     with open(path, 'r') as file:
@@ -116,30 +123,6 @@ def github_action_notification_io(
         notification_io(channel='#website', text=text, token=slack_token)
 
 
-def test_pybrew_io(
-    github_username,
-    github_token,
-    slack_token,
-    sha,
-    branch,
-    test_deployment_repo,
-    organization,
-    local_run,
-    **kwargs
-):
-    run_io(f'''
-        pytest -vv -l --color=yes --pyargs pybrew \
-            {'--runslow' if not local_run else ''} \
-            --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
-            --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
-            --SECRET_SLACK_BOT_TOKEN={slack_token} \
-            --SHA={sha} \
-            --BRANCH={branch} \
-            --TEST_REPOSITORY={test_deployment_repo} \
-            --ORGANIZATION={organization}
-        ''')
-
-
 def cleanup_io(deployment_repo, ref_branch, **kwargs):
     notify_io_ = partial(
         github_action_notification_io,
@@ -159,18 +142,53 @@ def cleanup_io(deployment_repo, ref_branch, **kwargs):
         raise
 
 
-def bake_images_io_(branch, repo_path, local_run, **kwargs):
-    with Path(repo_path):
-        bake_images_io(**kwargs)
+@cachier(cache_dir='.cache/baked')
+def tinify_bake_io(img: bytes, resolution: int) -> bytes:
+    source = tinify.from_buffer(img)
+    if resolution > 0:
+        return source.resize(method='scale', width=resolution).to_buffer()
+    else:
+        return source.to_buffer()
 
-    if local_run:
-        return
 
-    return github_push_io(
-        path=repo_path,
-        message=f'Baking images for branch {branch}',
-        allow_empty=False
-    )
+def bake_images_io(
+    tinify_key,
+    repo_path,
+    resolutions=[0, 256, 512, 1024, 2048],
+    **kwargs
+):
+    tinify.key = tinify_key
+
+    IMAGES_PATH = './img'
+    GEN_IMAGES_PATH = './img_gen'
+
+    def _baked_image_name(orig_name, resolution):
+        root, extension = os.path.splitext(
+            orig_name.replace(IMAGES_PATH, GEN_IMAGES_PATH, 1)
+        )
+        return (
+            f'{root}_{resolution}{extension}'
+            if resolution else
+            f'{root}{extension}'
+        )
+
+    def _bake_image_io(path, resolution):
+        path2 = _baked_image_name(path, resolution)
+        os.makedirs(os.path.dirname(path2), exist_ok=True)
+        with open(path, 'rb') as f, open(path2, 'wb') as f2:
+            comp(f2.write, tinify_bake_io)(f.read(), resolution)
+
+    with Path(os.path.join(repo_path, 'assets')):
+        delete_dir_io(GEN_IMAGES_PATH)
+
+        images = (
+            x for x in files_io(IMAGES_PATH)
+            if os.path.splitext(x)[1] in {'.jpg', '.png', '.jpeg'}
+        )
+
+        tasks = product(images, resolutions)
+
+        [_bake_image_io(*x) for x in tasks]
 
 
 class CICDCancelled(Exception):
@@ -217,6 +235,61 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
         wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
 
 
+def pytest_args(mark):
+    return f'pytest --color=yes --durations=10 --pyargs pybrew \
+        -m {mark} '
+# -vv -l
+
+
+def validate_pybrew_io(
+    github_username,
+    github_token,
+    slack_token,
+    sha,
+    branch,
+    test_deployment_repo,
+    organization,
+    local_run,
+    **kwargs
+):
+    run_io(
+        pytest_args('pybrew') + f'''
+            {'--runslow' if not local_run else ''} \
+            --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
+            --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
+            --SECRET_SLACK_BOT_TOKEN={slack_token} \
+            --SHA={sha} \
+            --BRANCH={branch} \
+            --TEST_REPOSITORY={test_deployment_repo} \
+            --ORGANIZATION={organization}
+        '''.strip('\n').strip()
+    )
+
+
+def build_io(**kwargs):
+    bake_images_io(**kwargs)
+    build_jekyll_io(**kwargs)
+
+
+def validate_build_io(path, local_run, **kwargs):
+    run_io(
+        pytest_args('build') + f'''
+            --WEBSITE_BUILD_PATH={path}
+        '''.strip('\n').strip()
+    )
+
+
+def deploy_io(**kwargs):
+    deploy_jekyll_io(**kwargs)
+
+
+def validate_deployment_io(**kwargs):
+    pass
+
+
+# ---
+
+
 def cicd_io(repo_path, event_name, **kwargs_):
     org, name = extract_repo_name_from_origin(git_origin_io(repo_path))
     sha = git_sha_io(repo_path)
@@ -255,26 +328,30 @@ def ob_branch_deleted_io(**kwargs):
 
 
 def on_branch_updated_io(**kwargs):
-    notify_io_ = partial(
-        github_action_notification_io,
-        **kwargs
-    )
+    notify_io_ = partial(github_action_notification_io, **kwargs)
+    with tmp() as ws:
+        try:
+            validate_pybrew_io(**kwargs)
 
-    try:
-        test_pybrew_io(**kwargs)
+            build_io(dest=ws, **kwargs)
+            validate_build_io(path=ws, **kwargs)
 
-        if bake_images_io_(**kwargs):
-            raise CICDCancelled('Some images were baked, cancelling CI/CD')
+            # checkpoint: changed, make a commit
+            # raise CICDCancelled('Some text was baked, cancelling CI/CD')
+            # github_push_io(
+            #     path=repo_path,
+            #     message=f'Baking images for branch {branch}',
+            #     allow_empty=False
+            # )
 
-        with tmp() as ws:
-            build_jekyll_io(dest=ws, **kwargs)
-            deploy_jekyll_io(path=ws, **kwargs)
+            deploy_io(path=ws, **kwargs)
+            validate_deployment_io(**kwargs)
 
-        notify_io_(success=True)
+            notify_io_(success=True)
 
-    except CICDCancelled as e:
-        print('CICDCancelled: ', str(e))
+        except CICDCancelled as e:
+            print('CICDCancelled: ', str(e))
 
-    except:
-        notify_io_(success=False)
-        raise
+        except Exception as e:
+            notify_io_(success=False)
+            raise

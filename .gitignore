@@ -24,3 +24,5 @@ __pycache__/
 terraform.tfstate
 
 .vscode/.ropeproject/objectdb
+
+assets/img_gen*
