@@ -19,18 +19,32 @@ def glvrd_proofread_io(text):
         headers=headers
     ).json()
 
-    print(r)
-
     total_length = comp(len, re.sub)(
         r'[А-Яа-яA-Za-z0-9-]+([^А-Яа-яA-Za-z0-9-]+)?',
         '.',
         text.strip('\n').strip()
     )
 
-    def _tab(name, hints):
+    def _process_fragment(hints, fragment):
+        hint = hints[fragment['hint']]
+
+        return {
+            'tab': hint['tab'],
+            'penalty': hint['penalty'],
+            'weight': hint['weight'],
+            'name': hint['name'],
+            'text': text[fragment['start']:fragment['end']],
+        }
+
+    hints_ = [
+        _process_fragment(r['hints'], x)
+        for x in chain_(r['fragments'])
+    ]
+
+    def _calc_score(hints_, tab):
         penalty, weight_ = pipe(
-            hints.values(),
-            filter(lambda x: x['tab'] == name),
+            hints_,
+            filter(lambda x: x['tab'] == tab),
             map(lambda x: (x['penalty'], x['weight'])),
             reduce(lambda x, y: (x[0] + y[0], x[1] + y[1]), (0.0, 0.0)),
             tuple
@@ -45,7 +59,11 @@ def glvrd_proofread_io(text):
 
         return min(max(score1, 0.0), 100.0) / 10.0
 
-    return (_tab('red', r['hints']), _tab('blue', r['hints']))
+    return {
+        'red': _calc_score(hints_, 'red'),
+        'blue': _calc_score(hints_, 'blue'),
+        'hints': hints_
+    }
 
 
 @cachier(cache_dir='.cache/glvrd')
@@ -236,9 +254,8 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
 
 
 def pytest_args(mark):
-    return f'pytest --color=yes --durations=10 --pyargs pybrew \
+    return f'pytest -vv -l -W ignore::DeprecationWarning --color=yes --durations=10 --pyargs pybrew \
         -m {mark} '
-# -vv -l
 
 
 def validate_pybrew_io(

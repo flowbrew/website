@@ -1,8 +1,9 @@
 import os
 import pytest
 import re
-from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter
+from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io_cached
 from bs4 import BeautifulSoup
+from bs4.element import Comment
 from path import Path
 
 
@@ -38,16 +39,31 @@ def test_baked_images(WEBSITE_BUILD_PATH):
         if x.endswith('.html')]
 
 
+def extract_all_texts(html):
+    soup = BeautifulSoup(html, features="html.parser")
+
+    tags = soup.find_all(re.compile(r'^(p|h1|h2|h3|h4|li|figcaption)$'))
+    texts = (
+        x.get_text().strip('\n').strip().replace('\xa0', ' ') for x in tags 
+        if not isinstance(x, Comment)
+        )
+
+    return (x for x in texts if x)
+
+
 @pytest.mark.build
 def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
-    def __validate(soup):
-        pass
+    def __validate(text):
+        r = glvrd_proofread_io_cached(text)
+        assert r['red'] > 7.0
+        assert r['blue'] > 7.0
 
     def _validate(path):
         with open(path, 'rb') as f:
             html = f.read().decode('utf-8')
-            soup = BeautifulSoup(html, features="html.parser")
-            __validate(soup)
+            [__validate(x) for x in extract_all_texts(html)]
 
     [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
         if x.endswith('.html')]
+
+    assert False

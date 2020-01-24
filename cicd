@@ -21,7 +21,7 @@ DOCKER_COMMAND=$(cat <<-EOF
 git config --global user.email "action@flowbrew.ru"
 git config --global user.name "GitHub Action"
 pip install ./pybrew
-python -W ignore::DeprecationWarning -c "$(cat <<-PYEOF
+python -c "$(cat <<-PYEOF
 
 # ----- 
 
