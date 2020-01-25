@@ -25,21 +25,37 @@ def glvrd_proofread_io(text):
         text.strip('\n').strip()
     )
 
-    def _process_fragment(hints, fragment):
+    def _process_fragment(text, hints, fragment):
         hint = hints[fragment['hint']]
+        text_ = text[fragment['start']:fragment['end']]
+
+        if (hint['name'] == 'Неверное использование косой черты' and
+                text_.lower() == 'мг/г'):
+            return None
+        if (hint['name'] == 'Необъективная оценка' and
+                text_.lower() == 'простуда'):
+            return None 
+        if (hint['name'] == 'Необъективная оценка' and
+                text_.lower() == 'простуда'):
+            return None 
+        if (hint['name'] == 'Предлог «от»'):
+            return None 
+        if (hint['name'] == 'Канцеляризм' and
+                text_.lower() == 'лицо'):
+            return None
 
         return {
             'tab': hint['tab'],
             'penalty': hint['penalty'],
             'weight': hint['weight'],
             'name': hint['name'],
-            'text': text[fragment['start']:fragment['end']],
+            'text': text_,
         }
 
-    hints_ = [
-        _process_fragment(r['hints'], x)
+    hints_ = comp(list, filterempty)([
+        _process_fragment(text, r['hints'], x)
         for x in chain_(r['fragments'])
-    ]
+    ])
 
     def _calc_score(hints_, tab):
         penalty, weight_ = pipe(
@@ -62,7 +78,11 @@ def glvrd_proofread_io(text):
     return {
         'red': _calc_score(hints_, 'red'),
         'blue': _calc_score(hints_, 'blue'),
-        'hints': hints_
+        'hints': sorted(
+            hints_,
+            key=lambda x: x['weight'] + x['penalty'],
+            reverse=True
+        )
     }
 
 
@@ -89,7 +109,7 @@ def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
                 **load_yaml_io('_config.yml'),
                 **{
                     'baseurl': (
-                        '/' if branch == master_branch()
+                        '/' if local_run or branch == master_branch()
                         else branch_to_prefix(branch)
                     ),
                     'github-branch': branch,
@@ -242,7 +262,10 @@ def github_commit_url_io(org, name, sha):
 
 def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
     if local_run:
-        pass
+        dict_to_filesystem_io(
+            './_local_deployment',
+            filesystem_to_dict_io(path)
+        )
 
     else:
         deploy_to_github_io(

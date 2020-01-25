@@ -1,11 +1,14 @@
 #!/bin/bash
 
 BUILDPARAMS=""
+RUNPARAMS=""
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 
 if [ "$1" = "local" ]; then
     LOCAL_RUN=True
     DOCKERNAME="flowbrewlocal:${BRANCH_NAME}"
+    pkill -f jekyll
+    nohup jekyll serve -s "./_local_deployment" &
 else
     LOCAL_RUN=False
     DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
@@ -60,7 +63,9 @@ if [ "$1" != "local" ]; then
     docker push "$DOCKERNAME"
 fi
 
+docker kill cicd
 docker run --rm --name cicd \
+    ${RUNPARAMS} \
     -v "$PWD":/usr/src/website \
     -w /usr/src/website \
     "$DOCKERNAME" bash -c "$DOCKER_COMMAND"

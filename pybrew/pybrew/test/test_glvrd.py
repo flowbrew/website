@@ -146,6 +146,17 @@ def test_glvrd_proofread_io():
                 ]
             }
          ),
+
+
+         ('''
+количество EGCG в зеленом чае достигает 55 мг/г
+''',
+            {
+                'red': 10.0,
+                'blue': 10.0,
+                'hints': []
+            }
+         ),
     )
 
     for text, result in tests:

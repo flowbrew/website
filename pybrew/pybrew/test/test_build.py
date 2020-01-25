@@ -44,26 +44,30 @@ def extract_all_texts(html):
 
     tags = soup.find_all(re.compile(r'^(p|h1|h2|h3|h4|li|figcaption)$'))
     texts = (
-        x.get_text().strip('\n').strip().replace('\xa0', ' ') for x in tags 
+        x.get_text().strip('\n').strip().replace('\xa0', ' ') for x in tags
         if not isinstance(x, Comment)
-        )
+    )
 
-    return (x for x in texts if x)
+    return (x.replace('( )', '') for x in texts if x)
 
 
 @pytest.mark.build
 def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
-    def __validate(text):
+    def __validate(path, text):
         r = glvrd_proofread_io_cached(text)
-        assert r['red'] > 7.0
-        assert r['blue'] > 7.0
+        assert r['red'] >= 7.9
+        assert r['blue'] >= 7.9
 
     def _validate(path):
+        if any(x in path for x in [
+            'политика+конфиденциальности',
+        ]):
+            return
+
         with open(path, 'rb') as f:
             html = f.read().decode('utf-8')
-            [__validate(x) for x in extract_all_texts(html)]
+            [__validate(path, x) for x in extract_all_texts(html)]
 
     [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
         if x.endswith('.html')]
 
-    assert False
