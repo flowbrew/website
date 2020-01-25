@@ -407,11 +407,11 @@ def on_branch_updated_io(**kwargs):
             deploy_io(path=ws, **kwargs)
             validate_deployment_io(**kwargs)
 
+            notify_io_(success=True)
+
         except CICDCancelled as e:
             print('CICDCancelled: ', str(e))
 
         except Exception as e:
             notify_io_(success=False)
             raise
-
-    notify_io_(success=True)
