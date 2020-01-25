@@ -237,10 +237,6 @@ def bake_images_io(
         [_bake_image_io(*x) for x in tasks]
 
 
-class CICDCancelled(Exception):
-    pass
-
-
 def _check_output(x): return check_output(x).decode('utf-8').strip('\n')
 
 
@@ -385,8 +381,6 @@ def git_push_state_if_updated_io(repo_path, branch, **kwargs):
         allow_empty=False
     )
 
-    raise CICDCancelled(f'CI/CD updated state of {branch}')
-
 
 def on_branch_updated_io(**kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
@@ -409,9 +403,6 @@ def on_branch_updated_io(**kwargs):
 
             notify_io_(success=True)
 
-        except CICDCancelled as e:
-            print('CICDCancelled: ', str(e))
-
-        except Exception as e:
+        except Exception as _:
             notify_io_(success=False)
             raise
