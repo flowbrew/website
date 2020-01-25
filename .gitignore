@@ -1,4 +1,6 @@
 _site/
+_local_deployment/
+
 .sass-cache/
 .DS_Store
 .DS_Store/
@@ -22,3 +24,8 @@ __pycache__/
 
 .terraform
 terraform.tfstate
+
+.vscode/.ropeproject/objectdb
+
+assets/img_gen*
+nohup.out

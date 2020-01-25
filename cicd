@@ -1,13 +1,23 @@
 #!/bin/bash
 
 BUILDPARAMS=""
+RUNPARAMS=""
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
 
 if [ "$1" = "local" ]; then
     LOCAL_RUN=True
+    DOCKERNAME="flowbrewlocal:${BRANCH_NAME}"
+    pkill -f jekyll
+    nohup jekyll serve -s "./_local_deployment" &
 else
     LOCAL_RUN=False
+    DOCKERNAME="ntoss/builder:${BRANCH_NAME}"
+    
+    echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+
+    if docker pull ${DOCKERNAME} 2>/dev/null; then
+        BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
+    fi
 fi
 
 DOCKER_COMMAND=$(cat <<-EOF
@@ -36,10 +46,7 @@ cicd_io(
 
     deployment_repo='website-deployment',
     test_deployment_repo='test-website-deployment',
-
-    images_path='./assets/img',
-    baked_images_path='./assets/img_gen',
-
+    
     ref_branch='$3',
     )
 
@@ -50,16 +57,15 @@ PYEOF
 EOF
 )
 
-echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
 
-if docker pull ${DOCKERNAME} 2>/dev/null; then
-    BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
+if [ "$1" != "local" ]; then
+    docker push "$DOCKERNAME"
 fi
 
-docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
-docker push "$DOCKERNAME"
-
+docker kill cicd
 docker run --rm --name cicd \
+    ${RUNPARAMS} \
     -v "$PWD":/usr/src/website \
     -w /usr/src/website \
     "$DOCKERNAME" bash -c "$DOCKER_COMMAND"

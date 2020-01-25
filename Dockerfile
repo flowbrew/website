@@ -23,5 +23,5 @@ RUN pip install \
         toolz \
         fn \
         tinify \
-        more-itertools
-
+        more-itertools \
+        cachier

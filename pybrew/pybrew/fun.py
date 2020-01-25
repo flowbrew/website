@@ -10,6 +10,7 @@ import requests
 import time
 import yaml
 import re
+import shutil
 import more_itertools
 
 from bs4 import BeautifulSoup
@@ -19,10 +20,10 @@ from toolz import compose, curry, pipe
 from toolz.curried import map
 from toolz.itertoolz import get
 from toolz.functoolz import identity
-from functools import partial
+from functools import partial, reduce as reduce_, lru_cache
 
 from fn.iters import flatten
-from itertools import chain
+from itertools import chain, product
 
 
 def chain_(x): return chain(*x)
@@ -30,6 +31,12 @@ def chain_(x): return chain(*x)
 
 apply = curry(lambda f, x: f(x))
 applyw = curry(lambda f, x: f(*x))
+product = curry(product)
+
+
+@curry
+def reduce(f, initializer, iterable):
+    return reduce_(f, iterable, initializer)
 
 
 def flip(f): return lambda *a: f(*reversed(a))
@@ -99,7 +106,7 @@ def remove_prefix(x: str) -> str:
 b2p = branch_to_prefix
 
 
-def files(path):
+def files_io(path):
     for r, _, fs in os.walk(path):
         for f in fs:
             yield os.path.join(r, f)
@@ -263,7 +270,9 @@ def github_enable_pages_site_io(
     path: str = ''
 ):
     url = f"{github_endpoint()}/repos/{organization}/{repo_name}/pages"
-    headers = {'Accept': 'application/vnd.github.switcheroo-preview+json'}
+    headers = {
+        'Accept': 'application/vnd.github.switcheroo-preview+json'
+    }
     content = {
         "source": {
             "branch": branch,
@@ -514,5 +523,6 @@ def extract_repo_name_from_origin(origin):
     )
 
 
-# 'git@github.com:flowbrew/website.git',
-# 'https://github.com/flowbrew/website'
+def delete_dir_io(path):
+    if os.path.isdir(path):
+        shutil.rmtree(path)
