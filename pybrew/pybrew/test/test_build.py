@@ -1,7 +1,7 @@
 import os
 import pytest
 import re
-from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io_cached
+from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from path import Path
@@ -54,7 +54,7 @@ def extract_all_texts(html):
 @pytest.mark.build
 def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
     def __validate(path, text):
-        r = glvrd_proofread_io_cached(text)
+        r = glvrd_proofread_io(text)
         assert r['red'] >= 7.9
         assert r['blue'] >= 7.9
 

@@ -97,7 +97,7 @@ def test_glvrd_proofread_io():
 Вы замурчите от удовольствия !!! уже через 2 минуты после чашки чая матча!
 ''',
             {
-                'red': 7.7,
+                'red': 7.9,
                 'blue': 9.6,
                 'hints':
                 [
@@ -121,13 +121,6 @@ def test_glvrd_proofread_io():
                         'weight': 0,
                         'name': 'Личное местоимение',
                         'text': 'Вы'
-                    },
-                    {
-                        'tab': 'red',
-                        'penalty': 0,
-                        'weight': 30,
-                        'name': 'Предлог «от»',
-                        'text': 'от'
                     },
                     {
                         'tab': 'red',
@@ -160,7 +153,7 @@ def test_glvrd_proofread_io():
     )
 
     for text, result in tests:
-        r = glvrd_proofread_io(text)
+        r = glvrd_proofread_io(text, use_cache=False)
 
         assert abs(r['red'] - result['red']) <= 0.01
         assert abs(r['blue'] - result['blue']) <= 0.01

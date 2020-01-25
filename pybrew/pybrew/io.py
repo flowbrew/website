@@ -4,20 +4,33 @@ import operator
 import math
 import re
 import tinify
+import json
 from cachier import cachier
 
 
-def glvrd_proofread_io(text):
+@curry
+def cpost(cache_dir, url, data, headers):
+
+    @cachier(cache_dir=cache_dir)
+    def _cpost(url, jdata, jheaders):
+        return requests.post(
+            url,
+            data=json.loads(jdata),
+            headers=json.loads(jheaders)
+        )
+
+    return _cpost(url, json.dumps(data), json.dumps(headers))
+
+
+def glvrd_proofread_io(text, use_cache=True):
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
     content = {
         'chunks': text
     }
-    r = requests.post(
-        url,
-        data=content,
-        headers=headers
-    ).json()
+
+    _f = cpost('.cache/glvrd') if use_cache else requests.post
+    r = _f(url, data=content, headers=headers).json()
 
     total_length = comp(len, re.sub)(
         r'[А-Яа-яA-Za-z0-9-]+([^А-Яа-яA-Za-z0-9-]+)?',
@@ -34,12 +47,12 @@ def glvrd_proofread_io(text):
             return None
         if (hint['name'] == 'Необъективная оценка' and
                 text_.lower() == 'простуда'):
-            return None 
+            return None
         if (hint['name'] == 'Необъективная оценка' and
                 text_.lower() == 'простуда'):
-            return None 
+            return None
         if (hint['name'] == 'Предлог «от»'):
-            return None 
+            return None
         if (hint['name'] == 'Канцеляризм' and
                 text_.lower() == 'лицо'):
             return None
@@ -84,11 +97,6 @@ def glvrd_proofread_io(text):
             reverse=True
         )
     }
-
-
-@cachier(cache_dir='.cache/glvrd')
-def glvrd_proofread_io_cached(text):
-    return glvrd_proofread_io(text)
 
 
 def load_yaml_io(path):
@@ -367,8 +375,22 @@ def ob_branch_deleted_io(**kwargs):
     )
 
 
+def git_push_state_if_updated_io(repo_path, branch, **kwargs):
+    if not git_has_unstaged_changes_io():
+        return
+
+    github_push_io(
+        path=repo_path,
+        message=f'CI/CD updated state of {branch}',
+        allow_empty=False
+    )
+
+    raise CICDCancelled(f'CI/CD updated state of {branch}')
+
+
 def on_branch_updated_io(**kwargs):
     notify_io_ = partial(github_action_notification_io, **kwargs)
+
     with tmp() as ws:
         try:
             validate_pybrew_io(**kwargs)
@@ -376,18 +398,14 @@ def on_branch_updated_io(**kwargs):
             build_io(dest=ws, **kwargs)
             validate_build_io(path=ws, **kwargs)
 
-            # checkpoint: changed, make a commit
-            # raise CICDCancelled('Some text was baked, cancelling CI/CD')
-            # github_push_io(
-            #     path=repo_path,
-            #     message=f'Baking images for branch {branch}',
-            #     allow_empty=False
-            # )
+            # ---
+
+            git_push_state_if_updated_io(**kwargs)
+
+            # ---
 
             deploy_io(path=ws, **kwargs)
             validate_deployment_io(**kwargs)
-
-            notify_io_(success=True)
 
         except CICDCancelled as e:
             print('CICDCancelled: ', str(e))
@@ -395,3 +413,5 @@ def on_branch_updated_io(**kwargs):
         except Exception as e:
             notify_io_(success=False)
             raise
+
+    notify_io_(success=True)
