@@ -23,7 +23,6 @@ def pytest_addoption(parser):
     parser.addoption("--BRANCH", action="store", default="")
     parser.addoption("--SHA", action="store", default="")
     parser.addoption("--WEBSITE_BUILD_PATH", action="store", default="")
-    parser.addoption("--LOCAL_RUN", action="store", default="")
 
 
 def pytest_configure(config):

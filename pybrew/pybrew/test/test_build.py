@@ -51,7 +51,7 @@ def test_baked_images_io(WEBSITE_BUILD_PATH):
 def test_beseurl_on_branch_build_io(BRANCH, WEBSITE_BUILD_PATH):
     def _validate_href(path, href):
         if href.startswith('/') and BRANCH != master_branch():
-            assert href.startswith(branch_to_prefix(BRANCH))
+            assert href.startswith('/' + branch_to_prefix(BRANCH))
 
     def __validate(path, soup):
         [
