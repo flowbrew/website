@@ -1,19 +1,33 @@
 import os
 import pytest
 import re
-from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io, yandex_speller_io
+
+from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io, branch_to_prefix, master_branch, yandex_speller_io
+
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from path import Path
 
 
+def extract_all_htmls_io(path):
+    def _make_soup_io(path):
+        with open(path, 'rb') as f:
+            html = f.read().decode('utf-8')
+            soup = BeautifulSoup(html, features="html.parser")
+            return (path, soup)
+
+    return filterempty(
+        _make_soup_io(x) for x in files_io(path) if x.endswith('.html')
+    )
+
+
 @pytest.mark.build
-def test_baked_images(WEBSITE_BUILD_PATH):
+def test_baked_images_io(WEBSITE_BUILD_PATH):
     def _validate_path(path):
         with Path(os.path.join(WEBSITE_BUILD_PATH, 'assets')):
             assert os.stat('.' + path).st_size > 0
 
-    def __validate(soup):
+    def __validate(path, soup):
         srcset = re.compile(r'.+')
         extract_path = re.compile(r'assets(/\S+)')
         pipe(
@@ -29,14 +43,23 @@ def test_baked_images(WEBSITE_BUILD_PATH):
             force
         )
 
-    def _validate(path):
-        with open(path, 'rb') as f:
-            html = f.read().decode('utf-8')
-            soup = BeautifulSoup(html, features="html.parser")
-            __validate(soup)
+    [__validate(p, s) for p, s in extract_all_htmls_io(WEBSITE_BUILD_PATH)]
 
-    [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
-        if x.endswith('.html')]
+
+@pytest.mark.skip_in_local
+@pytest.mark.build
+def test_beseurl_on_branch_build_io(BRANCH, WEBSITE_BUILD_PATH):
+    def _validate_href(path, href):
+        if href.startswith('/') and BRANCH != master_branch():
+            assert href.startswith('/' + branch_to_prefix(BRANCH))
+
+    def __validate(path, soup):
+        [
+            _validate_href(path, x.get('href').strip())
+            for x in soup.find_all('a')
+        ]
+
+    [__validate(p, s) for p, s in extract_all_htmls_io(WEBSITE_BUILD_PATH)]
 
 
 def extract_all_texts(html):
@@ -68,7 +91,7 @@ def all_texts_io(path):
 
 
 @pytest.mark.build
-def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
+def test_texts_with_glvrd_io(WEBSITE_BUILD_PATH):
     def __validate_io(path, text):
         r = glvrd_proofread_io(text)
         assert r['red'] >= 7.9
@@ -81,7 +104,7 @@ def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
 
 
 @pytest.mark.build
-def test_texts_with_yandex_speller(WEBSITE_BUILD_PATH):
+def test_texts_with_yandex_speller_io(WEBSITE_BUILD_PATH):
     def __validate_io(path, text):
         r = yandex_speller_io(text)
         assert len(r) == 0

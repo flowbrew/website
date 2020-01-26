@@ -337,9 +337,12 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
         wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
 
 
-def pytest_args(mark):
+def pytest_args(mark, local_run):
     return f'pytest -vv -l -W ignore::DeprecationWarning --color=yes --durations=10 --pyargs pybrew \
-        -m {mark} '
+        -m {mark} \
+        {"--local" if local_run else ""} \
+        {"--runslow" if not local_run else ""} \
+        '
 
 
 def validate_pybrew_io(
@@ -354,8 +357,7 @@ def validate_pybrew_io(
     **kwargs
 ):
     run_io(
-        pytest_args('pybrew') + f'''
-            {'--runslow' if not local_run else ''} \
+        pytest_args('pybrew', local_run) + f'''
             --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
             --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
             --SECRET_SLACK_BOT_TOKEN={slack_token} \
@@ -372,10 +374,11 @@ def build_io(**kwargs):
     build_jekyll_io(**kwargs)
 
 
-def validate_build_io(path, local_run, **kwargs):
+def validate_build_io(path, branch, local_run, **kwargs):
     run_io(
-        pytest_args('build') + f'''
-            --WEBSITE_BUILD_PATH={path}
+        pytest_args('build', local_run) + f'''
+            --WEBSITE_BUILD_PATH={path} \
+            --BRANCH={branch} \
         '''.strip('\n').strip()
     )
 
