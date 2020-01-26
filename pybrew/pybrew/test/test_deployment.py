@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial
 
 
 @pytest.mark.pybrew
@@ -241,13 +241,16 @@ def test_deploy_to_github_io(
 @pytest.mark.deployment
 def test_website_performance_io(URL):
     def __test(url, is_mobile):
-        for _, audit in google_test_page_speed_io(
+        _f = comp(
+            partial(sorted, key=lambda x: x[1]['score']), 
+            google_test_page_speed_io
+            )
+        for _, audit in _f(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
             url=url,
             is_mobile=is_mobile
         ).items():
-            if audit['score'] is not None:
-                assert audit['score'] >= 0.9
+            assert audit['score'] >= 0.9
 
     __test(URL + '/', False)
     __test(URL + '/', True)

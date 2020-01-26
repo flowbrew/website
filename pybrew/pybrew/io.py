@@ -63,7 +63,7 @@ def _google_pagespeed_io(
 
     return {
         k: v for k, v in r['lighthouseResult']['audits'].items() if
-        k not in depricated
+        k not in depricated and v['score'] is not None
     }
 
 
