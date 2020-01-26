@@ -1,7 +1,7 @@
 import os
 import pytest
 import re
-from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io
+from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io, yandex_speller_io
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from path import Path
@@ -70,4 +70,3 @@ def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
 
     [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
         if x.endswith('.html')]
-

@@ -22,6 +22,51 @@ def cpost(cache_dir, url, data, headers):
     return _cpost(url, json.dumps(data), json.dumps(headers))
 
 
+@curry
+def cget(cache_dir, url, params, headers):
+
+    @cachier(cache_dir=cache_dir)
+    def _cget(url, jparams, jheaders):
+        return requests.get(
+            url,
+            params=json.loads(jparams),
+            headers=json.loads(jheaders)
+        )
+
+    return _cget(url, json.dumps(params), json.dumps(headers))
+
+
+def yandex_speller_io(text, use_cache=True):
+    url = 'https://speller.yandex.net/services/spellservice.json/checkText'
+    headers = {}
+    params = {
+        'text': text
+    }
+
+    _f = cget('.cache/yandex') if use_cache else requests.get
+    r = _f(url, params=params, headers=headers).json()
+
+    def _make_result(x):
+        def _error(code):
+            if code == 1:
+                return 'Слова нет в словаре.'
+            if code == 2:
+                return 'Повтор слова.'
+            if code == 3:
+                return 'Неверное употребление прописных и строчных букв.'
+            if code == 4:
+                return 'Текст содержит слишком много ошибок.'
+            return 'Неизвестная ошибка'
+
+        return {
+            'error': _error(x['code']),
+            'word': x['word'],
+            'hints': x['s']
+        }
+
+    return [_make_result(x) for x in r]
+
+
 def glvrd_proofread_io(text, use_cache=True):
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
