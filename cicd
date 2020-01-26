@@ -21,6 +21,13 @@ else
 fi
 
 DOCKER_COMMAND=$(cat <<-EOF
+
+export GITHUB_WEBSITE_USERNAME='${GITHUB_WEBSITE_USERNAME}'
+export GITHUB_WEBSITE_TOKEN='${GITHUB_WEBSITE_TOKEN}'
+export SLACK_BOT_TOKEN='${SLACK_BOT_TOKEN}'
+export TINIFY_KEY='${TINIFY_KEY}'
+export GOOGLE_PAGESPEED_KEY='${GOOGLE_PAGESPEED_KEY}'
+
 git config --global user.email "action@flowbrew.ru"
 git config --global user.name "GitHub Action"
 pip install ./pybrew
@@ -35,18 +42,9 @@ cicd_io(
     local_run=${LOCAL_RUN},
     workflow='$1',
     event_name='$2',
-
-    github_username='${GITHUB_WEBSITE_USERNAME}',
-    github_token='${GITHUB_WEBSITE_TOKEN}',
-
-    slack_token='${SLACK_BOT_TOKEN}',
-    tinify_key='${TINIFY_KEY}',
-
     repo_path='./',
-
     deployment_repo='website-deployment',
-    test_deployment_repo='test-website-deployment',
-    
+    test_deployment_repo='test-website-deployment',   
     ref_branch='$3',
     )
 

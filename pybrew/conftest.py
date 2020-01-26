@@ -7,18 +7,12 @@ def pytest_addoption(parser):
                      action="store_true", default=False,
                      help="run slow tests"
                      )
-
     parser.addoption("--local",
                      action="store_true", default=False,
                      help="skipping some tests unavalible in local"
                      )
-
-    parser.addoption("--SECRET_SLACK_BOT_TOKEN", action="store", default="")
-    parser.addoption("--SECRET_GITHUB_WEBSITE_USERNAME",
-                     action="store", default="")
-    parser.addoption("--SECRET_GITHUB_WEBSITE_TOKEN",
-                     action="store", default="")
     parser.addoption("--ORGANIZATION", action="store", default="")
+    parser.addoption("--URL", action="store", default="")
     parser.addoption("--TEST_REPOSITORY", action="store", default="")
     parser.addoption("--BRANCH", action="store", default="")
     parser.addoption("--SHA", action="store", default="")
@@ -44,21 +38,6 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "slow" in item.keywords:
             item.add_marker(skip_slow)
-
-
-@pytest.fixture
-def SECRET_SLACK_BOT_TOKEN(request):
-    return request.config.getoption("--SECRET_SLACK_BOT_TOKEN")
-
-
-@pytest.fixture
-def SECRET_GITHUB_WEBSITE_USERNAME(request):
-    return request.config.getoption("--SECRET_GITHUB_WEBSITE_USERNAME")
-
-
-@pytest.fixture
-def SECRET_GITHUB_WEBSITE_TOKEN(request):
-    return request.config.getoption("--SECRET_GITHUB_WEBSITE_TOKEN")
 
 
 @pytest.fixture
@@ -89,3 +68,8 @@ def REPOSITORY(request):
 @pytest.fixture
 def WEBSITE_BUILD_PATH(request):
     return request.config.getoption("--WEBSITE_BUILD_PATH")
+
+
+@pytest.fixture
+def URL(request):
+    return request.config.getoption("--URL")

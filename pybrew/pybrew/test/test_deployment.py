@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io
 
 
 @pytest.mark.pybrew
@@ -176,8 +176,6 @@ def test_filesystem_to_dict_io():
 @pytest.mark.slow
 @pytest.mark.pybrew
 def test_deploy_to_github_io(
-    SECRET_GITHUB_WEBSITE_USERNAME,
-    SECRET_GITHUB_WEBSITE_TOKEN,
     ORGANIZATION,
     TEST_REPOSITORY,
     BRANCH,
@@ -222,8 +220,8 @@ def test_deploy_to_github_io(
         with tmp() as td:
             dict_to_filesystem_io(td, fs)
             deploy_to_github_io(
-                github_username=SECRET_GITHUB_WEBSITE_USERNAME,
-                github_token=SECRET_GITHUB_WEBSITE_TOKEN,
+                github_username=secret_io('GITHUB_WEBSITE_USERNAME'),
+                github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
                 organization=ORGANIZATION,
                 target_repo_name=TEST_REPOSITORY,
                 branch=br,
@@ -235,3 +233,26 @@ def test_deploy_to_github_io(
         TEST_REPOSITORY + '/' + p1_.replace('.html', ''),
         SHA
     )
+
+
+@pytest.mark.slow
+@pytest.mark.skip_in_local
+@pytest.mark.deployment
+def test_website_performance_io(URL):
+    def __test(url, is_mobile):
+        r = google_test_page_speed_io(
+            google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
+            url=url,
+            is_mobile=is_mobile
+        )
+
+        for _, audit in r:
+            title = audit['audit']
+            description = audit['description']
+            assert audit['score'] >= 0.9
+
+    __test(URL + '/', False)
+    __test(URL + '/', True)
+
+    __test(URL + '/blog/7-prichin-pit-chaj-matcha', False)
+    __test(URL + '/blog/7-prichin-pit-chaj-matcha', True)
