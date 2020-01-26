@@ -59,7 +59,12 @@ def _google_pagespeed_io(
 
     r = requests.get(api_url, params=params, headers=headers).json()
 
-    return r['lighthouseResult']['audits']
+    depricated = ['first-meaningful-paint']
+
+    return {
+        k: v for k, v in r['lighthouseResult']['audits'].items() if
+        k not in depricated
+    }
 
 
 def google_test_page_speed_io(**kwarg):
