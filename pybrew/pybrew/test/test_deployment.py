@@ -175,6 +175,7 @@ def test_filesystem_to_dict_io():
 
 @pytest.mark.slow
 @pytest.mark.pybrew
+@pytest.mark.skip('temp skip to make the cycle smaller')
 def test_deploy_to_github_io(
     ORGANIZATION,
     TEST_REPOSITORY,
