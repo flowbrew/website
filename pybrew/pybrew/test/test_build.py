@@ -1,7 +1,9 @@
 import os
 import pytest
 import re
-from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io, branch_to_prefix, master_branch
+
+from pybrew import files_io, pipe, chain_, flatten, force, map, filterempty, filter, glvrd_proofread_io, branch_to_prefix, master_branch, yandex_speller_io
+
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from path import Path
@@ -20,7 +22,7 @@ def extract_all_htmls_io(path):
 
 
 @pytest.mark.build
-def test_baked_images(WEBSITE_BUILD_PATH):
+def test_baked_images_io(WEBSITE_BUILD_PATH):
     def _validate_path(path):
         with Path(os.path.join(WEBSITE_BUILD_PATH, 'assets')):
             assert os.stat('.' + path).st_size > 0
@@ -72,14 +74,8 @@ def extract_all_texts(html):
     return (x.replace('( )', '') for x in texts if x)
 
 
-@pytest.mark.build
-def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
-    def __validate(path, text):
-        r = glvrd_proofread_io(text)
-        assert r['red'] >= 7.9
-        assert r['blue'] >= 7.9
-
-    def _validate(path):
+def all_texts_io(path):
+    def _get_text_io(path):
         if any(x in path for x in [
             'политика+конфиденциальности',
         ]):
@@ -87,7 +83,33 @@ def test_texts_with_glvrd(WEBSITE_BUILD_PATH):
 
         with open(path, 'rb') as f:
             html = f.read().decode('utf-8')
-            [__validate(path, x) for x in extract_all_texts(html)]
+            return (path, extract_all_texts(html))
 
-    [_validate(x) for x in files_io(WEBSITE_BUILD_PATH)
-        if x.endswith('.html')]
+    return filterempty(
+        _get_text_io(x) for x in files_io(path) if x.endswith('.html')
+    )
+
+
+@pytest.mark.build
+def test_texts_with_glvrd_io(WEBSITE_BUILD_PATH):
+    def __validate_io(path, text):
+        r = glvrd_proofread_io(text)
+        assert r['red'] >= 7.9
+        assert r['blue'] >= 7.9
+
+    [
+        [__validate_io(path, text) for text in texts]
+        for path, texts in all_texts_io(WEBSITE_BUILD_PATH)
+    ]
+
+
+@pytest.mark.build
+def test_texts_with_yandex_speller_io(WEBSITE_BUILD_PATH):
+    def __validate_io(path, text):
+        r = yandex_speller_io(text)
+        assert len(r) == 0
+
+    [
+        [__validate_io(path, text) for text in texts]
+        for path, texts in all_texts_io(WEBSITE_BUILD_PATH)
+    ]

@@ -22,6 +22,63 @@ def cpost(cache_dir, url, data, headers):
     return _cpost(url, json.dumps(data), json.dumps(headers))
 
 
+@curry
+def cget(cache_dir, url, params, headers):
+
+    @cachier(cache_dir=cache_dir)
+    def _cget(url, jparams, jheaders):
+        return requests.get(
+            url,
+            params=json.loads(jparams),
+            headers=json.loads(jheaders)
+        )
+
+    return _cget(url, json.dumps(params), json.dumps(headers))
+
+
+def yandex_speller_io(_text, use_cache=True):
+    # «Проверка правописания: Яндекс.Спеллер» http://api.yandex.ru/speller/
+    text = _text.replace('γδ', '')
+    
+    url = 'https://speller.yandex.net/services/spellservice.json/checkText'
+    headers = {}
+    params = {
+        'text': text
+    }
+
+    _f = cget('.cache/yandex') if use_cache else requests.get
+    r = _f(url, params=params, headers=headers).json()
+
+    def _make_result(x):
+        def _error(code):
+            if code == 1:
+                return 'Слова нет в словаре.'
+            if code == 2:
+                return 'Повтор слова.'
+            if code == 3:
+                return 'Неверное употребление прописных и строчных букв.'
+            if code == 4:
+                return 'Текст содержит слишком много ошибок.'
+            return 'Неизвестная ошибка'
+
+        err = _error(x['code'])
+
+        if err == 'Слова нет в словаре.':
+            valid_words = [
+                'NToss', 'улуна', 'замурчите'
+            ]
+            if x['word'].lower() in (x.lower() for x in valid_words):
+                return
+
+        return {
+            'error': err,
+            'word': x['word'],
+            'hints': x['s']
+        }
+
+    return comp(list, filterempty)(_make_result(x) for x in r)
+
+
 def glvrd_proofread_io(text, use_cache=True):
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
@@ -44,18 +101,18 @@ def glvrd_proofread_io(text, use_cache=True):
 
         if (hint['name'] == 'Неверное использование косой черты' and
                 text_.lower() == 'мг/г'):
-            return None
+            return
         if (hint['name'] == 'Необъективная оценка' and
                 text_.lower() == 'простуда'):
-            return None
+            return
         if (hint['name'] == 'Необъективная оценка' and
                 text_.lower() == 'простуда'):
-            return None
+            return
         if (hint['name'] == 'Предлог «от»'):
-            return None
+            return
         if (hint['name'] == 'Канцеляризм' and
                 text_.lower() == 'лицо'):
-            return None
+            return
 
         return {
             'tab': hint['tab'],
@@ -374,8 +431,8 @@ def ob_branch_deleted_io(**kwargs):
     )
 
 
-def git_push_state_if_updated_io(repo_path, branch, **kwargs):
-    if not git_has_unstaged_changes_io():
+def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
+    if local_run or not git_has_unstaged_changes_io():
         return
 
     github_push_io(
