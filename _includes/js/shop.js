@@ -1,37 +1,40 @@
+function baseurl_link(url) {
+  var base = "{{ '/' | relative_url }}";
+  return (base == '/' ? '' : base) + url;
+}
+
 var ZOOM_HOVER_TIMEOUT = null;
 
-$.fn.universalClick = function (f) {
-  $(this).on('click', f);
-} 
+$.fn.universalClick = function(f) {
+  $(this).on("click", f);
+};
 
 function int_to_(d_, a, b, c) {
-  var word = '';
+  var word = "";
   var d = d_ % 10;
-  if ((d == 0 || d >= 5) || (d_ >= 11 && d_ <= 14)) {
+  if (d == 0 || d >= 5 || (d_ >= 11 && d_ <= 14)) {
     word = a;
   } else if (d == 1) {
     word = b;
   } else {
     word = c;
   }
-  return d_ + ' ' + word;
+  return d_ + " " + word;
 }
 
 function int_to_days(d) {
-  return int_to_(d, 'дней', 'день', 'дня');
+  return int_to_(d, "дней", "день", "дня");
 }
 
 function int_to_hours(d) {
-  return int_to_(d, 'часов', 'час', 'часа');
+  return int_to_(d, "часов", "час", "часа");
 }
 
 function is_grid_supported() {
   try {
-    var el = document.querySelector('body');
-    return typeof el.style.grid === 'string';
-  } catch (err) {
-
-  }
+    var el = document.querySelector("body");
+    return typeof el.style.grid === "string";
+  } catch (err) {}
   return false;
 }
 
@@ -120,13 +123,13 @@ function init_preview() {
     $(".offer-img").hide();
     $("#" + id).show();
     preview_selected(x.attr("id"), x.attr("src"));
-  } 
+  }
 
   target.mouseenter(function() {
     payload($(this));
   });
 
-  target.universalClick(function(){
+  target.universalClick(function() {
     payload($(this));
   });
 }
@@ -168,7 +171,7 @@ function init_accordion() {
 function we_have_stock(quantity) {
   $(".buy-button").universalClick(function() {
     buy_button_pressed($(this).attr("id"));
-    window.location = "./checkout.html";
+    window.location = baseurl_link("/checkout.html");
   });
 
   var word = quantity == 1 ? "Остался" : "Осталось";
@@ -176,7 +179,7 @@ function we_have_stock(quantity) {
   // $(".quantity").hide();
 
   $(".quantity").html(
-    word + ' <strong>' + quantity + '</strong> <i class="fas fa-gift"></i>'
+    word + " <strong>" + quantity + '</strong> <i class="fas fa-gift"></i>'
   );
 
   $(".quantity-wrapper").css("visibility", "visible");
@@ -349,7 +352,7 @@ function resolution_detected(resolution) {
 
 function resolution() {
   var res = $("html").css("--resolution");
-  return res == undefined ? '' : res.trim();
+  return res == undefined ? "" : res.trim();
 }
 
 function init_event_trackers() {
@@ -434,7 +437,7 @@ function init_navigation() {
 function mdc_set_textfield(selector, value) {
   var tf = mdc.textField.MDCTextField.attachTo(
     document.querySelector(selector).closest(".mdc-text-field")
-    );
+  );
   tf.value = value ? value : "";
 }
 
@@ -449,16 +452,16 @@ function init_mdc() {
     if (typeof mdc === "undefined") {
       return;
     }
-    
+
     foreach(
       document.querySelectorAll(".mdc-text-field"),
       mdc.textField.MDCTextField.attachTo
-      );
+    );
 
     foreach(
       document.querySelectorAll(".mdc-button"),
       mdc.ripple.MDCRipple.attachTo
-      );
+    );
   });
 }
 
@@ -533,8 +536,8 @@ var GTM_YTLISTENERS = [];
 function onYouTubeIframeAPIReady() {
   YT.gtmLastAction = "p";
   GTM_YTLISTENERS = $("iframe")
-    .filter(function( index ) {
-      return /youtube.com\/embed/.test($(this).attr("src"))
+    .filter(function(index) {
+      return /youtube.com\/embed/.test($(this).attr("src"));
     })
     .map(function() {
       return new YT.Player($(this).attr("id"), {
@@ -636,15 +639,7 @@ function ec_refund(t_id) {
   });
 }
 
-function ec_purchase(
-  t_id,
-  product,
-  revenue,
-  shipping,
-  quantity,
-  coupon,
-  cb
-) {
+function ec_purchase(t_id, product, revenue, shipping, quantity, coupon, cb) {
   setTimeout(cb, 2000);
   push_event({
     event: "purchase",
@@ -674,17 +669,21 @@ function ec_purchase(
 
 function getUrlVars() {
   var vars = {};
-  var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-      vars[key] = value;
+  var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(
+    m,
+    key,
+    value
+  ) {
+    vars[key] = value;
   });
   return vars;
 }
 
-function getUrlParam(parameter, defaultvalue){
+function getUrlParam(parameter, defaultvalue) {
   var urlparameter = defaultvalue;
-  if(window.location.href.indexOf(parameter) > -1){
-      urlparameter = getUrlVars()[parameter];
-      }
+  if (window.location.href.indexOf(parameter) > -1) {
+    urlparameter = getUrlVars()[parameter];
+  }
   return urlparameter;
 }
 
@@ -693,13 +692,13 @@ function _init_promocode_from_url() {
   if (code) {
     set_promocode_2(code, NORMAL_PROMOCODE_EXPIRATION);
   }
-} 
+}
 
 function set_promocode(code) {
   if (code) {
-    Cookies.set('promocode', code, { expires: 30 });
+    Cookies.set("promocode", code, { expires: 30 });
   } else {
-    Cookies.remove('promocode');
+    Cookies.remove("promocode");
   }
 }
 
@@ -714,7 +713,7 @@ function set_promocode_2_notify(code, expires) {
 }
 
 function promocode_expiration_to_str(name) {
-  return 'promocode_' + name + '_expiration';
+  return "promocode_" + name + "_expiration";
 }
 
 function set_promocode_expiration(name, expires) {
@@ -728,10 +727,10 @@ function set_promocode_expiration(name, expires) {
   if (!(promocode_expiration_in_days(name) === undefined)) {
     return;
   }
-  
+
   var date = new Date();
   date.setDate(date.getDate() + expires);
-  
+
   Cookies.set(name_str, date.toISOString(), { expires: 60 });
 }
 
@@ -747,9 +746,7 @@ function promocode_expiration_in_(name, x) {
     var t2 = Date.parse(t2_str);
 
     return Math.ceil((t2 - t1) / (1000 * x));
-  } catch (err) { 
-
-  }
+  } catch (err) {}
   return undefined;
 }
 
@@ -762,7 +759,7 @@ function promocode_expiration_in_days(name) {
 }
 
 function promocode() {
-  return Cookies.get('promocode');
+  return Cookies.get("promocode");
 }
 
 var WELCOME_PROMOCODE10 = "GIFT10";
@@ -793,7 +790,7 @@ function process_coupon(coupon_str) {
   return 0.0;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function() {
   init_on_document_ready();
 });
 
@@ -805,16 +802,12 @@ var CHECKOUT_VIEWED = "CHECKOUT_VIEWED";
 var BOUGHT = "BOUGHT";
 
 function _goal(name) {
-  return 'goal_' + name;
+  return "goal_" + name;
 }
 
 function _add_goal(name, value, expires) {
   if (name) {
-    Cookies.set(
-      _goal(name), 
-      _get_goal(name) + value, 
-      { expires: expires }
-      );
+    Cookies.set(_goal(name), _get_goal(name) + value, { expires: expires });
   }
 }
 
@@ -826,9 +819,7 @@ function _get_goal(name) {
   try {
     var res = parseInt(Cookies.get(_goal(name)));
     return res ? res : 0;
-  } catch (err) { 
-
-  }
+  } catch (err) {}
   return 0;
 }
 
@@ -853,13 +844,13 @@ function includes(str, substr) {
 function promotion_processor() {
   var path = window.location.pathname;
 
-  if (path == "/") {
+  if (path == baseurl_link("/")) {
     _add_goal_d(OFFER_VIEWED);
   }
-  if (includes(path, "/blog")) {
+  if (includes(path, baseurl_link("/blog"))) {
     _add_goal_d(BLOG_VIEWED);
   }
-  if (path == "/checkout.html") {
+  if (path == baseurl_link("/checkout.html")) {
     _add_goal_d(CHECKOUT_VIEWED);
   }
   if (includes(path, encodeURI("спасибо"))) {
@@ -874,8 +865,7 @@ function promotion_processor() {
 
   _init_promocode_from_url();
 
-  if (!promocode()) 
-  {
+  if (!promocode()) {
     _welcome_bonus_promotion();
   }
 }
@@ -895,7 +885,7 @@ function init_global() {
 
 function init_on_document_ready() {
   send_grid_support();
-  $('body').show();
+  $("body").show();
   init_mdc();
   reset_viewport();
   page_loaded();

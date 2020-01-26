@@ -312,7 +312,7 @@ product: Чай матча 60 г – 60 чашек
         crossDomain: true,
         error: function() {
           enablebutton();
-          window.location = '{{ '/ошибка' | relative_url }}';
+          window.location = "{{ '/ошибка' | relative_url }}";
         },
         success: function(response) {
           ec_purchase(
@@ -331,7 +331,7 @@ product: Чай матча 60 г – 60 чашек
       });
     } catch (e) {
       enablebutton();
-      window.location = '{{ '/ошибка' | relative_url }}';
+      window.location = "{{ '/ошибка' | relative_url }}";
     }
   }
 

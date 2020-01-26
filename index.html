@@ -75,7 +75,7 @@ questions:
     answer: <ul><li>Такой объем чая в вашем заказе позволяет доставлять его  бесплатно. А также позволяет дарить бесплатный набор для заварки новым клиентам.</li><li>Чай матча портится от контакта с воздухом. После открытия упаковки у вас есть 3 недели, чтобы им насладиться. 60 г можно не успеть выпить за такой короткий срок.</li></ul>
   - question: Зачем пить чай матча
     answer: >-
-      <p>Читайте о полезных свойствах чая матча в нашем блоге:<br><a href='{{ '/blog/7-prichin-pit-chaj-matcha' | relative_url }}'>7 причин почему вы подсядете на полезный чай матча</a></p>
+      <p>Читайте о полезных свойствах чая матча в нашем блоге:<br><a href="{{ '/blog/7-prichin-pit-chaj-matcha' | relative_url }}">7 причин почему вы подсядете на полезный чай матча</a></p>
   - question: Как заваривать чай матча
     answer: >-
       <p>Чай матча легко заваривается. При должной практике заварка займет у вас не больше 1 минуты.</p>
@@ -172,11 +172,11 @@ reviews:
         <p class="promotion">
           {{ page.promotion }}
         </p>
-        {% include cta_button.html id="buy-button-1" text=page.buy href="./checkout.html" %}
+        {% include cta_button.html id="buy-button-1" text=page.buy href="{{ '/checkout.html' | relative_url }}" %}
         <p class="mproperty">{{ page.mproperty }}</p>
       </div> 
     </section>
-  
+    
     <script>	
       function update_promotion() {	
         var code = promocode();	
@@ -251,7 +251,7 @@ reviews:
   </section>
 
   <section id="buy-button-section" class="grid">
-    {% include cta_button.html id="buy-button-2" text=page.buy href="./checkout.html" %}
+    {% include cta_button.html id="buy-button-2" text=page.buy href="{{ '/checkout.html' | relative_url }}" %}
   </section>
   
   <section id="signature" >
