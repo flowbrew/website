@@ -240,13 +240,11 @@ def test_deploy_to_github_io(
 @pytest.mark.deployment
 def test_website_performance_io(URL):
     def __test(url, is_mobile):
-        r = google_test_page_speed_io(
+        for _, audit in google_test_page_speed_io(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
             url=url,
             is_mobile=is_mobile
-        )
-
-        for _, audit in r:
+        ).items():
             assert audit['score'] >= 0.9
 
     __test(URL + '/', False)
