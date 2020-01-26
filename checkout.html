@@ -166,7 +166,7 @@ product: Чай матча 60 г – 60 чашек
 <br />
 
 <div class="checkout-buttons">
-  <a href="/" class="mdc-button">Назад</a>
+  <a href="{{ '/' | relative_url }}" class="mdc-button">Назад</a>
   <button id="buy" class="checkout-buy mdc-button mdc-button--raised"><i class="fa fa-spinner fa-spin"></i> <span class="buy-button-text">Купить</span></button>
 </div>
 
@@ -312,7 +312,7 @@ product: Чай матча 60 г – 60 чашек
         crossDomain: true,
         error: function() {
           enablebutton();
-          window.location = '/ошибка';
+          window.location = '{{ '/ошибка' | relative_url }}';
         },
         success: function(response) {
           ec_purchase(
@@ -324,14 +324,14 @@ product: Чай матча 60 г – 60 чашек
             state.coupon,
             function () {
               enablebutton();
-              window.location = "/спасибо";
+              window.location = "{{ '/спасибо' | relative_url }}";
             }
             );
         }
       });
     } catch (e) {
       enablebutton();
-      window.location = '/ошибка';
+      window.location = '{{ '/ошибка' | relative_url }}';
     }
   }
 
