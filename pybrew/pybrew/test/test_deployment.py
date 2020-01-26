@@ -247,8 +247,6 @@ def test_website_performance_io(URL):
         )
 
         for _, audit in r:
-            title = audit['audit']
-            description = audit['description']
             assert audit['score'] >= 0.9
 
     __test(URL + '/', False)
