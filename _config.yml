@@ -16,7 +16,7 @@ products:
     id: flowbrew60
     price: 3880
     currency: "RUB"
-    shipping: 500
+    shipping: 100
     weight: 60
     quantity: 5
 

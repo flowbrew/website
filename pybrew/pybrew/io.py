@@ -36,7 +36,10 @@ def cget(cache_dir, url, params, headers):
     return _cget(url, json.dumps(params), json.dumps(headers))
 
 
-def yandex_speller_io(text, use_cache=True):
+def yandex_speller_io(_text, use_cache=True):
+    # «Проверка правописания: Яндекс.Спеллер» http://api.yandex.ru/speller/
+    text = _text.replace('γδ', '')
+    
     url = 'https://speller.yandex.net/services/spellservice.json/checkText'
     headers = {}
     params = {
@@ -58,13 +61,22 @@ def yandex_speller_io(text, use_cache=True):
                 return 'Текст содержит слишком много ошибок.'
             return 'Неизвестная ошибка'
 
+        err = _error(x['code'])
+
+        if err == 'Слова нет в словаре.':
+            valid_words = [
+                'NToss', 'улуна', 'замурчите'
+            ]
+            if x['word'].lower() in (x.lower() for x in valid_words):
+                return
+
         return {
-            'error': _error(x['code']),
+            'error': err,
             'word': x['word'],
             'hints': x['s']
         }
 
-    return [_make_result(x) for x in r]
+    return comp(list, filterempty)(_make_result(x) for x in r)
 
 
 def glvrd_proofread_io(text, use_cache=True):
@@ -89,18 +101,18 @@ def glvrd_proofread_io(text, use_cache=True):
 
         if (hint['name'] == 'Неверное использование косой черты' and
                 text_.lower() == 'мг/г'):
-            return None
+            return
         if (hint['name'] == 'Необъективная оценка' and
                 text_.lower() == 'простуда'):
-            return None
+            return
         if (hint['name'] == 'Необъективная оценка' and
                 text_.lower() == 'простуда'):
-            return None
+            return
         if (hint['name'] == 'Предлог «от»'):
-            return None
+            return
         if (hint['name'] == 'Канцеляризм' and
                 text_.lower() == 'лицо'):
-            return None
+            return
 
         return {
             'tab': hint['tab'],
@@ -416,8 +428,8 @@ def ob_branch_deleted_io(**kwargs):
     )
 
 
-def git_push_state_if_updated_io(repo_path, branch, **kwargs):
-    if not git_has_unstaged_changes_io():
+def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
+    if local_run or not git_has_unstaged_changes_io():
         return
 
     github_push_io(

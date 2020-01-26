@@ -2,7 +2,7 @@ import pytest
 from pybrew import yandex_speller_io
 
 
-# @pytest.mark.slow
+@pytest.mark.slow
 @pytest.mark.pybrew
 def test_yandex_speller_io():
     tests = (
