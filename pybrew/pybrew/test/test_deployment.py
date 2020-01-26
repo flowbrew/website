@@ -242,14 +242,15 @@ def test_deploy_to_github_io(
 def test_website_performance_io(URL):
     def __test(url, is_mobile):
         _f = comp(
-            partial(sorted, key=lambda x: x[1]['score']), 
+            partial(sorted, key=lambda x: x[1]['score']),
+            lambda x: x.items(),
             google_test_page_speed_io
             )
         for _, audit in _f(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
             url=url,
             is_mobile=is_mobile
-        ).items():
+        ):
             assert audit['score'] >= 0.9
 
     __test(URL + '/', False)
