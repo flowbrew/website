@@ -245,7 +245,8 @@ def test_website_performance_io(URL):
             url=url,
             is_mobile=is_mobile
         ).items():
-            assert audit['score'] >= 0.9
+            if audit['score'] is not None:
+                assert audit['score'] >= 0.9
 
     __test(URL + '/', False)
     __test(URL + '/', True)
