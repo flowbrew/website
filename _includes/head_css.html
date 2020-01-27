@@ -1,3 +1,4 @@
+{% capture fonts %} {% include css/fonts.css %} {% endcapture %}
 {% capture fontawesome %} {% include css/fa/fontawesome.min.css %} {% endcapture %}
 {% capture brands %} {% include css/fa/brands.min.css %} {% endcapture %}
 {% capture solid %} {% include css/fa/solid.min.css %} {% endcapture %}
@@ -7,6 +8,7 @@
 {% capture roboto %} {% include css/roboto.css %} {% endcapture %}
 
 <style>
+    {{ fonts }}
     {{ fontawesome  }}
     {{ brands  }}
     {{ solid  }}
