@@ -1,5 +1,9 @@
 FROM python:3
 
+# Sometimes ruby crashes when building with jekyll
+# I don't know if it will fix it, but there is a chance
+ENV BUNDLE_FORCE_RUBY_PLATFORM true
+
 RUN apt-get -y update && apt-get -y install \
         apt-utils \
         ruby-full \
