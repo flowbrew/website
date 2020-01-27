@@ -902,5 +902,5 @@ $(window).on("load", function() {
   });
 
   var url = "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js";
-  $("head").append("<scr" + "ipt src='" + url + "'></sc" + "ript>");
+  $("head").append("<scr" + "ipt src='" + url + "' defer></sc" + "ript>");
 });
