@@ -174,7 +174,7 @@ reviews:
       </div> 
     </section>
     
-    <script>	
+    <script defer>	
       function update_promotion() {	
         var code = promocode();	
         if (!code) {	
@@ -257,7 +257,7 @@ reviews:
 
 </div>
 
-<script>
+<script defer>
   update_inventory_quantity({{ product | jsonify }});
 </script>
 
