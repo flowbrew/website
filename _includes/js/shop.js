@@ -1,4 +1,5 @@
-function baseurl_link(url) {
+function baseurl_link(url_) {
+  var url = url_.replace(/^\//, '');
   var base = "{{ '/' | relative_url }}";
   return (base == '/' ? '' : base) + url;
 }
