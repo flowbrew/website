@@ -442,11 +442,11 @@ def validate_deployment_io(
         f'https://{domain_io(repo_path)}'
     )
 
-    baseurl = (
+    baseurl = url + (
         '/' 
         if local_run or branch == master_branch() else 
         branch_to_prefix(branch)
-    ),
+    )
 
     run_io(pytest_args('deployment', local_run) + f'''
         --BRANCH={branch} 
