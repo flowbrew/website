@@ -22,38 +22,39 @@ $theme-on-error: rgba(255, 255, 255, 0.84);
 
 @font-face {
   font-family: 'Graphik';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
   src: url("{{ '/assets/fonts/Graphik-Regular-Web.eot' | relative_url }}");
   src: url("{{ '/assets/fonts/Graphik-Regular-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-Regular-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-Regular-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-Regular-Web.ttf' | relative_url }}") format("truetype");
-  font-weight: normal;
-  font-style: normal;
 }
 
 
 @font-face {
   font-family: 'Graphik';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
   src: url("{{ '/assets/fonts/Graphik-Bold-Web.eot' | relative_url }}");
   src: url("{{ '/assets/fonts/Graphik-Bold-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-Bold-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-Bold-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-Bold-Web.ttf' | relative_url }}") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
   font-family: 'Graphik';
+  font-style: italic;
+  font-weight: normal;
+  font-display: swap;
   src: url("{{ '/assets/fonts/Graphik-RegularItalic-Web.eot' | relative_url }}");
   src: url("{{ '/assets/fonts/Graphik-RegularItalic-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-RegularItalic-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-RegularItalic-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-RegularItalic-Web.ttf' | relative_url }}") format("truetype");
-  font-weight: normal;
-  font-style: italic;
-  font-display: swap;
 }
 
 @font-face {
   font-family: 'Graphik';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
   src: url("{{ '/assets/fonts/Graphik-Black-Web.eot' | relative_url }}");
   src: url("{{ '/assets/fonts/Graphik-Black-Web.eot?#iefix' | relative_url }}") format('embedded-opentype'),url("{{ '/assets/fonts/Graphik-Black-Web.woff2' | relative_url }}") format('woff2'),url("{{ '/assets/fonts/Graphik-Black-Web.woff' | relative_url }}") format('woff'),url("{{ '/assets/fonts/Graphik-Black-Web.ttf' | relative_url }}") format('truetype'),url("{{ '/assets/fonts/Graphik-Black-Web.svg#Graphik-Black-Web' | relative_url }}") format('svg');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
 }
 
 // google
@@ -104,8 +105,8 @@ $theme-on-error: rgba(255, 255, 255, 0.84);
 }
 @font-face {
   font-family: Annabelle;
-  src: url("{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}");
   font-display: swap;
+  src: url("{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}");
 }
 //
 
