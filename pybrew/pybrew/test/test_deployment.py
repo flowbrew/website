@@ -253,8 +253,8 @@ def test_website_performance_io(URL):
         ):
             assert audit['score'] >= 0.9
 
-    __test(URL + '/', False)
-    __test(URL + '/', True)
+    __test(URL + '', False)
+    __test(URL + '', True)
 
-    __test(URL + '/blog/7-prichin-pit-chaj-matcha', False)
-    __test(URL + '/blog/7-prichin-pit-chaj-matcha', True)
+    __test(URL + 'blog/7-prichin-pit-chaj-matcha', False)
+    __test(URL + 'blog/7-prichin-pit-chaj-matcha', True)
