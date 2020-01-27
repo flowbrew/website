@@ -4,6 +4,7 @@ from pybrew import glvrd_proofread_io
 
 @pytest.mark.slow
 @pytest.mark.pybrew
+@pytest.mark.skip
 def test_glvrd_proofread_io():
     tests = (
 

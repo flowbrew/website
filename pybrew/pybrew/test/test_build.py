@@ -22,6 +22,7 @@ def extract_all_htmls_io(path):
 
 
 @pytest.mark.build
+@pytest.mark.skip
 def test_baked_images_io(WEBSITE_BUILD_PATH):
     def _validate_path(path):
         with Path(os.path.join(WEBSITE_BUILD_PATH, 'assets')):
@@ -91,6 +92,7 @@ def all_texts_io(path):
 
 
 @pytest.mark.build
+@pytest.mark.skip
 def test_texts_with_glvrd_io(WEBSITE_BUILD_PATH):
     def __validate_io(path, text):
         r = glvrd_proofread_io(text)
@@ -104,6 +106,7 @@ def test_texts_with_glvrd_io(WEBSITE_BUILD_PATH):
 
 
 @pytest.mark.build
+@pytest.mark.skip
 def test_texts_with_yandex_speller_io(WEBSITE_BUILD_PATH):
     def __validate_io(path, text):
         r = yandex_speller_io(text)
