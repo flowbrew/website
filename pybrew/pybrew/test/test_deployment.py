@@ -255,7 +255,7 @@ def test_website_performance_io(URL):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
             else:
-                assert audit['score'] >= 0.9
+                assert audit['score'] >= 0.75
 
     __test(URL + '', False)
     __test(URL + '', True)
