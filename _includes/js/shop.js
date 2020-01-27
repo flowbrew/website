@@ -901,8 +901,14 @@ $(function() {
 });
 
 $(function() {
-  $("<script/>", {
-    type: "text/javascript",
-    src: "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js"
-  }).appendTo("head");
+
+  setTimeout(function() { 
+    
+    $("<script/>", {
+      type: "text/javascript",
+      src: "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js"
+    }).appendTo("head");
+
+  }, 5000);
+
 });
