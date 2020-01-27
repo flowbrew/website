@@ -884,7 +884,7 @@ init_before_dom();
 
 // *** //
 
-$(window).on('load', function(){
+$(window).on("load", function() {
   $(function() {
     if (typeof mdc === "undefined") {
       return;
@@ -901,10 +901,6 @@ $(window).on('load', function(){
     );
   });
 
-  $(function() {
-    $("<script defer/>", {
-      type: "text/javascript",
-      src: "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js"
-    }).appendTo("head");
-  });
+  var url = "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js";
+  $("head").append("<scr" + "ipt src='" + url + "'></sc" + "ript>");
 });
