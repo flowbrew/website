@@ -245,13 +245,12 @@ def test_website_performance_io(URL):
             partial(sorted, key=lambda x: x[1]['score']),
             lambda x: x.items(),
             google_test_page_speed_io
-            )
-        _audits = _f(
+        )
+        for name, audit in _f(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
             url=url,
             is_mobile=is_mobile
-        )
-        for name, audit in _audits:
+        ):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
             else:
