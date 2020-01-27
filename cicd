@@ -4,8 +4,6 @@ BUILDPARAMS=""
 RUNPARAMS=""
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 
-docker system prune --all --force
-
 if [ "$1" = "local" ]; then
     LOCAL_RUN=True
     DOCKERNAME="flowbrewlocal:${BRANCH_NAME}"
