@@ -1,7 +1,7 @@
 function baseurl_link(url_) {
-  var url = url_.replace(/^\//, '');
+  var url = url_.replace(/^\//, "");
   var base = "{{ '/' | relative_url }}";
-  return (base == '/' ? '' : base) + url;
+  return (base == "/" ? "" : base) + url;
 }
 
 var ZOOM_HOVER_TIMEOUT = null;
@@ -448,23 +448,9 @@ function foreach(array, f) {
   }
 }
 
-function init_mdc() {
-  $(function() {
-    if (typeof mdc === "undefined") {
-      return;
-    }
+// function init_mdc() {
 
-    foreach(
-      document.querySelectorAll(".mdc-text-field"),
-      mdc.textField.MDCTextField.attachTo
-    );
-
-    foreach(
-      document.querySelectorAll(".mdc-button"),
-      mdc.ripple.MDCRipple.attachTo
-    );
-  });
-}
+// }
 
 function onPlayerStateChange(e) {
   e["data"] == YT.PlayerState.PLAYING &&
@@ -887,7 +873,7 @@ function init_global() {
 function init_on_document_ready() {
   send_grid_support();
   $("body").show();
-  init_mdc();
+  // init_mdc();
   reset_viewport();
   page_loaded();
 }
@@ -895,3 +881,28 @@ function init_on_document_ready() {
 // *** //
 
 init_before_dom();
+
+// *** //
+
+$(function() {
+  if (typeof mdc === "undefined") {
+    return;
+  }
+
+  foreach(
+    document.querySelectorAll(".mdc-text-field"),
+    mdc.textField.MDCTextField.attachTo
+  );
+
+  foreach(
+    document.querySelectorAll(".mdc-button"),
+    mdc.ripple.MDCRipple.attachTo
+  );
+});
+
+$(function() {
+  $("<script/>", {
+    type: "text/javascript",
+    src: "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js"
+  }).appendTo("head");
+});
