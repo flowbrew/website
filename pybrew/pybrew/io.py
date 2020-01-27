@@ -202,7 +202,7 @@ def load_yaml_io(path):
 
 def save_yaml_io(path, data):
     with open(path, 'w') as file:
-        yaml.safe_dump(data, file)
+        yaml.safe_dump(data, file, encoding='utf-8', allow_unicode=True)
 
 
 def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
