@@ -26,7 +26,6 @@ $theme-on-error: rgba(255, 255, 255, 0.84);
   src: url("{{ '/assets/fonts/Graphik-Regular-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-Regular-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-Regular-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-Regular-Web.ttf' | relative_url }}") format("truetype");
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
 }
 
 
