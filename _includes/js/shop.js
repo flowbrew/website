@@ -884,31 +884,27 @@ init_before_dom();
 
 // *** //
 
-$(function() {
-  if (typeof mdc === "undefined") {
-    return;
-  }
+$(window).load(function() {
+  $(function() {
+    if (typeof mdc === "undefined") {
+      return;
+    }
 
-  foreach(
-    document.querySelectorAll(".mdc-text-field"),
-    mdc.textField.MDCTextField.attachTo
-  );
+    foreach(
+      document.querySelectorAll(".mdc-text-field"),
+      mdc.textField.MDCTextField.attachTo
+    );
 
-  foreach(
-    document.querySelectorAll(".mdc-button"),
-    mdc.ripple.MDCRipple.attachTo
-  );
-});
+    foreach(
+      document.querySelectorAll(".mdc-button"),
+      mdc.ripple.MDCRipple.attachTo
+    );
+  });
 
-$(function() {
-
-  setTimeout(function() { 
-    
+  $(function() {
     $("<script/>", {
       type: "text/javascript",
       src: "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js"
     }).appendTo("head");
-
-  }, 5000);
-
+  });
 });
