@@ -59,7 +59,10 @@ def _google_pagespeed_io(
 
     r = requests.get(api_url, params=params, headers=headers).json()
 
-    depricated = ['first-meaningful-paint', 'first-cpu-idle']
+    depricated = [
+        # 'first-meaningful-paint', 
+        'first-cpu-idle'
+        ]
 
     return {
         k: v for k, v in r['lighthouseResult']['audits'].items() if
