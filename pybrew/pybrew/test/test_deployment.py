@@ -253,6 +253,8 @@ def test_website_performance_io(URL):
         ):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
+            if is_mobile and name == 'interactive':
+                assert audit['score'] >= 0.6
             else:
                 assert audit['score'] >= 0.75
 

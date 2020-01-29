@@ -29,3 +29,5 @@ RUN pip install \
         tinify \
         more-itertools \
         cachier
+
+RUN npm install
