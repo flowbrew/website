@@ -914,7 +914,6 @@ init_before_dom();
 
 $(window).on("load", function() {
   var gtm = `
-<script defer>
   (function(w, d, s, l, i) {
     w[l] = w[l] || [];
     w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
@@ -925,10 +924,9 @@ $(window).on("load", function() {
     j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
     f.parentNode.insertBefore(j, f);
   })(window, document, "script", "dataLayer", "GTM-WZ5F755");
-</script>
   `;
   $("head").append("<scr" + "ipt defer> " + gtm + " </sc" + "ript>");
-  
+
   setTimeout(function() {
     var url = "//code.tidio.co/w3dxwgmwf8ybh4xrqxkgetwvwqqd35aj.js";
     $("head").append("<scr" + "ipt src='" + url + "' defer></sc" + "ript>");
