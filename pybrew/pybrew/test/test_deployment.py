@@ -254,7 +254,7 @@ def test_website_performance_io(URL, BRANCH):
                 assert audit['score'] >= 0.3
 
             elif name == 'is-crawlable':
-                if BRANCH != master_branch():
+                if BRANCH == master_branch():
                     assert audit['score'] >= 0.75
 
             elif is_mobile and name == 'first-contentful-paint-3g':
