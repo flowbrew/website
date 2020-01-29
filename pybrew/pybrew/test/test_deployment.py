@@ -261,7 +261,7 @@ def test_website_performance_io(URL):
                 assert audit['score'] >= 0.4
 
             elif is_mobile and name == 'interactive':
-                assert audit['score'] >= 0.6
+                assert audit['score'] >= 0.5
 
             else:
                 assert audit['score'] >= 0.75
