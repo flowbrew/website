@@ -262,6 +262,9 @@ def test_website_performance_io(URL):
             elif is_mobile and name == 'interactive':
                 assert audit['score'] >= 0.5
 
+            elif is_mobile and name == 'max-potential-fid':
+                assert audit['score'] >= 0.5
+
             elif is_mobile and name == 'third-party-summary':
                 assert audit['details']['summary']['wastedMs'] < 500
 
