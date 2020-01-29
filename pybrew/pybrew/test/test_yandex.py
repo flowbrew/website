@@ -4,7 +4,6 @@ from pybrew import yandex_speller_io
 
 @pytest.mark.slow
 @pytest.mark.pybrew
-@pytest.mark.skip
 def test_yandex_speller_io():
     tests = (
         (
