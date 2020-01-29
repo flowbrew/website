@@ -254,14 +254,14 @@ def test_website_performance_io(URL):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
 
-            elif is_mobile and name == 'first-contentful-paint-3g':
-                assert audit['score'] >= 0.5
+            # elif is_mobile and name == 'first-contentful-paint-3g':
+            #     assert audit['score'] >= 0.5
 
-            elif is_mobile and name == 'first-cpu-idle':
-                assert audit['score'] >= 0.4
+            # elif is_mobile and name == 'first-cpu-idle':
+            #     assert audit['score'] >= 0.4
 
-            elif is_mobile and name == 'interactive':
-                assert audit['score'] >= 0.5
+            # elif is_mobile and name == 'interactive':
+            #     assert audit['score'] >= 0.5
 
             else:
                 assert audit['score'] >= 0.75
