@@ -30,4 +30,4 @@ RUN pip install \
         more-itertools \
         cachier
 
-RUN npm install
+RUN npm update

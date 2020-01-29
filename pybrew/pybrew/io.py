@@ -369,6 +369,7 @@ def github_commit_url_io(org, name, sha):
 
 def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
     if local_run:
+        delete_dir_io('./_local_deployment')
         dict_to_filesystem_io(
             './_local_deployment',
             filesystem_to_dict_io(path)
@@ -413,15 +414,24 @@ def validate_pybrew_io(
         ''')
 
 
-def build_npm_io(repo_path, **kwargs):
+def build_npm_io(repo_path, local_run, **kwargs):
     with Path(repo_path):
+        delete_dir_io('./node_modules')
+
         run_io(f'npm install')
+
+        if local_run:
+            run_io(f'npm run test_build')
+        else:
+            run_io(f'npm run build')
+
         run_io(f'npm run test')
-        run_io(f'npm run build')
 
 
-def build_io(**kwargs):
-    bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
+def build_io(local_run, **__kwargs):
+    kwargs = {**__kwargs, **{'local_run': local_run}}
+    if not local_run:
+        bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
     build_npm_io(**kwargs)
     build_jekyll_io(**kwargs)
 

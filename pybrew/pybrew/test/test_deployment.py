@@ -266,11 +266,17 @@ def test_website_performance_io(URL, BRANCH):
             elif is_mobile and name == 'interactive':
                 assert audit['score'] >= 0.5
 
+            elif is_mobile and name == 'mainthread-work-breakdown':
+                assert audit['score'] >= 0.7
+
             elif is_mobile and name == 'max-potential-fid':
-                assert audit['score'] >= 0.5
+                if url.endswith('checkout.html'):
+                    assert audit['score'] >= 0.3
+                else:
+                    assert audit['score'] >= 0.5
 
             elif is_mobile and name == 'third-party-summary':
-                assert audit['details']['summary']['wastedMs'] < 500
+                assert audit['details']['summary']['wastedMs'] < 650
 
             else:
                 assert audit['score'] >= 0.75

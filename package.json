@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Flow Brew website # this one is tasty",
   "scripts": {
-    "test": "echo \"NO TESTING\"",
-    "build": "webpack --color --output-path ./_includes/dist/ --config ./webpack.config.js --mode production"
+    "test": "mocha --color -r esm",
+    "build": "webpack --color --output-path ./_includes/dist/ --config ./webpack.config.js --mode production",
+    "test_build": "webpack --color --output-path ./_includes/dist/ --config ./webpack.config.js --mode development"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,11 @@
     "@material/form-field": "^4.0.0",
     "@material/icon-button": "^4.0.0",
     "@material/list": "^4.0.0",
-    "@material/mwc-icon": "^0.12.0",
     "@material/radio": "^4.0.0",
     "@material/ripple": "^4.0.0",
     "@material/textfield": "^4.0.0",
     "@material/top-app-bar": "^4.0.0",
+    "esm": "^3.2.25",
     "jquery": "^3.4.1",
     "js-cookie": "^2.2.1",
     "lazysizes": "^5.2.0"
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@babel/core": "^7.8.3",
     "@babel/preset-env": "^7.8.3",
+    "@babel/register": "^7.8.3",
     "autoprefixer": "^9.7.4",
     "babel-loader": "^8.0.6",
     "babel-minify-webpack-plugin": "^0.3.1",
@@ -43,6 +45,8 @@
     "fibers": "^4.0.2",
     "file-loader": "^5.0.2",
     "mini-css-extract-plugin": "^0.9.0",
+    "mocha": "^7.0.1",
+    "mocha-loader": "^4.0.1",
     "node-sass": "^4.13.1",
     "postcss-loader": "^3.0.0",
     "sass": "^1.25.0",
@@ -51,5 +55,9 @@
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1"
+  },
+  "main": "webpack.config.js",
+  "directories": {
+    "test": "test"
   }
 }
