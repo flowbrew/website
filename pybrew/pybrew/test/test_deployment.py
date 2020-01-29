@@ -258,7 +258,7 @@ def test_website_performance_io(URL):
                 assert audit['score'] >= 0.4
 
             elif is_mobile and name == 'first-cpu-idle':
-                assert audit['score'] >= 0.5
+                assert audit['score'] >= 0.4
 
             # elif is_mobile and name == 'interactive':
             #     assert audit['score'] >= 0.5
