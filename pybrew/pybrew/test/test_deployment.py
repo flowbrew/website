@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch
 
 
 @pytest.mark.pybrew
@@ -238,7 +238,7 @@ def test_deploy_to_github_io(
 @pytest.mark.slow
 @pytest.mark.skip_in_local
 @pytest.mark.deployment
-def test_website_performance_io(URL):
+def test_website_performance_io(URL, BRANCH):
     def ___test_io(f, url, is_mobile):
         _f = comp(
             partial(sorted, key=lambda x: x[1]['score']),
@@ -252,6 +252,10 @@ def test_website_performance_io(URL):
         ):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
+
+            elif name == 'is-crawlable':
+                if BRANCH != master_branch():
+                    assert audit['score'] >= 0.75
 
             elif is_mobile and name == 'first-contentful-paint-3g':
                 assert audit['score'] >= 0.4
