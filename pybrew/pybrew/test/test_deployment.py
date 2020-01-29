@@ -273,7 +273,7 @@ def test_website_performance_io(URL, BRANCH):
                     assert audit['score'] >= 0.5
 
             elif is_mobile and name == 'third-party-summary':
-                assert audit['details']['summary']['wastedMs'] < 500
+                assert audit['details']['summary']['wastedMs'] < 650
 
             else:
                 assert audit['score'] >= 0.75
