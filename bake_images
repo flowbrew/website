@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./.github/workflows/scripts/bake_images.py -k $TINIFY_ACCESS_KEY
