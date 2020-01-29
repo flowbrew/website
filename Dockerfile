@@ -30,4 +30,36 @@ RUN pip install \
         more-itertools \
         cachier
 
-RUN npm install
+RUN npm install --global \
+        mocha \
+        @material/button \
+        @material/drawer \
+        @material/form-field \
+        @material/icon-button \
+        @material/list \
+        @material/radio \
+        @material/ripple \
+        @material/textfield \
+        @material/top-app-bar \
+        jquery \
+        js-cookie \
+        lazysizes \
+        @babel/core \
+        @babel/preset-env \
+        autoprefixer \
+        babel-loader \
+        babel-minify-webpack-plugin \
+        core-js \
+        css-loader \
+        extract-loader \
+        fibers \
+        file-loader \
+        mini-css-extract-plugin \
+        node-sass \
+        postcss-loader \
+        sass \
+        sass-loader \
+        style-loader \
+        webpack \
+        webpack-cli \
+        webpack-dev-server
