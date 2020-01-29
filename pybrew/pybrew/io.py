@@ -61,7 +61,7 @@ def _google_pagespeed_io(
 
     depricated = [
         'first-cpu-idle'
-        ]
+    ]
 
     return {
         k: v for k, v in r['lighthouseResult']['audits'].items() if
@@ -411,8 +411,16 @@ def validate_pybrew_io(
         ''')
 
 
+def build_npm_io(repo_path, **kwargs):
+    with Path(repo_path):
+        run_io(f'npm install')
+        run_io(f'npm run test')
+        run_io(f'npm run build')
+
+
 def build_io(**kwargs):
     bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
+    build_npm_io(**kwargs)
     build_jekyll_io(**kwargs)
 
 
@@ -445,8 +453,8 @@ def validate_deployment_io(
     )
 
     baseurl = url + (
-        '' 
-        if local_run or branch == master_branch() else 
+        ''
+        if local_run or branch == master_branch() else
         branch_to_prefix(branch)
     )
 

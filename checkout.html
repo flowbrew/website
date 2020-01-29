@@ -172,7 +172,7 @@ product: Чай матча 60 г – 60 чашек
 
 </form>
 
-<script defer>
+<script>
   product = {{ product | jsonify }};
 
   function read_coupon() {
@@ -191,8 +191,8 @@ product: Чай матча 60 г – 60 чашек
     var price = product.price;
 
     var coupon = read_coupon();
-    var discount = process_coupon(coupon);
-    var expiration = promocode_expiration_in_hours(coupon);
+    var discount = Shop.process_coupon(coupon);
+    var expiration = Shop.promocode_expiration_in_hours(coupon);
 
     var shipping = 0;
     var city = $('input[name=city]:checked').attr('label');
@@ -234,7 +234,7 @@ product: Чай матча 60 г – 60 чашек
 
     if (expiration > 0) {
       $("#expiration_panel").show();
-      $('#priceduration').html(int_to_hours(expiration));
+      $('#priceduration').html(Shop.int_to_hours(expiration));
     } else {
       $("#expiration_panel").hide();
     }
@@ -254,7 +254,7 @@ product: Чай матча 60 г – 60 чашек
   });
 
   function on_coupon_update() {
-    set_promocode(read_coupon());
+    Shop.set_promocode(read_coupon());
     update_state();
   } 
   $('#coupon').change(on_coupon_update);
@@ -284,7 +284,7 @@ product: Чай матча 60 г – 60 чашек
       return;
     }
 
-    ec_checkout_d(product, 3);
+    Shop.ec_checkout_d(product, 3);
 
     var state = update_state();
     state.product = product;
@@ -315,7 +315,7 @@ product: Чай матча 60 г – 60 чашек
           window.location = "{{ '/ошибка' | relative_url }}";
         },
         success: function(response) {
-          ec_purchase(
+          Shop.ec_purchase(
             state.t_id, 
             state.product, 
             state.revenue, 
@@ -343,33 +343,33 @@ product: Чай матча 60 г – 60 чашек
 
   function init_form_reader(product) {
     $("#name").focusout(function() {
-      ec_checkout_d(product, 2);
+      Shop.ec_checkout_d(product, 2);
     });
 
     $(".mdc-text-field__input").focusout(function() {
-      form_input(
+      Shop.form_input(
         $(this).attr("id"), 
         $(this).val()
         );
     });
     
     $("input[type=radio]").change(function() {
-      form_input(
+      Shop.form_input(
         $(this).attr("name"), 
         $(this).attr("label")
         );
     });
   }
 
-  var code = promocode();
-  var discount = process_coupon(code);	
+  var code = Shop.promocode();
+  var discount = Shop.process_coupon(code);	
   if (discount > 0.0) {
-    mdc_set_textfield('#coupon', code);
+    Shop.mdc_set_textfield('#coupon', code);
   }
 
   update_state();
   init_form_reader(product);
 
-  ec_checkout_d(product, 1);
+  Shop.ec_checkout_d(product, 1);
 
 </script>

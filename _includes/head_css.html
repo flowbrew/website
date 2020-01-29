@@ -1,15 +1,13 @@
 {% capture fonts %} {% include css/fonts.css %} {% endcapture %}
 {% capture fontawesome %} {% include css/fa/fontawesome.min.css %} {% endcapture %}
-{% capture material_components_web %} {% include css/material-components-web.min.css %} {% endcapture %}
 {% capture mdc_icon %} {% include css/mdc-icon.css %} {% endcapture %}
-{% capture styles %} {% include css/styles.scss %} {% endcapture %}
 {% capture roboto %} {% include css/roboto.css %} {% endcapture %}
+{% capture bundle %} {% include dist/bundle.css %} {% endcapture %}
 
 <style>
+    {{ mdc_icon }}
     {{ fonts }}
     {{ fontawesome  }}
-    {{ material_components_web }}
-    {{ mdc_icon }}
-    {{ styles | scssify }}
+    {{ bundle  }}
     {{ roboto }}
 </style>

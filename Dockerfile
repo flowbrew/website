@@ -1,4 +1,4 @@
-FROM python:3
+FROM nikolaik/python-nodejs:latest
 
 # Sometimes ruby crashes when building with jekyll
 # I don't know if it will fix it, but there is a chance

@@ -259,5 +259,8 @@ def test_website_performance_io(URL):
     __test(URL + '', False)
     __test(URL + '', True)
 
+    __test(URL + 'checkout.html', False)
+    __test(URL + 'checkout.html', True)
+
     __test(URL + 'blog/7-prichin-pit-chaj-matcha', False)
     __test(URL + 'blog/7-prichin-pit-chaj-matcha', True)

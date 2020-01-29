@@ -1,5 +1,14 @@
 @charset "utf-8";
 
+@import "@material/button/mdc-button";
+@import "@material/drawer/mdc-drawer";
+@import "@material/list/mdc-list";
+@import "@material/textfield/mdc-text-field";
+@import "@material/form-field/mdc-form-field";
+@import "@material/radio/mdc-radio";
+@import "@material/top-app-bar/mdc-top-app-bar";
+@import "@material/icon-button/mdc-icon-button";
+
 $header-height: 64px;
 $gutter-width: 16px;
 $on-dark: rgba(255, 255, 255, 0.84);
@@ -111,7 +120,8 @@ h1 {
   line-height: 4rem;
 }
 
-.offer-top h1, .hero-text h1 {
+.offer-top h1,
+.hero-text h1 {
   @include fancy-title-typography;
   font-size: 3.5rem;
   line-height: 4rem;
@@ -205,7 +215,8 @@ body {
   white-space: nowrap;
 }
 
-a, a:visited {
+a,
+a:visited {
   //white-space: nowrap; // this breaks some pages
   color: $theme-typography-on-bright;
   text-decoration: none;
@@ -823,7 +834,13 @@ $img-zoomin-time-ex: 0.4s;
 }
 
 .footer-background {
-  background-image: linear-gradient(180deg, #ffffff 15%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 70%, #000000 100%)
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 15%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0) 70%,
+    #000000 100%
+  );
 }
 
 .footer-background-img {
@@ -1358,7 +1375,6 @@ main {
 }
 
 @mixin desktop-layout {
-
   .arrow_down {
     margin-top: 2.5rem;
   }
@@ -1369,7 +1385,12 @@ main {
 
   .hero-wrap {
     // height: 100%;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 98%, rgba(255, 255, 255, 255) 100%), url("{{ '/assets/img_gen/tea2.jpg' | relative_url }}");
+    background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0) 98%,
+        rgba(255, 255, 255, 255) 100%
+      ),
+      url("{{ '/assets/img_gen/tea2.jpg' | relative_url }}");
     margin-bottom: 3rem;
   }
 
@@ -1384,13 +1405,12 @@ main {
     font-size: 1.25rem;
   }
 
-  .hero-panel .rewiewsbb{
+  .hero-panel .rewiewsbb {
     margin-top: 2.5rem;
   }
 
   .hero-panel {
-    grid-template-areas:
-      "hero-image hero-image hero-image hero-image hero-image hero-image hero-image hero-text hero-text hero-text hero-text hero-text";
+    grid-template-areas: "hero-image hero-image hero-image hero-image hero-image hero-image hero-image hero-text hero-text hero-text hero-text hero-text";
   }
 
   #offer {
@@ -1427,8 +1447,7 @@ main {
   }
 
   .signature {
-    grid-template-areas:
-      "photo photo photo photo . . . . signature signature signature signature";
+    grid-template-areas: "photo photo photo photo . . . . signature signature signature signature";
   }
 
   footer {
@@ -1450,14 +1469,20 @@ main {
 
   .hero-wrap {
     // height: 100%;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 50%,rgba(255, 255, 255, 255) 65%, rgba(255, 255, 255, 255) 100%), url("{{ '/assets/img_gen/tea1.jpg' | relative_url }}");
+    background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(255, 255, 255, 255) 65%,
+        rgba(255, 255, 255, 255) 100%
+      ),
+      url("{{ '/assets/img_gen/tea1.jpg' | relative_url }}");
     margin-bottom: 0;
   }
 
   .hero-image {
     min-height: 50vh;
   }
-  
+
   .hero-panel h1 {
     font-size: 3rem;
     margin-top: 2rem;
@@ -1470,7 +1495,7 @@ main {
     font-size: 1rem;
   }
 
-  .hero-panel .rewiewsbb{
+  .hero-panel .rewiewsbb {
     // margin-top: 0;
     margin-top: 0.5rem;
   }
@@ -1515,8 +1540,7 @@ main {
   }
 
   .signature {
-    grid-template-areas:
-      "photo photo signature signature";
+    grid-template-areas: "photo photo signature signature";
   }
 
   footer {
