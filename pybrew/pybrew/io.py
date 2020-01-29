@@ -4,6 +4,7 @@ import operator
 import math
 import re
 import tinify
+import time
 import json
 from cachier import cachier
 
@@ -469,6 +470,8 @@ def validate_deployment_io(
 
 
 def cicd_io(repo_path, event_name, **kwargs_):
+    start_time = time.time()
+
     org, name = extract_repo_name_from_origin(git_origin_io(repo_path))
     sha = git_sha_io(repo_path)
 
@@ -492,6 +495,8 @@ def cicd_io(repo_path, event_name, **kwargs_):
         ob_branch_deleted_io(**kwargs)
     else:
         raise Exception(f'Unknown event "{event_name}""')
+
+    assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
 
 
 def ob_branch_deleted_io(**kwargs):
