@@ -1,4 +1,4 @@
-const autoprefixer = require("autoprefixer");
+const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 module.exports = {
   entry: ["./_includes/css/styles.scss", "./_includes/js/shop.js"],
@@ -36,5 +36,8 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new MinifyPlugin()
+  ]
 };
