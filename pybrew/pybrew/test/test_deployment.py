@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry
 
 
 @pytest.mark.pybrew
@@ -285,4 +285,3 @@ def test_website_performance_io(URL):
     _t1(URL + 'blog/7-prichin-pit-chaj-matcha', True)
 
     _t2(URL + '', False)
-    
