@@ -60,7 +60,7 @@ def _google_pagespeed_io(
     r = requests.get(api_url, params=params, headers=headers).json()
 
     depricated = [
-        # 'first-cpu-idle'
+        'first-cpu-idle'
     ]
 
     return {
