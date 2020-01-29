@@ -30,7 +30,8 @@ RUN pip install \
         more-itertools \
         cachier
 
-RUN npm install --global \
+RUN npm update && \
+        npm install --global \
         mocha \
         @material/button \
         @material/drawer \
@@ -55,7 +56,6 @@ RUN npm install --global \
         fibers \
         file-loader \
         mini-css-extract-plugin \
-        node-sass \
         postcss-loader \
         sass \
         sass-loader \
@@ -63,3 +63,4 @@ RUN npm install --global \
         webpack \
         webpack-cli \
         webpack-dev-server
+

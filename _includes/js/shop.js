@@ -3,6 +3,8 @@ import { MDCTopAppBar } from "@material/top-app-bar";
 import { MDCTextField } from "@material/textfield";
 import { MDCRipple } from "@material/ripple";
 
+import { testFun } from "./pure";
+
 import Cookies from "js-cookie";
 import "lazysizes";
 import "lazysizes/plugins/parent-fit/ls.parent-fit";
