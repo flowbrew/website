@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Flow Brew website # this one is tasty",
   "scripts": {
-    "test": "mocha -r esm",
+    "test": "mocha --color -r esm",
     "build": "webpack --color --output-path ./_includes/dist/ --config ./webpack.config.js --mode production",
     "test_build": "webpack --color --output-path ./_includes/dist/ --config ./webpack.config.js --mode development"
   },
