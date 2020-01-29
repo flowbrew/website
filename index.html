@@ -1,7 +1,4 @@
 ---
-redirect_from:
-  - /test
-
 layout: default
 no_skipper: true
 invert_header_color: true
@@ -152,9 +149,9 @@ reviews:
         {% for item in page.images %}
         {% assign id = 'z' | append: forloop.index %}
         {% if forloop.index == 1 %}
-          {% include image_fixed.html id=id class='offer-img left-image ntrk fadein-img' image=item.image alt=item.alt %}
+          {% include image_variant.html id=id class='offer-img left-image ntrk fadein-img' image=item.image alt=item.alt %}
         {% else %}
-          {% include image_fixed.html id=id class='offer-img left-image img-hidden ntrk fadein-img' image=item.image alt=item.alt %}
+          {% include image_variant.html id=id class='offer-img left-image img-hidden ntrk fadein-img' image=item.image alt=item.alt %}
         {% endif %}
         {% endfor %}
       </div>
@@ -177,14 +174,14 @@ reviews:
       </div> 
     </section>
     
-    <script>	
+    <script defer>	
       function update_promotion() {	
-        var code = promocode();	
+        var code = Shop.promocode();	
         if (!code) {	
           return;	
         }	
       
-        var discount = process_coupon(code);	
+        var discount = Shop.process_coupon(code);	
         if (discount <= 0.0) {	
           return;	
         }
@@ -196,15 +193,15 @@ reviews:
           '<span class="old-price">' + old_price + '</span> <span class="new-price">' + new_price + ' руб (-' + (discount*100.0) + '%)</span>'
           );
   
-        var expiration = promocode_expiration_in_hours(code);
+        var expiration = Shop.promocode_expiration_in_hours(code);
         if (expiration > 0) {
-          $('#priceduration').html('<br/><span class="new-price">Цена действительна ' + int_to_hours(expiration) + '</span>');
+          $('#priceduration').html('<br/><span class="new-price">Цена действительна ' + Shop.int_to_hours(expiration) + '</span>');
         }
       }	
       update_promotion();
-      ec_product_details({{ product | jsonify }});	
-      init_preview();	
-      init_zoom();	
+      Shop.ec_product_details({{ product | jsonify }});	
+      Shop.init_preview();	
+      Shop.init_zoom();	
     </script>
 
   <section id="reviews" class="grid">
@@ -260,8 +257,8 @@ reviews:
 
 </div>
 
-<script>
-  update_inventory_quantity({{ product | jsonify }});
+<script defer>
+  Shop.update_inventory_quantity({{ product | jsonify }});
 </script>
 
-<script src="https://www.youtube.com/iframe_api" type="application/javascript"></script>
+<script src="https://www.youtube.com/iframe_api" type="application/javascript" defer></script>

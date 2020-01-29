@@ -4,8 +4,13 @@ import operator
 import math
 import re
 import tinify
+import time
 import json
 from cachier import cachier
+
+
+def secret_io(key):
+    return os.environ[key]
 
 
 @curry
@@ -36,10 +41,47 @@ def cget(cache_dir, url, params, headers):
     return _cget(url, json.dumps(params), json.dumps(headers))
 
 
+def _google_pagespeed_io(
+    google_pagespeed_key,
+    url,
+    category,
+    is_mobile=False
+):
+    api_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
+    headers = {
+        'Accept': 'application/json',
+    }
+    params = {
+        'url': url,
+        'category': category,
+        'strategy': 'mobile' if is_mobile else 'desktop',
+        'key': google_pagespeed_key,
+    }
+
+    r = requests.get(api_url, params=params, headers=headers).json()
+
+    depricated = [
+        # 'first-cpu-idle'
+    ]
+
+    return {
+        k: v for k, v in r['lighthouseResult']['audits'].items() if
+        k not in depricated and v['score'] is not None
+    }
+
+
+def google_test_page_speed_io(**kwarg):
+    return _google_pagespeed_io(category='performance', **kwarg)
+
+
+def google_test_page_seo_io(**kwarg):
+    return _google_pagespeed_io(category='seo', **kwarg)
+
+
 def yandex_speller_io(_text, use_cache=True):
     # «Проверка правописания: Яндекс.Спеллер» http://api.yandex.ru/speller/
     text = _text.replace('γδ', '')
-    
+
     url = 'https://speller.yandex.net/services/spellservice.json/checkText'
     headers = {}
     params = {
@@ -79,6 +121,7 @@ def yandex_speller_io(_text, use_cache=True):
     return comp(list, filterempty)(_make_result(x) for x in r)
 
 
+@try_n_times_decorator(5, 10)
 def glvrd_proofread_io(text, use_cache=True):
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
@@ -163,7 +206,7 @@ def load_yaml_io(path):
 
 def save_yaml_io(path, data):
     with open(path, 'w') as file:
-        yaml.safe_dump(data, file)
+        yaml.safe_dump(data, file, encoding='utf-8', allow_unicode=True)
 
 
 def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
@@ -229,11 +272,14 @@ def github_action_notification_io(
 def cleanup_io(deployment_repo, ref_branch, **kwargs):
     notify_io_ = partial(
         github_action_notification_io,
+        slack_token=secret_io('SLACK_BOT_TOKEN'),
         **kwargs
     )
 
     try:
         remove_from_github_io(
+            github_username=secret_io('GITHUB_WEBSITE_USERNAME'),
+            github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
             target_repo_name=deployment_repo,
             target_branch_name=ref_branch,
             **kwargs
@@ -330,6 +376,8 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
 
     else:
         deploy_to_github_io(
+            github_username=secret_io('GITHUB_WEBSITE_USERNAME'),
+            github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
             path=path,
             target_repo_name=deployment_repo,
             **kwargs
@@ -338,17 +386,18 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
 
 
 def pytest_args(mark, local_run):
-    return f'pytest -vv -l -W ignore::DeprecationWarning --color=yes --durations=10 --pyargs pybrew \
-        -m {mark} \
-        {"--local" if local_run else ""} \
-        {"--runslow" if not local_run else ""} \
-        '
+    return f'''pytest 
+        -vv -l -W ignore::DeprecationWarning 
+        --color=yes 
+        --durations=10 
+        --pyargs pybrew 
+        -m {mark} 
+        {"--local" if local_run else ""} 
+        {"--runslow" if not local_run else ""} 
+        '''
 
 
 def validate_pybrew_io(
-    github_username,
-    github_token,
-    slack_token,
     sha,
     branch,
     test_deployment_repo,
@@ -356,45 +405,73 @@ def validate_pybrew_io(
     local_run,
     **kwargs
 ):
-    run_io(
-        pytest_args('pybrew', local_run) + f'''
-            --SECRET_GITHUB_WEBSITE_USERNAME={github_username} \
-            --SECRET_GITHUB_WEBSITE_TOKEN={github_token} \
-            --SECRET_SLACK_BOT_TOKEN={slack_token} \
-            --SHA={sha} \
-            --BRANCH={branch} \
-            --TEST_REPOSITORY={test_deployment_repo} \
-            --ORGANIZATION={organization}
-        '''.strip('\n').strip()
-    )
+    run_io(pytest_args('pybrew', local_run) + f'''
+        --SHA={sha} 
+        --BRANCH={branch} 
+        --TEST_REPOSITORY={test_deployment_repo} 
+        --ORGANIZATION={organization}
+        ''')
+
+
+def build_npm_io(repo_path, **kwargs):
+    with Path(repo_path):
+        run_io(f'npm install')
+        run_io(f'npm run test')
+        run_io(f'npm run build')
 
 
 def build_io(**kwargs):
-    bake_images_io(**kwargs)
+    bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
+    build_npm_io(**kwargs)
     build_jekyll_io(**kwargs)
 
 
-def validate_build_io(path, branch, local_run, **kwargs):
-    run_io(
-        pytest_args('build', local_run) + f'''
-            --WEBSITE_BUILD_PATH={path} \
-            --BRANCH={branch} \
-        '''.strip('\n').strip()
-    )
+def validate_build_io(
+    path,
+    branch,
+    local_run,
+    **kwargs
+):
+    run_io(pytest_args('build', local_run) + f'''
+        --WEBSITE_BUILD_PATH={path} 
+        --BRANCH={branch}
+        ''')
 
 
 def deploy_io(**kwargs):
     deploy_jekyll_io(**kwargs)
 
 
-def validate_deployment_io(**kwargs):
-    pass
+def validate_deployment_io(
+    repo_path,
+    branch,
+    local_run,
+    **kwargs
+):
+    url = (
+        f'http://127.0.0.1:4000/'
+        if local_run else
+        f'https://{domain_io(repo_path)}/'
+    )
+
+    baseurl = url + (
+        ''
+        if local_run or branch == master_branch() else
+        branch_to_prefix(branch)
+    )
+
+    run_io(pytest_args('deployment', local_run) + f'''
+        --BRANCH={branch} 
+        --URL={baseurl}
+        ''')
 
 
 # ---
 
 
 def cicd_io(repo_path, event_name, **kwargs_):
+    start_time = time.time()
+
     org, name = extract_repo_name_from_origin(git_origin_io(repo_path))
     sha = git_sha_io(repo_path)
 
@@ -418,6 +495,8 @@ def cicd_io(repo_path, event_name, **kwargs_):
         ob_branch_deleted_io(**kwargs)
     else:
         raise Exception(f'Unknown event "{event_name}""')
+
+    assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
 
 
 def ob_branch_deleted_io(**kwargs):
@@ -443,7 +522,11 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
 
 
 def on_branch_updated_io(**kwargs):
-    notify_io_ = partial(github_action_notification_io, **kwargs)
+    notify_io_ = partial(
+        github_action_notification_io,
+        slack_token=secret_io('SLACK_BOT_TOKEN'),
+        **kwargs
+    )
 
     with tmp() as ws:
         try:

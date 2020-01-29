@@ -16,6 +16,7 @@ jobs:
           TINIFY_KEY: ${{ secrets.TINIFY_KEY }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          GOOGLE_PAGESPEED_KEY: ${{ secrets.GOOGLE_PAGESPEED_KEY }}
         run: |
           ./cicd \
             ${{ github.workflow }} \

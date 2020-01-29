@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch
 
 
 @pytest.mark.pybrew
@@ -176,8 +176,6 @@ def test_filesystem_to_dict_io():
 @pytest.mark.slow
 @pytest.mark.pybrew
 def test_deploy_to_github_io(
-    SECRET_GITHUB_WEBSITE_USERNAME,
-    SECRET_GITHUB_WEBSITE_TOKEN,
     ORGANIZATION,
     TEST_REPOSITORY,
     BRANCH,
@@ -222,8 +220,8 @@ def test_deploy_to_github_io(
         with tmp() as td:
             dict_to_filesystem_io(td, fs)
             deploy_to_github_io(
-                github_username=SECRET_GITHUB_WEBSITE_USERNAME,
-                github_token=SECRET_GITHUB_WEBSITE_TOKEN,
+                github_username=secret_io('GITHUB_WEBSITE_USERNAME'),
+                github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
                 organization=ORGANIZATION,
                 target_repo_name=TEST_REPOSITORY,
                 branch=br,
@@ -235,3 +233,56 @@ def test_deploy_to_github_io(
         TEST_REPOSITORY + '/' + p1_.replace('.html', ''),
         SHA
     )
+
+
+@pytest.mark.slow
+@pytest.mark.skip_in_local
+@pytest.mark.deployment
+def test_website_performance_io(URL, BRANCH):
+    def ___test_io(f, url, is_mobile):
+        _f = comp(
+            partial(sorted, key=lambda x: x[1]['score']),
+            lambda x: x.items(),
+            f
+        )
+        for name, audit in _f(
+            google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
+            url=url,
+            is_mobile=is_mobile
+        ):
+            if name == 'uses-long-cache-ttl':
+                assert audit['score'] >= 0.3
+
+            elif name == 'is-crawlable':
+                if BRANCH == master_branch():
+                    assert audit['score'] >= 0.75
+
+            elif is_mobile and name == 'first-contentful-paint-3g':
+                assert audit['score'] >= 0.4
+
+            elif is_mobile and name == 'first-cpu-idle':
+                assert audit['score'] >= 0.4
+
+            elif is_mobile and name == 'interactive':
+                assert audit['score'] >= 0.5
+
+            elif is_mobile and name == 'max-potential-fid':
+                assert audit['score'] >= 0.5
+
+            elif is_mobile and name == 'third-party-summary':
+                assert audit['details']['summary']['wastedMs'] < 500
+
+            else:
+                assert audit['score'] >= 0.75
+
+    tests = product(
+        [google_test_page_speed_io, google_test_page_seo_io],
+        [
+            URL + '',
+            URL + 'checkout.html',
+            URL + 'blog/7-prichin-pit-chaj-matcha'
+        ],
+        [False, True],
+    )
+
+    [___test_io(*x) for x in tests]

@@ -2,7 +2,7 @@ import os
 import slack
 import shlex
 import pytest
-from subprocess import check_output, CalledProcessError
+from subprocess import check_output, CalledProcessError, run as srun
 import random
 import string
 import tempfile
@@ -112,10 +112,10 @@ def files_io(path):
             yield os.path.join(r, f)
 
 
-def run_io(command_line):
+def run_io(command_line_):
+    command_line = command_line_.replace('\n', ' ').strip('\n').strip()
     print('>', command_line)
-    if os.system(command_line):
-        raise Exception(f'Exception while executing "{command_line}"')
+    srun(command_line, shell=True, check=True)
 
 
 def notification_io(channel, text, token):

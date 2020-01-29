@@ -1,5 +1,14 @@
 @charset "utf-8";
 
+@import "@material/button/mdc-button";
+@import "@material/drawer/mdc-drawer";
+@import "@material/list/mdc-list";
+@import "@material/textfield/mdc-text-field";
+@import "@material/form-field/mdc-form-field";
+@import "@material/radio/mdc-radio";
+@import "@material/top-app-bar/mdc-top-app-bar";
+@import "@material/icon-button/mdc-icon-button";
+
 $header-height: 64px;
 $gutter-width: 16px;
 $on-dark: rgba(255, 255, 255, 0.84);
@@ -17,97 +26,6 @@ $theme-typography-font-fancy: "Annabelle", arial;
 
 $theme-error: #c70039;
 $theme-on-error: rgba(255, 255, 255, 0.84);
-
-// Typography
-
-@font-face {
-  font-family: 'Graphik';
-  src: url("{{ '/assets/fonts/Graphik-Regular-Web.eot' | relative_url }}");
-  src: url("{{ '/assets/fonts/Graphik-Regular-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-Regular-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-Regular-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-Regular-Web.ttf' | relative_url }}") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-
-@font-face {
-  font-family: 'Graphik';
-  src: url("{{ '/assets/fonts/Graphik-Bold-Web.eot' | relative_url }}");
-  src: url("{{ '/assets/fonts/Graphik-Bold-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-Bold-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-Bold-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-Bold-Web.ttf' | relative_url }}") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: block;
-}
-
-@font-face {
-  font-family: 'Graphik';
-  src: url("{{ '/assets/fonts/Graphik-RegularItalic-Web.eot' | relative_url }}");
-  src: url("{{ '/assets/fonts/Graphik-RegularItalic-Web.eot?#iefix' | relative_url }}") format("embedded-opentype"),url("{{ '/assets/fonts/Graphik-RegularItalic-Web.woff2' | relative_url }}") format("woff2"),url("{{ '/assets/fonts/Graphik-RegularItalic-Web.woff' | relative_url }}") format("woff"),url("{{ '/assets/fonts/Graphik-RegularItalic-Web.ttf' | relative_url }}") format("truetype");
-  font-weight: normal;
-  font-style: italic;
-  font-display: block;
-}
-
-@font-face {
-  font-family: 'Graphik';
-  src: url("{{ '/assets/fonts/Graphik-Black-Web.eot' | relative_url }}");
-  src: url("{{ '/assets/fonts/Graphik-Black-Web.eot?#iefix' | relative_url }}") format('embedded-opentype'),url("{{ '/assets/fonts/Graphik-Black-Web.woff2' | relative_url }}") format('woff2'),url("{{ '/assets/fonts/Graphik-Black-Web.woff' | relative_url }}") format('woff'),url("{{ '/assets/fonts/Graphik-Black-Web.ttf' | relative_url }}") format('truetype'),url("{{ '/assets/fonts/Graphik-Black-Web.svg#Graphik-Black-Web' | relative_url }}") format('svg');
-  font-weight: 900;
-  font-style: normal;
-  font-display: block;
-}
-
-// google
-
-/* cyrillic-ext */
-@font-face {
-  font-family: "Lora";
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-  src: local("Lora Regular"), local("Lora-Regular"),
-    url("{{ '/assets/fonts/0QIvMX1D_JOuMwf7I_FMl_GW8g.woff2' | relative_url }}") format("woff2");
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
-    U+FE2E-FE2F;
-}
-/* cyrillic */
-@font-face {
-  font-family: "Lora";
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-  src: local("Lora Regular"), local("Lora-Regular"),
-    url("{{ '/assets/fonts/0QIvMX1D_JOuMw77I_FMl_GW8g.woff2' | relative_url }}") format("woff2");
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-/* latin-ext */
-@font-face {
-  font-family: "Lora";
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-  src: local("Lora Regular"), local("Lora-Regular"),
-    url("{{ '/assets/fonts/0QIvMX1D_JOuMwT7I_FMl_GW8g.woff2' | relative_url }}") format("woff2");
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
-    U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-  font-family: "Lora";
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-  src: local("Lora Regular"), local("Lora-Regular"),
-    url("{{ '/assets/fonts/0QIvMX1D_JOuMwr7I_FMl_E.woff2' | relative_url }}") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-    U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: Annabelle;
-  src: url("{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}");
-  font-display: block;
-}
-//
 
 @mixin regular-typography {
   font-family: $theme-typography-font-a;
@@ -202,7 +120,8 @@ h1 {
   line-height: 4rem;
 }
 
-.offer-top h1, .hero-text h1 {
+.offer-top h1,
+.hero-text h1 {
   @include fancy-title-typography;
   font-size: 3.5rem;
   line-height: 4rem;
@@ -284,7 +203,7 @@ h5 {
 
 body {
   counter-reset: links;
-  display: none;
+  // display: none;
 }
 
 .link-counter::before {
@@ -296,7 +215,8 @@ body {
   white-space: nowrap;
 }
 
-a, a:visited {
+a,
+a:visited {
   //white-space: nowrap; // this breaks some pages
   color: $theme-typography-on-bright;
   text-decoration: none;
@@ -914,7 +834,13 @@ $img-zoomin-time-ex: 0.4s;
 }
 
 .footer-background {
-  background-image: linear-gradient(180deg, #ffffff 15%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 70%, #000000 100%)
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 15%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0) 70%,
+    #000000 100%
+  );
 }
 
 .footer-background-img {
@@ -1449,7 +1375,6 @@ main {
 }
 
 @mixin desktop-layout {
-
   .arrow_down {
     margin-top: 2.5rem;
   }
@@ -1460,7 +1385,12 @@ main {
 
   .hero-wrap {
     // height: 100%;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 98%, rgba(255, 255, 255, 255) 100%), url("{{ '/assets/img/tea2.jpg' | relative_url }}");
+    background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0) 98%,
+        rgba(255, 255, 255, 255) 100%
+      ),
+      url("{{ '/assets/img_gen/tea2.jpg' | relative_url }}");
     margin-bottom: 3rem;
   }
 
@@ -1475,13 +1405,12 @@ main {
     font-size: 1.25rem;
   }
 
-  .hero-panel .rewiewsbb{
+  .hero-panel .rewiewsbb {
     margin-top: 2.5rem;
   }
 
   .hero-panel {
-    grid-template-areas:
-      "hero-image hero-image hero-image hero-image hero-image hero-image hero-image hero-text hero-text hero-text hero-text hero-text";
+    grid-template-areas: "hero-image hero-image hero-image hero-image hero-image hero-image hero-image hero-text hero-text hero-text hero-text hero-text";
   }
 
   #offer {
@@ -1518,8 +1447,7 @@ main {
   }
 
   .signature {
-    grid-template-areas:
-      "photo photo photo photo . . . . signature signature signature signature";
+    grid-template-areas: "photo photo photo photo . . . . signature signature signature signature";
   }
 
   footer {
@@ -1541,14 +1469,20 @@ main {
 
   .hero-wrap {
     // height: 100%;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0) 50%,rgba(255, 255, 255, 255) 65%, rgba(255, 255, 255, 255) 100%), url("{{ '/assets/img/tea1.jpg' | relative_url }}");
+    background-image: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(255, 255, 255, 255) 65%,
+        rgba(255, 255, 255, 255) 100%
+      ),
+      url("{{ '/assets/img_gen/tea1.jpg' | relative_url }}");
     margin-bottom: 0;
   }
 
   .hero-image {
     min-height: 50vh;
   }
-  
+
   .hero-panel h1 {
     font-size: 3rem;
     margin-top: 2rem;
@@ -1561,7 +1495,7 @@ main {
     font-size: 1rem;
   }
 
-  .hero-panel .rewiewsbb{
+  .hero-panel .rewiewsbb {
     // margin-top: 0;
     margin-top: 0.5rem;
   }
@@ -1606,8 +1540,7 @@ main {
   }
 
   .signature {
-    grid-template-areas:
-      "photo photo signature signature";
+    grid-template-areas: "photo photo signature signature";
   }
 
   footer {

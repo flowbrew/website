@@ -30,9 +30,13 @@
 
     <meta name="yandex-verification" content="a37366d53e5bb5b6" />
 
-    {% include head_script.html %}
-    {% include tags.html %}
+    <link rel="preconnect" href="https://www.tidiochat.com">
+    <link rel="preconnect" href="https://marketingplatform.google.com">
+    <link rel="preconnect" href="https://www.google.com">
+    <link rel="preconnect" href="https://www.googletagmanager.com/">
 
+    {% include head_script.html %}
+  
     {% unless page.light_page %}
     <link rel="preload" href="{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}" as="font" type="font/ttf" crossorigin />
     {% endunless %}
@@ -53,7 +57,6 @@
         настройках вашего браузера.
       </div>
     </noscript>
-    {% include scripts.html %}
     {% include navbar.html %} 
     {% include header.html invert_header_color=page.invert_header_color %}
 

@@ -29,3 +29,6 @@ terraform.tfstate
 
 assets/img_gen*
 nohup.out
+
+node_modules/
+dist/

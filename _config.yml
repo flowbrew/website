@@ -1,4 +1,11 @@
-﻿exclude: ['checkout/', 'watch', 'bake_images', 'README.md', 'pybrew']
+﻿exclude:
+  - checkout/
+  - watch
+  - bake_images
+  - README.md
+  - pybrew
+  - .cache
+  - node_modules
 
 # Dynamic params
 baseurl: /
@@ -27,7 +34,9 @@ whitelist:
 
 sass:
   style: compressed
-  sass_dir: _sass
+  load_paths:
+      - _sass
+      - node_modules
 
 permalink: /blog/:title
   
