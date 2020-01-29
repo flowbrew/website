@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io
 
 
 @pytest.mark.pybrew
@@ -239,11 +239,12 @@ def test_deploy_to_github_io(
 @pytest.mark.skip_in_local
 @pytest.mark.deployment
 def test_website_performance_io(URL):
-    def __test(url, is_mobile):
+    @curry
+    def __test(f, url, is_mobile):
         _f = comp(
             partial(sorted, key=lambda x: x[1]['score']),
             lambda x: x.items(),
-            google_test_page_speed_io
+            f
         )
         for name, audit in _f(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
@@ -271,11 +272,17 @@ def test_website_performance_io(URL):
             else:
                 assert audit['score'] >= 0.75
 
-    __test(URL + '', False)
-    __test(URL + '', True)
+    _t1 = __test(google_test_page_speed_io)
+    _t2 = __test(google_test_page_seo_io)
 
-    __test(URL + 'checkout.html', False)
-    __test(URL + 'checkout.html', True)
+    _t1(URL + '', False)
+    _t1(URL + '', True)
 
-    __test(URL + 'blog/7-prichin-pit-chaj-matcha', False)
-    __test(URL + 'blog/7-prichin-pit-chaj-matcha', True)
+    _t1(URL + 'checkout.html', False)
+    _t1(URL + 'checkout.html', True)
+
+    _t1(URL + 'blog/7-prichin-pit-chaj-matcha', False)
+    _t1(URL + 'blog/7-prichin-pit-chaj-matcha', True)
+
+    _t2(URL + '', False)
+    

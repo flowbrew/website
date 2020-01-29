@@ -120,6 +120,7 @@ def yandex_speller_io(_text, use_cache=True):
     return comp(list, filterempty)(_make_result(x) for x in r)
 
 
+@try_n_times_decorator(5, 10)
 def glvrd_proofread_io(text, use_cache=True):
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
