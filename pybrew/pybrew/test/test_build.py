@@ -133,7 +133,7 @@ def test_validate_website_links(WEBSITE_BUILD_PATH, BRANCH):
                 # dh key too small, unsecure connection, can't validate
                 return
 
-            @try_n_times_decorator(n=5, timeout=5)
+            @try_n_times_decorator(n=5, timeout=15)
             def _check_code_io():
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Mobile Safari/537.36',
