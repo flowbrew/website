@@ -3,9 +3,9 @@ import boto3
 from botocore.exceptions import ClientError
 
 
-def email(subject, body):
+def email(addr, subject, body):
     SENDER = "Checkout Bot <checkout@flowbrew.ru>"
-    RECIPIENT = "ak@flowbrew.ru"
+    RECIPIENT = addr
     AWS_REGION = "us-east-1"
     CHARSET = "UTF-8"
 
@@ -49,7 +49,13 @@ def lambda_handler(event, context):
     params_str = '\n'.join(f'{k} = {v}' for k, v in params.items())
     body = 'Получен новый заказ!\n\n' + params_str
 
-    if not email(subject, body):
+    addr = (
+        "bot@flowbrew.ru"
+        if params['email'].strip() == 'bot@flowbrew.ru' else 
+        "ak@flowbrew.ru"
+    )
+
+    if not email(addr, subject, body):
         return {
             'statusCode': 500,
             'body': json.dumps({'result': 'error'}),

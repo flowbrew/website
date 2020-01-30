@@ -17,6 +17,8 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           GOOGLE_PAGESPEED_KEY: ${{ secrets.GOOGLE_PAGESPEED_KEY }}
+          YANDEX_BOT_EMAIL: ${{ secrets.YANDEX_BOT_EMAIL }}
+          YANDEX_BOT_TOKEN: ${{ secrets.YANDEX_BOT_TOKEN }}
         run: |
           ./cicd \
             ${{ github.workflow }} \
