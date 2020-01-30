@@ -369,11 +369,11 @@ def github_commit_url_io(org, name, sha):
 
 def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
     if local_run:
-        delete_dir_io('./_local_deployment')
-        dict_to_filesystem_io(
-            './_local_deployment',
-            filesystem_to_dict_io(path)
-        )
+        run_io(f'jekyll serve \
+                --detach \
+                -H 0.0.0.0 -P 4000 \
+                -s {path} \
+                -d ./_local_deployment')
 
     else:
         deploy_to_github_io(
@@ -417,7 +417,7 @@ def validate_pybrew_io(
 def build_npm_io(repo_path, local_run, **kwargs):
     with Path(repo_path):
         delete_dir_io('./node_modules')
-
+        
         run_io(f'npm install')
 
         if local_run:
@@ -531,6 +531,12 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
     )
 
 
+def block_if_local(local_run, **kwargs):
+    if local_run:
+        print('END')
+        while True:
+            time.sleep(1)
+
 def on_branch_updated_io(**kwargs):
     notify_io_ = partial(
         github_action_notification_io,
@@ -555,6 +561,8 @@ def on_branch_updated_io(**kwargs):
             validate_deployment_io(**kwargs)
 
             notify_io_(success=True)
+
+            block_if_local(**kwargs)
 
         except Exception as _:
             notify_io_(success=False)

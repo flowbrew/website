@@ -22,6 +22,7 @@ def extract_all_htmls_io(path):
 
 
 @pytest.mark.build
+@pytest.mark.skip_in_local
 def test_baked_images_io(WEBSITE_BUILD_PATH):
     def _validate_path(path):
         with Path(os.path.join(WEBSITE_BUILD_PATH, 'assets')):

@@ -18,7 +18,7 @@ RUN gem install \
 
 RUN pip install --upgrade pip
 RUN pip install \
-        pytest \
+        "pytest!=5.3.4" \
         pyyaml \
         beautifulsoup4 \
         path \
@@ -31,3 +31,9 @@ RUN pip install \
         cachier
 
 RUN npm update
+
+WORKDIR /website_dependencies
+COPY package.json package.json  
+RUN npm install
+
+WORKDIR /
