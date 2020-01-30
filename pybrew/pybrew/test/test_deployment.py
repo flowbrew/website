@@ -8,25 +8,18 @@ from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p,
 
 
 @pytest.fixture(scope="module", autouse=False)
-def SELENIUM():
-    run_chrome_io('chrome', 4444)
-
-    driver = webdriver.Remote(
-        "http://127.0.0.1:4444/wd/hub",
-        DesiredCapabilities.CHROME
-    )
-
+def selenium_driver():
+    driver = run_chrome_io()
     try:
         yield driver
     finally:
-        driver.close()
-        stop_chrome_io('chrome')
+        stop_chrome_io(driver)
 
 
-@pytest.mark.deployment
-def test_website_performance_io(URL, BRANCH, SELENIUM):
-    SELENIUM.get("http://www.python.org")
-    assert SELENIUM.title == 'LOL INTERNET'
+@pytest.mark.pybrew
+def test_selenium_io(URL, BRANCH, selenium_driver):
+    selenium_driver.get("http://www.python.org")
+    assert 'Python'in selenium_driver.title
 
 
 @pytest.mark.pybrew
@@ -288,7 +281,7 @@ def test_website_performance_io(URL, BRANCH):
                 assert audit['score'] >= 0.4
 
             elif is_mobile and name == 'interactive':
-                assert audit['score'] >= 0.5
+                assert audit['score'] >= 0.4
 
             elif is_mobile and name == 'mainthread-work-breakdown':
                 assert audit['score'] >= 0.7
@@ -297,7 +290,7 @@ def test_website_performance_io(URL, BRANCH):
                 if url.endswith('checkout.html'):
                     assert audit['score'] >= 0.3
                 else:
-                    assert audit['score'] >= 0.5
+                    assert audit['score'] >= 0.4
 
             elif is_mobile and name == 'third-party-summary':
                 assert audit['details']['summary']['wastedMs'] < 650

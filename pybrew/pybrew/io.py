@@ -6,21 +6,35 @@ import re
 import tinify
 import time
 import json
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
 from cachier import cachier
 
 
-def run_chrome_io(name, port):
-    run_io(f'''
-        docker run -d 
-            --name {name}
-            -e START_XVFB=false 
-            -p {port}:{port} 
-            selenium/standalone-chrome
-        ''')
+def run_chrome_io():
+    options = webdriver.ChromeOptions()
+    options.add_argument('--disable-extensions')
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_experimental_option(
+        'prefs', {
+            'download.default_directory': '/download',
+            'download.prompt_for_download': False,
+            'download.directory_upgrade': True,
+            'safebrowsing.enabled': True
+        }
+    )
+
+    driver = webdriver.Chrome(chrome_options=options)
+    driver.implicitly_wait(10)
+    return driver
 
 
-def stop_chrome_io(name):
-    run_io(f'docker rm -f {name}')
+def stop_chrome_io(driver):
+    driver.quit()
 
 
 def secret_io(key):
@@ -537,7 +551,8 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
         return
 
     if local_run:
-        run_io(f'rsync -a --exclude "node_modules" {repo_path} /local_website/')
+        run_io(
+            f'rsync -a --exclude "node_modules" {repo_path} /local_website/')
 
     else:
         github_push_io(
