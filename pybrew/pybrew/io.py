@@ -11,9 +11,19 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 from cachier import cachier
+from contextlib import contextmanager
 
 
-def run_chrome_io():
+@contextmanager
+def chrome_io(*args, **kwds):
+    driver = run_chrome_io(*args, **kwds)
+    try:
+        yield driver
+    finally:
+        stop_chrome_io(driver)
+
+
+def run_chrome_io(*args, **kwds):
     options = webdriver.ChromeOptions()
     options.add_argument('--disable-extensions')
     options.add_argument('--headless')
