@@ -526,3 +526,7 @@ def extract_repo_name_from_origin(origin):
 def delete_dir_io(path):
     if os.path.isdir(path):
         shutil.rmtree(path)
+
+
+def copy_dir_io(source, dest):
+    run_io(f'yes | cp -rf {source}/. {dest}')

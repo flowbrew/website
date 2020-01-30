@@ -9,6 +9,20 @@ import json
 from cachier import cachier
 
 
+def run_chrome_io(name, port):
+    run_io(f'''
+        docker run -d 
+            --name {name}
+            -e START_XVFB=false 
+            -p {port}:{port} 
+            selenium/standalone-chrome
+        ''')
+
+
+def stop_chrome_io(name):
+    run_io(f'docker rm -f {name}')
+
+
 def secret_io(key):
     return os.environ[key]
 
@@ -416,8 +430,6 @@ def validate_pybrew_io(
 
 def build_npm_io(repo_path, local_run, **kwargs):
     with Path(repo_path):
-        delete_dir_io('./node_modules')
-        
         run_io(f'npm install')
 
         if local_run:
@@ -521,21 +533,26 @@ def ob_branch_deleted_io(**kwargs):
 
 
 def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
-    if local_run or not git_has_unstaged_changes_io():
+    if not git_has_unstaged_changes_io():
         return
 
-    github_push_io(
-        path=repo_path,
-        message=f'CI/CD updated state of {branch}',
-        allow_empty=False
-    )
+    if local_run:
+        run_io(f'rsync -a --exclude "node_modules" {repo_path} /local_website/')
+
+    else:
+        github_push_io(
+            path=repo_path,
+            message=f'CI/CD updated state of {branch}',
+            allow_empty=False
+        )
 
 
 def block_if_local(local_run, **kwargs):
     if local_run:
-        print('END')
+        print('Execution ended. Press Ctrl+C to exit.')
         while True:
             time.sleep(1)
+
 
 def on_branch_updated_io(**kwargs):
     notify_io_ = partial(

@@ -60,9 +60,8 @@ if [ "$1" != "local" ]; then
 fi
 
 docker rm -f cicd
-docker run --rm --name cicd \
+docker run -t --rm --name cicd \
     ${RUNPARAMS} \
-    -v "$PWD":/usr/src/website \
-    -w /usr/src/website \
+    -v "$PWD":/local_website \
     -p 127.0.0.1:4000:4000 \
     "$DOCKERNAME" bash -c "$DOCKER_COMMAND"

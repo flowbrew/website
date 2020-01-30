@@ -33,7 +33,8 @@ setup(
         'fn',
         'tinify',
         'more-itertools',
-        'cachier'
+        'cachier',
+        'selenium'
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

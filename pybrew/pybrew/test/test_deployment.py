@@ -2,7 +2,31 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, run_chrome_io, stop_chrome_io
+
+
+@pytest.fixture(scope="module", autouse=False)
+def SELENIUM():
+    run_chrome_io('chrome', 4444)
+
+    driver = webdriver.Remote(
+        "http://127.0.0.1:4444/wd/hub",
+        DesiredCapabilities.CHROME
+    )
+
+    try:
+        yield driver
+    finally:
+        driver.close()
+        stop_chrome_io('chrome')
+
+
+@pytest.mark.deployment
+def test_website_performance_io(URL, BRANCH, SELENIUM):
+    SELENIUM.get("http://www.python.org")
+    assert SELENIUM.title == 'LOL INTERNET'
 
 
 @pytest.mark.pybrew

@@ -8,7 +8,8 @@ RUN apt-get -y update && apt-get -y install \
         apt-utils \
         ruby-full \
         build-essential \
-        zlib1g-dev
+        zlib1g-dev \
+        rsync
 
 RUN gem install \
         jekyll \
@@ -28,12 +29,12 @@ RUN pip install \
         fn \
         tinify \
         more-itertools \
-        cachier
+        cachier \
+        selenium
 
-RUN npm update
+RUN npm update && npm install -g npm
 
-WORKDIR /website_dependencies
+WORKDIR /website
 COPY package.json package.json  
 RUN npm install
-
-WORKDIR /
+COPY . /website
