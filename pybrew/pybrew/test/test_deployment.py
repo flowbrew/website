@@ -302,7 +302,6 @@ def test_website_performance_io(URL, BRANCH):
         [google_test_page_speed_io, google_test_page_seo_io],
         [
             URL + '',
-            URL + 'checkout.html',
             URL + 'blog/7-prichin-pit-chaj-matcha'
         ],
         [False, True],
