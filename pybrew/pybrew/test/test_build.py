@@ -120,7 +120,7 @@ def test_validate_website_links(WEBSITE_BUILD_PATH, BRANCH):
                 assert link.startswith('/' + branch_to_prefix(BRANCH))
             with Path(WEBSITE_BUILD_PATH):
                 link2 = __unlink(link)
-                link3 = re.sub(rf'^/({branch_to_prefix(BRANCH)})', '', link2)
+                link3 = re.sub(rf'^/{branch_to_prefix(BRANCH)}', '/', link2)
                 assert os.stat('.' + link3).st_size > 0
 
         elif link.startswith('./'):
