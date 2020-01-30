@@ -40,7 +40,7 @@ def emails_io(addr, port, login, password):
     m.logout()
 
 
-# @pytest.mark.slow
+@pytest.mark.slow
 @pytest.mark.deployment
 def test_checkout_io(URL):
     with chrome_io() as chrome:
