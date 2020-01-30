@@ -150,7 +150,7 @@ export function init_preview() {
 
 function init_accordion() {
   $(".question-h").universalClick(function() {
-    t = $(this);
+    var t = $(this);
 
     // Add the correct active class
     if (t.closest(".question").hasClass("active")) {
