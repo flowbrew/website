@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io
 
 
 @pytest.mark.pybrew
@@ -57,3 +57,18 @@ def test_try_n_times_decorator():
     with pytest.raises(Exception) as e:
         broken_io()
     assert 'Fail!' in str(e.value)
+
+
+@pytest.mark.pybrew
+def test_copy_dir_io():
+    filesystem = {
+        'lol': b'internet',
+        'lol2/lol': b'some internet'
+    }
+
+    with tmp() as td1, tmp() as td2:
+        dict_to_filesystem_io(td1, filesystem)
+
+        dst = os.path.join(td2, '/results')
+        copy_dir_io(td1, dst)
+        assert filesystem_to_dict_io(dst) == filesystem

@@ -6,7 +6,45 @@ import re
 import tinify
 import time
 import json
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
 from cachier import cachier
+from contextlib import contextmanager
+
+
+@contextmanager
+def chrome_io(*args, **kwds):
+    driver = run_chrome_io(*args, **kwds)
+    try:
+        yield driver
+    finally:
+        stop_chrome_io(driver)
+
+
+def run_chrome_io(*args, **kwds):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--disable-extensions')
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_experimental_option(
+        'prefs', {
+            'download.default_directory': '/download',
+            'download.prompt_for_download': False,
+            'download.directory_upgrade': True,
+            'safebrowsing.enabled': True
+        }
+    )
+
+    driver = webdriver.Chrome(chrome_options=options)
+    driver.implicitly_wait(10)
+    return driver
+
+
+def stop_chrome_io(driver):
+    driver.quit()
 
 
 def secret_io(key):
@@ -369,11 +407,11 @@ def github_commit_url_io(org, name, sha):
 
 def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
     if local_run:
-        delete_dir_io('./_local_deployment')
-        dict_to_filesystem_io(
-            './_local_deployment',
-            filesystem_to_dict_io(path)
-        )
+        run_io(f'jekyll serve \
+                --detach \
+                -H 0.0.0.0 -P 4000 \
+                -s {path} \
+                -d ./_local_deployment')
 
     else:
         deploy_to_github_io(
@@ -416,8 +454,6 @@ def validate_pybrew_io(
 
 def build_npm_io(repo_path, local_run, **kwargs):
     with Path(repo_path):
-        delete_dir_io('./node_modules')
-
         run_io(f'npm install')
 
         if local_run:
@@ -521,14 +557,26 @@ def ob_branch_deleted_io(**kwargs):
 
 
 def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
-    if local_run or not git_has_unstaged_changes_io():
+    if not git_has_unstaged_changes_io():
         return
 
-    github_push_io(
-        path=repo_path,
-        message=f'CI/CD updated state of {branch}',
-        allow_empty=False
-    )
+    if local_run:
+        run_io(
+            f'rsync -a --exclude "node_modules" {repo_path} /local_website/')
+
+    else:
+        github_push_io(
+            path=repo_path,
+            message=f'CI/CD updated state of {branch}',
+            allow_empty=False
+        )
+
+
+def block_if_local(local_run, **kwargs):
+    if local_run:
+        print('Execution ended. Press Ctrl+C to exit.')
+        while True:
+            time.sleep(1)
 
 
 def on_branch_updated_io(**kwargs):
@@ -555,6 +603,8 @@ def on_branch_updated_io(**kwargs):
             validate_deployment_io(**kwargs)
 
             notify_io_(success=True)
+
+            block_if_local(**kwargs)
 
         except Exception as _:
             notify_io_(success=False)
