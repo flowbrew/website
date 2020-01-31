@@ -32,3 +32,5 @@ nohup.out
 
 node_modules/
 dist/
+package/
+*.zip

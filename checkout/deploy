@@ -8,4 +8,4 @@ cd package
 zip -r9 ${OLDPWD}/function.zip .
 cd $OLDPWD
 zip -g function.zip lambda_function.py
-aws lambda update-function-code --function-name checkout --zip-file fileb://function.zip
+aws --region eu-west-1 lambda update-function-code --function-name checkout --zip-file fileb://function.zip
