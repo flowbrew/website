@@ -1,9 +1,15 @@
+const path = require('path');
+
 const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 module.exports = {
-  entry: ["./_includes/css/styles.scss", "./_includes/js/shop.js"],
+  entry: [
+    "./_includes/css/styles.scss", 
+    "./_includes/js/shop.js", 
+    "./_includes/js/ab.js"
+  ],
   output: {
-    filename: "bundle.js",
+    filename: "[name].bundle.js",
     libraryTarget: "var",
     library: "Shop"
   },
