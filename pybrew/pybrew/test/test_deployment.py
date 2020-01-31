@@ -1,17 +1,84 @@
 import pytest
 import tempfile
 import os
+
+import imaplib
+import email
+from email import policy
+import time
+from urllib.parse import unquote, urlparse
+
 from path import Path
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, make_a_bot_url
 
 
-# @pytest.mark.deployment
-# def test_checkout_io(URL):
-#     with chrome_io() as chrome:
-#         chrome.get(URL)
-#         assert 'Python'in chrome.title
+def emails_io(addr, port, login, password):
+    m = imaplib.IMAP4_SSL(addr, port)
+    m.login(login, password)
+    m.select()
+    _, message_numbers = m.search(None, 'ALL')
+
+    for num in message_numbers[0].split():
+        _, data = m.fetch(num, '(RFC822)')
+
+        msg = email.message_from_string(
+            data[0][1].decode('utf-8'),
+            policy=policy.default
+        )
+
+        yield {
+            'from': msg['From'],
+            'subject': msg['Subject'],
+            'body': msg.get_payload(decode=True).decode(
+                msg.get_content_charset()
+            )
+        }
+
+    m.close()
+    m.logout()
+
+
+def url_path(driver):
+    return urlparse(driver.current_url).path.strip()
+
+
+@pytest.mark.slow
+@pytest.mark.deployment
+def test_checkout_io(URL):
+    with chrome_io() as chrome:
+        comp(chrome.get, make_a_bot_url)(URL)
+        chrome.find_element_by_id('buy-button-1').click()
+        assert 'checkout' in url_path(chrome)
+
+        token = random_str()
+
+        chrome.find_element_by_id("name").send_keys(token)
+        chrome.find_element_by_id("email").send_keys("bot@flowbrew.ru")
+        chrome.find_element_by_id("phone").send_keys("9999999")
+        chrome.find_element_by_xpath(
+            "//*[@id='checkout_form']/div[2]/div[3]/div/input"
+        ).click()
+        chrome.find_element_by_id("address").send_keys("Улица 2 д2")
+        chrome.find_element_by_id("coupon").send_keys("FLB10")
+        chrome.find_element_by_id("comment").send_keys("Ignore, E2E test")
+        chrome.find_element_by_id('buy').click()
+
+        @try_n_times_decorator(n=5, timeout=15)
+        def __check_email():
+            emails = emails_io(
+                'imap.yandex.ru', 993,
+                secret_io('YANDEX_BOT_EMAIL'),
+                secret_io('YANDEX_BOT_TOKEN')
+            )
+            assert any(
+                token in x['body'] for x in emails
+            ), 'Order was received via email'
+
+        __check_email()
+
+        assert 'спасибо' in unquote(chrome.current_url)
 
 
 @pytest.mark.slow
@@ -291,6 +358,9 @@ def test_website_performance_io(URL, BRANCH):
                     assert audit['score'] >= 0.3
                 else:
                     assert audit['score'] >= 0.4
+
+            elif is_mobile and name == 'first-meaningful-paint':
+                assert audit['score'] >= 0.7
 
             elif is_mobile and name == 'third-party-summary':
                 assert audit['details']['summary']['wastedMs'] < 650

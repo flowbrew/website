@@ -51,6 +51,34 @@ def secret_io(key):
     return os.environ[key]
 
 
+def make_a_bot_url(url):
+    return url + '?IS_FLB_BOT=True&'
+
+
+def wait_until_deployed_by_sha_io(url: str, sha: str):
+    wait_until_html_deployed_io(
+        url,
+        lambda soup:
+        soup.find('meta', {'name': 'github-commit-sha'}).get('content') == sha
+    )
+
+
+def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
+    wait_until_deployed_by_sha_io(
+        'https://' + domain + '/' + branch_to_prefix(branch),
+        sha
+    )
+
+
+@try_n_times_decorator(n=12, timeout=10)
+def wait_until_html_deployed_io(url: str, f):
+    with chrome_io() as chrome:
+        comp(chrome.get, make_a_bot_url)(url)
+        html = chrome.page_source
+        soup = BeautifulSoup(html, features="html.parser")
+        assert f(soup), f'Page {url} is not valid'
+
+
 @curry
 def cpost(cache_dir, url, data, headers):
 
@@ -405,13 +433,17 @@ def github_commit_url_io(org, name, sha):
     return f'https://github.com/{org}/{name}/commit/{sha}'
 
 
-def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
+def deploy_jekyll_io(path, local_run, deployment_repo, sha, **kwargs):
     if local_run:
         run_io(f'jekyll serve \
                 --detach \
                 -H 0.0.0.0 -P 4000 \
                 -s {path} \
                 -d ./_local_deployment')
+        wait_until_deployed_by_sha_io(
+            'http://127.0.0.1:4000/',
+            sha
+        )
 
     else:
         deploy_to_github_io(
@@ -421,18 +453,22 @@ def deploy_jekyll_io(path, local_run, deployment_repo, **kwargs):
             target_repo_name=deployment_repo,
             **kwargs
         )
-        wait_until_deployed_by_sha_io_(domain=domain_io(path), **kwargs)
+        wait_until_deployed_by_sha_io_(
+            domain=domain_io(path),
+            sha=sha,
+            **kwargs
+        )
 
 
 def pytest_args(mark, local_run):
-    return f'''pytest 
-        -vv -l -W ignore::DeprecationWarning 
-        --color=yes 
-        --durations=10 
-        --pyargs pybrew 
-        -m {mark} 
-        {"--local" if local_run else ""} 
-        {"--runslow" if not local_run else ""} 
+    return f'''pytest
+        -vv -l
+        --color=yes
+        --durations=10
+        --pyargs pybrew
+        -m {mark}
+        {"--local" if local_run else ""}
+        {"--runslow" if not local_run else ""}
         '''
 
 
@@ -445,9 +481,9 @@ def validate_pybrew_io(
     **kwargs
 ):
     run_io(pytest_args('pybrew', local_run) + f'''
-        --SHA={sha} 
-        --BRANCH={branch} 
-        --TEST_REPOSITORY={test_deployment_repo} 
+        --SHA={sha}
+        --BRANCH={branch}
+        --TEST_REPOSITORY={test_deployment_repo}
         --ORGANIZATION={organization}
         ''')
 
@@ -479,7 +515,7 @@ def validate_build_io(
     **kwargs
 ):
     run_io(pytest_args('build', local_run) + f'''
-        --WEBSITE_BUILD_PATH={path} 
+        --WEBSITE_BUILD_PATH={path}
         --BRANCH={branch}
         ''')
 
@@ -507,7 +543,7 @@ def validate_deployment_io(
     )
 
     run_io(pytest_args('deployment', local_run) + f'''
-        --BRANCH={branch} 
+        --BRANCH={branch}
         --URL={baseurl}
         ''')
 

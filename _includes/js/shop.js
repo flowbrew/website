@@ -445,6 +445,14 @@ function init_navigation() {
   });
 }
 
+export function is_flb_bot_session() {
+  return (
+    getUrlParam("IS_FLB_BOT", "")
+      .toLowerCase()
+      .trim() == "true"
+  );
+}
+
 export function mdc_set_textfield(selector, value) {
   var tf = new MDCTextField(
     document.querySelector(selector).closest(".mdc-text-field")

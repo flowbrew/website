@@ -472,33 +472,6 @@ def url_(domain: str, branch: str, path: str):
     return f'https://{domain}/{branch}/{path}'
 
 
-def wait_until_deployed_by_sha_io(url: str, sha: str):
-    wait_until_html_deployed_io(
-        url,
-        lambda soup:
-        soup.find('meta', {'name': 'github-commit-sha'}).get('content') == sha
-    )
-
-
-def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
-    wait_until_deployed_by_sha_io(
-        'https://' + domain + '/' + branch_to_prefix(branch),
-        sha
-    )
-
-
-def wait_until_html_deployed_io(url: str, f):
-    # There is a some sort of a cache that doesn't allow
-    # to retrieve html page via GET in a loop.
-    # So, we wait X seconds and try to check deployment only ONCE
-    time.sleep(180.0)
-
-    html = http_get_io(url)
-    soup = BeautifulSoup(html, features="html.parser")
-    if not f(soup):
-        raise Exception(f'Invalid html {url}')
-
-
 @curry
 def first(default, iterable):
     """Returns first element of iterable
