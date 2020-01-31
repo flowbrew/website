@@ -2,12 +2,22 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io
 
 
 @pytest.mark.pybrew
 def test_my_fun():
     assert my_fun(4) == 5
+
+
+@pytest.mark.slow
+@pytest.mark.pybrew
+def test_wait_until_html_deployed_io():
+    wait_until_html_deployed_io(
+        'https://example.com',
+        lambda soup:
+            'Example Domain' in soup.find('h1').text
+    )
 
 
 @pytest.mark.pybrew

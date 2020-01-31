@@ -1,0 +1,11 @@
+rm -rf ./package
+rm -rf ./function.zip
+mkdir ./package
+
+pip install --target ./package requests
+
+cd package
+zip -r9 ${OLDPWD}/function.zip .
+cd $OLDPWD
+zip -g function.zip lambda_function.py
+aws --region eu-west-1 lambda update-function-code --function-name deploy_validator --zip-file fileb://function.zip
