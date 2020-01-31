@@ -72,7 +72,7 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
 
 @try_n_times_decorator(n=10, timeout=10)
 def wait_until_html_deployed_io(url: str, f):
-    url = f"https://kev8cnkcrk.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
+    api_url = f"https://kev8cnkcrk.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
     content = {
         "url": url,
     }
@@ -82,7 +82,7 @@ def wait_until_html_deployed_io(url: str, f):
         'Pragma': 'no-cache',
         'Expires': '0',
     }
-    html = requests.post(url, json=content, headers=headers).text
+    html = requests.post(api_url, json=content, headers=headers).text
     soup = BeautifulSoup(html, features="html.parser")
     assert f(soup), f'Page {url} is not valid'
 
