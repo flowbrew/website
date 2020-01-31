@@ -70,7 +70,7 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
     )
 
 
-@try_n_times_decorator(n=12, timeout=10)
+@try_n_times_decorator(n=30, timeout=10)
 def wait_until_html_deployed_io(url: str, f):
     with chrome_io() as chrome:
         comp(chrome.get, make_a_bot_url)(url)
