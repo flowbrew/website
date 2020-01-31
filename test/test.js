@@ -1,5 +1,7 @@
 var assert = require("assert");
+
 var pure = require("../_includes/js/pure");
+var ab = require("../_includes/js/ab");
 
 describe("Test", function() {
   describe("#testFun()", function() {

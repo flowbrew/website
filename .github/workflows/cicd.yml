@@ -1,6 +1,14 @@
 name: CI/CD
 
-on: [push, delete]
+on:
+  push:
+    branches:
+      - "*"
+  delete:
+    branches:
+      - "*"
+  schedule:
+    - cron: "*/15 * * * *"
 
 jobs:
   build-deploy:

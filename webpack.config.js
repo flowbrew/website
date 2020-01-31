@@ -1,18 +1,8 @@
-const path = require('path');
+const path = require("path");
 
-const MinifyPlugin = require('babel-minify-webpack-plugin');
+const MinifyPlugin = require("babel-minify-webpack-plugin");
 
-module.exports = {
-  entry: [
-    "./_includes/css/styles.scss", 
-    "./_includes/js/shop.js", 
-    "./_includes/js/ab.js"
-  ],
-  output: {
-    filename: "[name].bundle.js",
-    libraryTarget: "var",
-    library: "Shop"
-  },
+var config = {
   module: {
     rules: [
       {
@@ -40,10 +30,28 @@ module.exports = {
         query: {
           presets: ["@babel/preset-env"]
         }
-      },
+      }
     ]
   },
-  plugins: [
-    new MinifyPlugin()
-  ]
+  plugins: [new MinifyPlugin()]
 };
+
+var shopConfig = Object.assign({}, config, {
+  entry: ["./_includes/css/styles.scss", "./_includes/js/shop.js"],
+  output: {
+    filename: "shop.bundle.js",
+    libraryTarget: "var",
+    library: "Shop"
+  }
+});
+
+var abConfig = Object.assign({}, config, {
+  entry: ["./_includes/js/ab.js"],
+  output: {
+    filename: "ab.bundle.js",
+    libraryTarget: "var",
+    library: "AB"
+  }
+});
+
+module.exports = [shopConfig, abConfig];

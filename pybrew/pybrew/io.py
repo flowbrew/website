@@ -501,6 +501,8 @@ def build_npm_io(repo_path, local_run, **kwargs):
         else:
             run_io(f'npm run build')
 
+        run_io(f'ls -a {repo_path}_includes/dist')
+
         run_io(f'npm run test')
 
 
