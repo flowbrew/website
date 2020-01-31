@@ -72,9 +72,11 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
 
 @try_n_times_decorator(n=25, timeout=10)
 def wait_until_html_deployed_io(url: str, f):
+    # This is a workaround of caching on get requests in Github Actions
     api_url = f"https://wvailztjei.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
     content = {
         "url": url,
+        "random": random_str()
     }
     headers = {
         'User-Agent': 'Github Action',
