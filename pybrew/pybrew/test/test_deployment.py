@@ -74,7 +74,7 @@ def test_checkout_io(URL):
             )
             assert any(
                 token in x['body'] for x in emails
-            ), 'Order was received via email'
+            ), 'Order wasnt received via '
 
         __check_email()
 

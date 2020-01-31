@@ -72,7 +72,7 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
 
 @try_n_times_decorator(n=20, timeout=10)
 def wait_until_html_deployed_io(url: str, f):
-    api_url = f"https://kev8cnkcrk.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
+    api_url = f"https://wvailztjei.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
     content = {
         "url": url,
     }
