@@ -11,11 +11,7 @@ from urllib.parse import unquote, urlparse
 from path import Path
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io
-
-
-def make_a_bot_url(url):
-    return url + '?IS_FLB_BOT=True&'
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, make_a_bot_url
 
 
 def emails_io(addr, port, login, password):
@@ -53,8 +49,6 @@ def url_path(driver):
 def test_checkout_io(URL):
     with chrome_io() as chrome:
         comp(chrome.get, make_a_bot_url)(URL)
-        assert '/' == url_path(chrome)
-
         chrome.find_element_by_id('buy-button-1').click()
         assert 'checkout' in url_path(chrome)
 
