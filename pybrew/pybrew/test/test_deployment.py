@@ -6,12 +6,16 @@ import imaplib
 import email
 from email import policy
 import time
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 from path import Path
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io
+
+
+def make_a_bot_url(url):
+    return url + '?IS_FLB_BOT=True&'
 
 
 def emails_io(addr, port, login, password):
@@ -40,13 +44,19 @@ def emails_io(addr, port, login, password):
     m.logout()
 
 
+def url_path(driver):
+    return urlparse(driver.current_url).path.strip()
+
+
 @pytest.mark.slow
 @pytest.mark.deployment
 def test_checkout_io(URL):
     with chrome_io() as chrome:
-        chrome.get(URL)
+        comp(chrome.get, make_a_bot_url)(URL)
+        assert '/' == url_path(chrome)
+
         chrome.find_element_by_id('buy-button-1').click()
-        assert 'checkout' in chrome.current_url
+        assert 'checkout' in url_path(chrome)
 
         token = random_str()
 
@@ -68,7 +78,9 @@ def test_checkout_io(URL):
                 secret_io('YANDEX_BOT_EMAIL'),
                 secret_io('YANDEX_BOT_TOKEN')
             )
-            assert any(token in x['body'] for x in emails)
+            assert any(
+                token in x['body'] for x in emails
+            ), 'Order was received via email'
 
         __check_email()
 
@@ -352,6 +364,9 @@ def test_website_performance_io(URL, BRANCH):
                     assert audit['score'] >= 0.3
                 else:
                     assert audit['score'] >= 0.4
+
+            elif is_mobile and name == 'first-meaningful-paint':
+                assert audit['score'] >= 0.7
 
             elif is_mobile and name == 'third-party-summary':
                 assert audit['details']['summary']['wastedMs'] < 650
