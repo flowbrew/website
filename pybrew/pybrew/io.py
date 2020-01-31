@@ -70,13 +70,21 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
     )
 
 
-@try_n_times_decorator(n=30, timeout=10)
+@try_n_times_decorator(n=10, timeout=10)
 def wait_until_html_deployed_io(url: str, f):
-    with chrome_io() as chrome:
-        comp(chrome.get, make_a_bot_url)(url)
-        html = chrome.page_source
-        soup = BeautifulSoup(html, features="html.parser")
-        assert f(soup), f'Page {url} is not valid'
+    url = f"https://kev8cnkcrk.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
+    content = {
+        "url": url,
+    }
+    headers = {
+        'User-Agent': 'Github Action',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+    }
+    html = requests.post(url, json=content, headers=headers).text
+    soup = BeautifulSoup(html, features="html.parser")
+    assert f(soup), f'Page {url} is not valid'
 
 
 @curry
@@ -440,10 +448,6 @@ def deploy_jekyll_io(path, local_run, deployment_repo, sha, **kwargs):
                 -H 0.0.0.0 -P 4000 \
                 -s {path} \
                 -d ./_local_deployment')
-        wait_until_deployed_by_sha_io(
-            'http://127.0.0.1:4000/',
-            sha
-        )
 
     else:
         deploy_to_github_io(
