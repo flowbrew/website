@@ -73,7 +73,7 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
 @try_n_times_decorator(n=25, timeout=10)
 def wait_until_html_deployed_io(url: str, f):
     # This is a workaround of caching on get requests in Github Actions
-    api_url = f"https://wvailztjei.execute-api.eu-west-1.amazonaws.com/default/deploy_validator"
+    api_url = f"https://wvailztjei.execute-api.eu-west-1.amazonaws.com/default/deploy_validator?random=" + random_str()
     content = {
         "url": url,
         "random": random_str()
@@ -583,10 +583,16 @@ def cicd_io(repo_path, event_name, **kwargs_):
         on_branch_updated_io(**kwargs)
     elif event_name == 'delete':
         ob_branch_deleted_io(**kwargs)
+    elif event_name == 'schedule':
+        on_schedule(**kwargs)
     else:
         raise Exception(f'Unknown event "{event_name}""')
 
     assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
+
+
+def on_schedule(**kwargs):
+    pass
 
 
 def ob_branch_deleted_io(**kwargs):
