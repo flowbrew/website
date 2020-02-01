@@ -2,12 +2,47 @@ import pytest
 import tempfile
 import os
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic, extract_key
 
 
 @pytest.mark.pybrew
 def test_my_fun():
     assert my_fun(4) == 5
+
+
+@pytest.mark.pybrew
+def test_x():
+    pass
+    # tests = [
+    #     {
+    #         'pull_requests': [
+    #             {
+    #                 'branch': 'a',
+    #                 'last_commit_time': 100,
+    #                 'labels': ['l1', 'l2'],
+    #             }
+    #         ],
+    #         'visitors_per_day': 100,
+    #         'traffic_allocation': {
+    #             'master': 0.8,
+    #             'a': 0.1,
+    #             'b': 0.1,
+    #         }
+    #     },
+    #     {
+    #         'pull_requests': [('a', 100), ('b', 200), ('c', 300)],
+    #         'visitors_per_day': 100,
+    #         'traffic_allocation': {
+    #             'master': 0.8,
+    #             'a': 0.1,
+    #             'b': 0.1,
+    #         }
+    #     },
+    # ]
+
+    # for test in tests:
+    #     args, result = extract_key(test, 'traffic_allocation')
+    #     assert allocate_traffic(*args) == result
 
 
 @pytest.mark.slow

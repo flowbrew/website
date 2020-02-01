@@ -236,6 +236,10 @@ def dict_to_filesystem_io(mount_path: str, data: dict) -> str:
     )
 
 
+def extract_key(d, key):
+    return ({k: v for k, v in d.items() if k != key}, d.get(key, None))
+
+
 def random_str(size=16, chars=string.ascii_lowercase):
     return ''.join(random.choice(chars) for x in range(size))
 
@@ -503,3 +507,7 @@ def delete_dir_io(path):
 
 def copy_dir_io(source, dest):
     run_io(f'yes | cp -rf {source}/. {dest}')
+
+
+def allocate_traffic(pull_requests, visitors_per_day):
+    pass
