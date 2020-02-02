@@ -351,7 +351,7 @@ def test_website_performance_io(URL, BRANCH):
                 assert audit['score'] >= 0.4
 
             elif is_mobile and name == 'mainthread-work-breakdown':
-                assert audit['score'] >= 0.7
+                assert audit['score'] >= 0.6
 
             elif is_mobile and name == 'max-potential-fid':
                 if url.endswith('checkout.html'):

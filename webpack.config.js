@@ -46,11 +46,11 @@ var shopConfig = Object.assign({}, config, {
 });
 
 var abConfig = Object.assign({}, config, {
-  entry: ["./_includes/js/ab.js"],
+  entry: ["./_includes/js/split.js"],
   output: {
-    filename: "ab.bundle.js",
+    filename: "split.bundle.js",
     libraryTarget: "var",
-    library: "AB"
+    library: "Split"
   }
 });
 

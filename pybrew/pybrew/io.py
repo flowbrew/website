@@ -590,7 +590,6 @@ def cicd_io(repo_path, event_name, **kwargs_):
 
     assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
 
-
 def on_schedule(**kwargs):
     pass
 
