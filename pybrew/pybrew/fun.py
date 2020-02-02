@@ -570,6 +570,69 @@ def _label_io(op, github_token, labelable_id, label_id, mid=None):
 
 
 @curry
+def create_split_test_label_io(github_token, pull_request):
+    return create_label_io(
+        github_token=github_token,
+        pull_request=pull_request,
+        name=split_test_label(),
+        color='a2eeef',
+        description='The branch is receiving live traffic',
+        mid=None
+    )
+
+
+@curry
+def create_label_io(
+    github_token,
+    pull_request,
+    name,
+    color,
+    description,
+    mid=None
+):
+    mid = random_str() if not mid else mid
+    query = '''
+    mutation (
+        $repositoryId: ID!, 
+        $color: String!,
+        $description: String,
+        $name: String,
+        $mutation_id: String
+    ) {
+        createLabel(input: {
+            clientMutationId: $mutation_id,
+            color: $color,
+            description: $description,
+            name: $name,
+            repositoryId: $repositoryId,
+        }) {
+            clientMutationId
+            label {
+                id
+            }
+        }
+    }
+    '''
+    return requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'mutation_id': mid,
+                'color': color,
+                'description': description,
+                'name': name,
+                'repositoryId': pull_request['node']['repository']['id'],
+            }
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+            'Accept': 'application/vnd.github.bane-preview+json',
+        },
+    ).json()['data']['createLabel']['clientMutationId']
+
+
+@curry
 def _label_io_(op, github_token, pull_request, label):
     labels = labels_io(
         github_token=github_token,
@@ -674,6 +737,7 @@ def pull_requests_io(github_token, organization, repo_name):
                 baseRefName
                 title
                 repository {
+                    id
                     name
                     owner {
                         login

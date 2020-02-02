@@ -96,7 +96,8 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
                 "headRefName": "pull_request_test",
                 "baseRefName": "master",
                 "repository": {
-                    "name": "website",
+                    "id": "MDEwOlJlcG9zaXRvcnkyMzUzMzI5MDk=",
+                    "name": "test-website-deployment",
                     "owner": {
                         "login": "flowbrew"
                     }
