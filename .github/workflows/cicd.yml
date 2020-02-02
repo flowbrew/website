@@ -31,7 +31,7 @@ jobs:
             ${{ github.event_name }} \
             ${{ github.event.ref }}
 
-  split-testing:
+  split-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

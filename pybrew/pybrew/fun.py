@@ -12,6 +12,7 @@ import yaml
 import re
 import shutil
 import more_itertools
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
 from path import Path
@@ -81,6 +82,14 @@ force = compose(any, map(bottom))
 
 def my_fun(x):
     return x + 1
+
+
+def split_test_label() -> str:
+    return 'SPLIT TESTING'
+
+
+def split_test_stale():
+    return tdlt(days=5)
 
 
 def master_branch() -> str:
@@ -290,7 +299,6 @@ def github_enable_pages_site_io(
         headers=headers,
         auth=(username, token)
     ).json()
-    print(r)
     return r
 
 
@@ -474,6 +482,317 @@ def delete_github_repo_io(
 
 def url_(domain: str, branch: str, path: str):
     return f'https://{domain}/{branch}/{path}'
+
+
+def merge_pull_request_io(github_token, pull_request, mid=None):
+    mid = random_str() if not mid else mid
+    query = '''
+    mutation ($mutation_id: String, $pull_request_id: ID!) {
+        mergePullRequest(input: {
+            clientMutationId: $mutation_id, 
+            pullRequestId:  $pull_request_id,
+            mergeMethod: SQUASH
+        }) {
+            clientMutationId
+        }
+    }
+    '''
+    return requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'mutation_id': mid,
+                'pull_request_id': pull_request['node']['id']
+            }
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+        }
+    ).json()['data']['mergePullRequest']['clientMutationId']
+
+
+def close_pull_request_io(github_token, pull_request, mid=None):
+    mid = random_str() if not mid else mid
+    query = '''
+    mutation ($mutation_id: String, $pull_request_id: ID!) {
+        closePullRequest(input: {
+            clientMutationId: $mutation_id, 
+            pullRequestId:  $pull_request_id
+        }) {
+            clientMutationId
+        }
+    }
+    '''
+    return requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'mutation_id': mid,
+                'pull_request_id': pull_request['node']['id']
+            }
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+        }
+    ).json()['data']['closePullRequest']['clientMutationId']
+
+
+@curry
+def _label_io(op, github_token, labelable_id, label_id, mid=None):
+    mid = random_str() if not mid else mid
+    query = '''
+    mutation ($label_id: ID!, $labelable_id: ID!, $mutation_id: String) {
+        %s(input: {
+            clientMutationId: $mutation_id,
+            labelableId: $labelable_id,
+            labelIds: [$label_id]
+        }) {
+            clientMutationId
+        }
+    }
+    ''' % op
+    return requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'mutation_id': mid,
+                'labelable_id': labelable_id,
+                'label_id': label_id,
+            }
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+        },
+    ).json()['data'][op]['clientMutationId']
+
+
+@curry
+def _label_io_(op, github_token, pull_request, label):
+    labels = labels_io(
+        github_token=github_token,
+        organization=pull_request['node']['repository']['owner']['login'],
+        repo_name=pull_request['node']['repository']['name'],
+    )
+
+    return _label_io(
+        op,
+        github_token=github_token,
+        labelable_id=pull_request['node']['id'],
+        label_id=next(x['id'] for x in labels if x['name'] == label)
+    )
+
+
+remove_label_by_name_io = _label_io_('removeLabelsFromLabelable')
+add_label_by_name_io = _label_io_('addLabelsToLabelable')
+
+
+@curry
+def deep_get(keys, dictionary):
+    return reduce(
+        lambda d, key: d[key],
+        dictionary,
+        keys
+    )
+
+
+@curry
+def deep_set(keys, value, dictionary):
+    h, *t = keys
+
+    return {
+        **dictionary,
+        **(
+            {h: deep_set(t, value, dictionary.get(h))}
+            if t else
+            {h: value}
+        )
+    }
+
+
+@curry
+def deep_transform(keys, f, dictionary):
+    try:
+        v = deep_get(keys, dictionary)
+    except KeyError:
+        return dictionary
+    return deep_set(
+        keys,
+        f(v),
+        dictionary,
+    )
+
+
+@curry
+def deep_map_f(keys, f, dictionary):
+    return deep_transform(keys, comp(list, map(f)), dictionary)
+
+
+@curry
+def labels_io(github_token, organization, repo_name):
+    query = '''
+    query ($owner: String!, $name: String!){
+        repository(owner: $owner, name: $name) {
+            labels(last:100) {
+                nodes {
+                    id
+                    name
+                }
+            }
+        }
+    }
+    '''
+    return requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'owner': organization,
+                'name': repo_name,
+            }
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+        }
+    ).json()['data']['repository']['labels']['nodes']
+
+
+@curry
+def pull_requests_io(github_token, organization, repo_name):
+    query = '''
+        query ($owner: String!, $name: String!, $master: String!){
+        repository(owner: $owner, name: $name) {
+            pullRequests(last:100, baseRefName: $master) {
+            edges{
+                node{
+                id
+                number
+                state
+                headRefName
+                baseRefName
+                title
+                repository {
+                    name
+                    owner {
+                        login
+                    }
+                }
+                mergeStateStatus
+                commits(last: 1) {
+                    nodes{
+                    commit {
+                        pushedDate
+                        oid
+                    }
+                    }
+                }
+                timelineItems(last: 100, itemTypes: [LABELED_EVENT UNLABELED_EVENT]) {
+                    nodes {
+                    ... on LabeledEvent {
+                        label { name }
+                        createdAt
+                    }
+                    ... on UnlabeledEvent {
+                        label { name }
+                        removedAt: createdAt
+                    }
+                    }
+                }
+                }
+            }
+            }
+        }
+        }
+    '''
+    transform_pr = comp_(
+        deep_map_f(
+            ['node', 'commits', 'nodes'],
+            deep_transform(['commit', 'pushedDate'], s2t),
+        ),
+        deep_map_f(
+            ['node', 'timelineItems', 'nodes'],
+            deep_transform(['createdAt'], s2t),
+        ),
+        deep_map_f(
+            ['node', 'timelineItems', 'nodes'],
+            deep_transform(['removedAt'], s2t),
+        ),
+    )
+    return pipe(
+        requests.post(
+            'https://api.github.com/graphql',
+            json={
+                'query': query,
+                'variables': {
+                    'owner': organization,
+                    'name': repo_name,
+                    'master':  master_branch(),
+                }
+            },
+            headers={
+                'Authorization': 'token ' + github_token,
+                'Accept': 'application/vnd.github.merge-info-preview+json',
+            }
+        ).json()['data']['repository']['pullRequests']['edges'],
+        map(transform_pr),
+        list
+    )
+
+
+def is_green_pull_request(pull_request):
+    return pull_request.get('mergeStateStatus', None) == 'CLEAN'
+
+
+@curry
+def sorted_(key, data, reverse=True):
+    return sorted(data, key=key, reverse=reverse)
+
+
+@curry
+def max_(key, data, default=None):
+    return max(data, key=key, default=default)
+
+
+s2t = comp(datetime.fromisoformat, lambda x: x.replace('Z', ''))
+
+
+def t2s(x):
+    return x.isoformat(timespec='seconds') + 'Z'
+
+
+tdlt = timedelta
+
+
+def is_stale_pull_request(current_time, pull_request):
+    last_action = pipe(
+        pull_request.get('timelineItems', {}).get('nodes', []),
+        filter(
+            lambda x:
+                x.get('label', {}).get('name', None) == split_test_label()
+        ),
+        max_(
+            lambda x: (
+                x.get('createdAt')
+                if 'createdAt' in x else
+                x.get('removedAt')
+            ),
+            default={}
+        )
+    )
+
+    return 'createdAt' in last_action and (
+        current_time - last_action.get('createdAt')
+    ) >= split_test_stale()
+
+
+def allocate_traffic_to_pull_requests(traffic_per_day, pull_requests):
+    return None
+
+
+def apply_traffic_allocation_io(traffic_allocation):
+    pass
 
 
 @curry

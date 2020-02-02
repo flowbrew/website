@@ -584,14 +584,51 @@ def cicd_io(repo_path, event_name, **kwargs_):
     elif event_name == 'delete':
         ob_branch_deleted_io(**kwargs)
     elif event_name == 'schedule':
-        on_schedule(**kwargs)
+        on_schedule_io(**kwargs)
     else:
         raise Exception(f'Unknown event "{event_name}""')
 
     assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
 
-def on_schedule(**kwargs):
+
+@curry
+def mapif(f, filter_f):
+    return comp(map(f), filter(filter_f))
+
+
+merge_green_pull_requests_io = mapif(
+    merge_pull_request_io, is_green_pull_request
+)
+
+
+close_staled_pull_requests_io = mapif(
+    close_pull_request_io, is_stale_pull_request
+)
+
+
+def allocate_traffic_to_pull_requests_io(pull_requests):
+    current_traffic_per_day = 20
+    traffic_allocation = allocate_traffic_to_pull_requests(
+        current_traffic_per_day,
+        pull_requests
+    )
+    apply_traffic_allocation_io(traffic_allocation)
+    return pull_requests
+
+
+def manage_pull_requests_io(branch, **kwargs):
+    pipe(
+        pull_requests_io(),
+        merge_green_pull_requests_io,
+        close_staled_pull_requests_io,
+        allocate_traffic_to_pull_requests_io,
+        force
+    )
+
+
+def on_schedule_io(**kwargs):
     pass
+    # manage_pull_requests_io(**kwargs)
 
 
 def ob_branch_deleted_io(**kwargs):
