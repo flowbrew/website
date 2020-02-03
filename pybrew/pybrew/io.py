@@ -6,6 +6,7 @@ import re
 import tinify
 import time
 import json
+from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -592,43 +593,73 @@ def cicd_io(repo_path, event_name, **kwargs_):
 
 
 @curry
-def mapif(f, filter_f):
-    return comp(map(f), filter(filter_f))
+def allocate_traffic_to_pull_requests_io(github_token, pull_requests):
+    if not pull_requests:
+        return
 
-
-merge_green_pull_requests_io = mapif(
-    merge_pull_request_io, is_green_pull_request
-)
-
-
-close_staled_pull_requests_io = mapif(
-    close_pull_request_io, is_stale_pull_request
-)
-
-
-def allocate_traffic_to_pull_requests_io(pull_requests):
     current_traffic_per_day = 20
-    traffic_allocation = allocate_traffic_to_pull_requests(
+
+    allocation = allocate_traffic_to_pull_requests(
         current_traffic_per_day,
         pull_requests
     )
-    apply_traffic_allocation_io(traffic_allocation)
-    return pull_requests
+
+    not_active = [
+        x for x in pull_requests
+        if x['node']['headRefName'] not in allocation.keys()
+    ]
+
+    repository_id = pull_requests[0]['node']['repository']['id']
+    create_split_test_label_io(github_token, repository_id)
+    [add_split_test_label_io(github_token, x) for x in active]
+    [remove_split_test_label_io(github_token, x) for x in not_active]
+
+    # current_traffic_per_day = 20
+    # traffic_allocation = allocate_traffic_to_pull_requests(
+    #     current_traffic_per_day,
+    #     pull_requests
+    # )
+    # apply_traffic_allocation_io(traffic_allocation)
+    # return pull_requests
+    # apply_traffic_allocation_io,
 
 
-def manage_pull_requests_io(branch, **kwargs):
+def manage_pull_requests_io(
+    branch,
+    organization,
+    repo_name,
+    **kwargs
+):
+    github_token = secret_io('GITHUB_WEBSITE_TOKEN')
+
+    def prs():
+        return pull_requests_io(github_token, organization, repo_name)
+
+    def merge_green_pull_requests_io(pull_requests):
+        [
+            merge_pull_request_io(github_token, x)
+            for x in pull_requests if is_green_pull_request(x)
+        ]
+        return prs()
+
+    def close_stale_pull_requests_io(pull_requests):
+        current_time = datetime.utcnow()
+        [
+            close_pull_request_io(github_token, x)
+            for x in pull_requests if is_stale_pull_request(current_time, x)
+        ]
+        return prs()
+
     pipe(
-        pull_requests_io(),
+        prs(),
         merge_green_pull_requests_io,
-        close_staled_pull_requests_io,
-        allocate_traffic_to_pull_requests_io,
-        force
+        close_stale_pull_requests_io,
+        allocate_traffic_to_pull_requests_io(github_token),
     )
 
 
 def on_schedule_io(**kwargs):
     pass
-    # manage_pull_requests_io(**kwargs)
 
 
 def ob_branch_deleted_io(**kwargs):
@@ -675,6 +706,9 @@ def on_branch_updated_io(**kwargs):
     with tmp() as ws:
         try:
             validate_pybrew_io(**kwargs)
+
+            if kwargs['branch'] == master_branch():
+                manage_pull_requests_io(**kwargs)
 
             build_io(dest=ws, **kwargs)
             validate_build_io(path=ws, **kwargs)

@@ -24,7 +24,7 @@ from toolz.functoolz import identity
 from functools import partial, reduce as reduce_, lru_cache
 
 from fn.iters import flatten
-from itertools import chain, product
+from itertools import chain, product, tee, filterfalse
 
 
 def chain_(x): return chain(*x)
@@ -484,6 +484,7 @@ def url_(domain: str, branch: str, path: str):
     return f'https://{domain}/{branch}/{path}'
 
 
+@curry
 def merge_pull_request_io(github_token, pull_request, mid=None):
     mid = random_str() if not mid else mid
     query = '''
@@ -512,6 +513,7 @@ def merge_pull_request_io(github_token, pull_request, mid=None):
     ).json()['data']['mergePullRequest']['clientMutationId']
 
 
+@curry
 def close_pull_request_io(github_token, pull_request, mid=None):
     mid = random_str() if not mid else mid
     query = '''
@@ -570,10 +572,10 @@ def _label_io(op, github_token, labelable_id, label_id, mid=None):
 
 
 @curry
-def create_split_test_label_io(github_token, pull_request):
+def create_split_test_label_io(github_token, repository_id):
     return create_label_io(
         github_token=github_token,
-        pull_request=pull_request,
+        repository_id=repository_id,
         name=split_test_label(),
         color='a2eeef',
         description='The branch is receiving live traffic',
@@ -584,7 +586,7 @@ def create_split_test_label_io(github_token, pull_request):
 @curry
 def create_label_io(
     github_token,
-    pull_request,
+    repository_id,
     name,
     color,
     description,
@@ -622,7 +624,7 @@ def create_label_io(
                 'color': color,
                 'description': description,
                 'name': name,
-                'repositoryId': pull_request['node']['repository']['id'],
+                'repositoryId': repository_id,
             }
         },
         headers={
@@ -633,7 +635,7 @@ def create_label_io(
 
 
 @curry
-def _label_io_(op, github_token, pull_request, label):
+def _label_io_(op, label, github_token, pull_request):
     labels = labels_io(
         github_token=github_token,
         organization=pull_request['node']['repository']['owner']['login'],
@@ -648,8 +650,15 @@ def _label_io_(op, github_token, pull_request, label):
     )
 
 
-remove_label_by_name_io = _label_io_('removeLabelsFromLabelable')
-add_label_by_name_io = _label_io_('addLabelsToLabelable')
+remove_split_test_label_io = _label_io_(
+    'removeLabelsFromLabelable',
+    split_test_label()
+)
+
+add_split_test_label_io = _label_io_(
+    'addLabelsToLabelable',
+    split_test_label()
+)
 
 
 @curry
@@ -857,6 +866,14 @@ def allocate_traffic_to_pull_requests(traffic_per_day, pull_requests):
 
 def apply_traffic_allocation_io(traffic_allocation):
     pass
+
+
+@curry
+def partition(pred, iterable):
+    yes, no = [], []
+    for d in iterable:
+        (yes if pred(d) else no).append(d)
+    return yes, no
 
 
 @curry

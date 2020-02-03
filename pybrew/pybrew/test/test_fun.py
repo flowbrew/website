@@ -83,6 +83,31 @@ def test_labels_io(ORGANIZATION, TEST_REPOSITORY):
         )
     ]
 
+sdfs
+
+@pytest.mark.pybrew
+def test_allocate_traffic_to_pull_requests():
+    def _pr(headRefName, state, time):
+        return {
+            "node": {
+                "state": state,
+                "headRefName": "pull_request_test",
+                "commits": {
+                    "nodes": [
+                        {
+                            "commit": {
+                                "pushedDate": s2t("2020-02-02T09:47:34Z"),
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+
+    pr = [
+
+    ]
+
 
 @pytest.mark.slow
 @pytest.mark.pybrew
