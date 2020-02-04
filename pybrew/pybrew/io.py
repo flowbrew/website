@@ -559,6 +559,7 @@ def validate_deployment_io(
     repo_path,
     branch,
     local_run,
+    traffic_allocation,
     **kwargs
 ):
     url = (
@@ -573,9 +574,13 @@ def validate_deployment_io(
         branch_to_prefix(branch)
     )
 
+    traffic_allocation1 = to_jekyll_traffic_allocation(traffic_allocation)
+    traffic_allocation2 = json.dumps(traffic_allocation1).replace("'", "")
+
     run_io(pytest_args('deployment', local_run) + f'''
         --BRANCH={branch}
         --URL={baseurl}
+        --TRAFFIC_ALLOCATION='{traffic_allocation2}'
         ''')
 
 
@@ -722,8 +727,8 @@ def block_if_local(local_run, **kwargs):
 
 
 def is_master(local_run, branch, **kwargs):
-    return not local_run and branch == master_branch()
-    # return True
+    # return not local_run and branch == master_branch()
+    return True
 
 
 def on_branch_updated_io(**kwargs):

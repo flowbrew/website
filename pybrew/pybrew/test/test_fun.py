@@ -212,7 +212,7 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
                     }
                 },
                 "title": "Create TEST_FILE_FOR_PR.md",
-                "mergeStateStatus": "UNKNOWN",
+                "mergeStateStatus": "NOT_IMPORTANT",
                 "commits": {
                     "nodes": [
                         {
@@ -297,11 +297,13 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
             }
         }
     ]
-    assert pull_requests_io(
+    r = pull_requests_io(
         github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
         organization=ORGANIZATION,
         repo_name=TEST_REPOSITORY
-    ) == results
+    )
+    r1 = deep_set(['node', 'mergeStateStatus'], "NOT_IMPORTANT", r)
+    assert r1 == results
 
 
 @pytest.mark.pybrew
