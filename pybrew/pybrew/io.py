@@ -16,9 +16,11 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def chrome_io(*args, **kwds):
+def chrome_io(is_bot, *args, **kwds):
     driver = run_chrome_io(*args, **kwds)
     try:
+        if is_bot:
+            driver.get()
         yield driver
     finally:
         stop_chrome_io(driver)

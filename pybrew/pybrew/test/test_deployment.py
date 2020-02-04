@@ -44,11 +44,11 @@ def url_path(driver):
     return urlparse(driver.current_url).path.strip()
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 @pytest.mark.deployment
 def test_checkout_io(URL):
-    with chrome_io() as chrome:
-        bot_get(chrome, URL)
+    with chrome_io(is_bot=True) as chrome:
+        chrome.get(URL)
         chrome.find_element_by_id('buy-button-1').click()
         assert 'checkout' in url_path(chrome)
 
@@ -84,7 +84,7 @@ def test_checkout_io(URL):
 @pytest.mark.slow
 @pytest.mark.pybrew
 def test_selenium_io():
-    with chrome_io() as chrome:
+    with chrome_io(is_bot=True) as chrome:
         chrome.get("http://www.python.org")
         assert 'Python'in chrome.title
 

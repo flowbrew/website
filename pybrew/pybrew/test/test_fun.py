@@ -196,27 +196,26 @@ def test_repository_io(ORGANIZATION, TEST_REPOSITORY):
 @pytest.mark.slow
 @pytest.mark.pybrew
 def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
-    results = [
-        {
-            "node": {
-                "id": "MDExOlB1bGxSZXF1ZXN0MzY5OTkxMDA1",
-                "number": 1,
-                "state": "OPEN",
-                "headRefName": "pull_request_test",
-                "baseRefName": "master",
-                "repository": {
-                    "id": "MDEwOlJlcG9zaXRvcnkyMzUzMzI5MDk=",
-                    "name": "test-website-deployment",
-                    "owner": {
+    results = {
+        "node": {
+            "id": "MDExOlB1bGxSZXF1ZXN0MzY5OTkxMDA1",
+            "number": 1,
+            "state": "OPEN",
+            "headRefName": "pull_request_test",
+            "baseRefName": "master",
+            "repository": {
+                "id": "MDEwOlJlcG9zaXRvcnkyMzUzMzI5MDk=",
+                "name": "test-website-deployment",
+                "owner": {
                         "login": "flowbrew"
-                    }
-                },
-                "title": "Create TEST_FILE_FOR_PR.md",
-                "mergeStateStatus": "NOT_IMPORTANT",
-                "commits": {
-                    "nodes": [
-                        {
-                            "commit": {
+                }
+            },
+            "title": "Create TEST_FILE_FOR_PR.md",
+            "mergeStateStatus": "NOT_IMPORTANT",
+            "commits": {
+                "nodes": [
+                    {
+                        "commit": {
                                 "pushedDate": s2t("2020-02-02T09:47:34Z"),
                                 "oid": "062c33faed0a0195f204c2b494ecd3fef73238ff",
                                 "checkSuites": {
@@ -244,65 +243,64 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
                                         }
                                     ]
                                 }
-                            }
                         }
-                    ]
-                },
-                "timelineItems": {
-                    "nodes": [
-                        {
-                            "label": {
-                                "name": "good first issue"
-                            },
-                            "createdAt": s2t("2020-02-02T09:26:10Z")
+                    }
+                ]
+            },
+            "timelineItems": {
+                "nodes": [
+                    {
+                        "label": {
+                            "name": "good first issue"
                         },
-                        {
-                            "label": {
-                                "name": "good first issue"
-                            },
-                            "removedAt": s2t("2020-02-02T09:26:33Z")
+                        "createdAt": s2t("2020-02-02T09:26:10Z")
+                    },
+                    {
+                        "label": {
+                            "name": "good first issue"
                         },
-                        {
-                            "label": {
-                                "name": "documentation"
-                            },
-                            "createdAt": s2t("2020-02-02T09:26:33Z")
+                        "removedAt": s2t("2020-02-02T09:26:33Z")
+                    },
+                    {
+                        "label": {
+                            "name": "documentation"
                         },
-                        {
-                            "label": {
-                                "name": "good first issue"
-                            },
-                            "createdAt": s2t("2020-02-02T09:26:47Z")
+                        "createdAt": s2t("2020-02-02T09:26:33Z")
+                    },
+                    {
+                        "label": {
+                            "name": "good first issue"
                         },
-                        {
-                            "label": {
-                                "name": "duplicate"
-                            },
-                            "createdAt": s2t("2020-02-02T09:33:06Z")
+                        "createdAt": s2t("2020-02-02T09:26:47Z")
+                    },
+                    {
+                        "label": {
+                            "name": "duplicate"
                         },
-                        {
-                            "label": {
-                                "name": "duplicate"
-                            },
-                            "removedAt": s2t("2020-02-02T09:33:19Z")
+                        "createdAt": s2t("2020-02-02T09:33:06Z")
+                    },
+                    {
+                        "label": {
+                            "name": "duplicate"
                         },
-                        {
-                            "label": {
-                                "name": "bug"
-                            },
-                            "createdAt": s2t("2020-02-02T10:53:00Z")
-                        }
-                    ]
-                }
+                        "removedAt": s2t("2020-02-02T09:33:19Z")
+                    },
+                    {
+                        "label": {
+                            "name": "bug"
+                        },
+                        "createdAt": s2t("2020-02-02T10:53:00Z")
+                    }
+                ]
             }
         }
-    ]
+    }
     r = pull_requests_io(
         github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
         organization=ORGANIZATION,
         repo_name=TEST_REPOSITORY
-    )
-    r1 = deep_set([0, 'node', 'mergeStateStatus'], "NOT_IMPORTANT", r)
+    )[0]
+    r1 = deep_set(['node', 'mergeStateStatus'], "NOT_IMPORTANT", r)
     assert r1 == results
 
 
