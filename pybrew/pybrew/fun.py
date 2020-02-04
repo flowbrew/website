@@ -685,7 +685,7 @@ def deep_set(keys, value, dictionary):
     return {
         **dictionary,
         **(
-            {h: deep_set(t, value, dictionary.get(h))}
+            {h: deep_set(t, value, dictionary[h])}
             if t else
             {h: value}
         )

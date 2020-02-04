@@ -731,8 +731,8 @@ def block_if_local(local_run, **kwargs):
 
 
 def is_master(local_run, branch, **kwargs):
-    # return not local_run and branch == master_branch()
-    return True
+    return not local_run and branch == master_branch()
+    # return True
 
 
 def on_branch_updated_io(**kwargs):
