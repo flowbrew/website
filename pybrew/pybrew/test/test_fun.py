@@ -1,8 +1,9 @@
 import pytest
 import tempfile
 import os
+from datetime import datetime
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io
 
 
 @pytest.mark.pybrew
@@ -83,20 +84,39 @@ def test_labels_io(ORGANIZATION, TEST_REPOSITORY):
         )
     ]
 
-sdfs
 
 @pytest.mark.pybrew
 def test_allocate_traffic_to_pull_requests():
-    def _pr(headRefName, state, time):
+    def _pr(branch, state, time, checks):
+        _checks = {
+            "nodes": [
+                {
+                    "checkRuns": {
+                        "nodes": []
+                    }
+                },
+                {
+                    "checkRuns": {
+                        "nodes": checks
+                    }
+                },
+                {
+                    "checkRuns": {
+                        "nodes": []
+                    }
+                },
+            ]
+        }
         return {
             "node": {
                 "state": state,
-                "headRefName": "pull_request_test",
+                "headRefName": branch,
                 "commits": {
                     "nodes": [
                         {
                             "commit": {
-                                "pushedDate": s2t("2020-02-02T09:47:34Z"),
+                                "pushedDate": time,
+                                "checkSuites": _checks
                             }
                         }
                     ]
@@ -104,9 +124,73 @@ def test_allocate_traffic_to_pull_requests():
             }
         }
 
-    pr = [
+    def _cheks(chk1, chk2):
+        return [
+            {
+                "status": "COMPLETED",
+                "conclusion": "SUCCESS" if chk1 else "FAILURE",
+                "name": build_test_deploy_check_name()
+            },
+            {
+                "status": "COMPLETED",
+                "conclusion": "SUCCESS" if chk2 else "FAILURE",
+                "name": "nothing"
+            }
+        ]
+    pr1 = _pr(
+        'test1',
+        'OPEN',
+        datetime.utcnow() + tdlt(seconds=1),
+        _cheks(False, True)
+    )
+    pr2 = _pr(
+        'test2',
+        'CLOSED',
+        datetime.utcnow() + tdlt(seconds=2),
+        _cheks(True, False)
+    )
+    pr3 = _pr(
+        'test3',
+        'OPEN',
+        datetime.utcnow() + tdlt(days=1),
+        _cheks(True, False)
+    )
+    pr4 = _pr(
+        'test4',
+        'OPEN',
+        datetime.utcnow() - tdlt(days=1),
+        _cheks(True, False)
+    )
 
+    prs = [pr1, pr2, pr3, pr4]
+
+    tests = [
+        (0, [],         [pr4, pr1, pr2, pr3]),
+        (1, [pr4],      [pr1, pr2, pr3]),
+        (2, [pr4, pr3], [pr1, pr2]),
+        (3, [pr4, pr3], [pr1, pr2]),
+        (4, [pr4, pr3], [pr1, pr2]),
     ]
+
+    for max_parallel_split_tests, r_yes, r_no in tests:
+        yes, no = allocate_traffic_to_pull_requests(
+            max_parallel_split_tests,
+            prs
+        )
+        for x in no:
+            print(x['node']['headRefName'])
+        assert yes == r_yes
+        assert no == r_no
+
+
+@pytest.mark.slow
+@pytest.mark.pybrew
+def test_repository_io(ORGANIZATION, TEST_REPOSITORY):
+    assert repository_io(
+        github_token=secret_io('GITHUB_WEBSITE_TOKEN'),
+        organization=ORGANIZATION,
+        repo_name=TEST_REPOSITORY
+    )['id'] == 'MDEwOlJlcG9zaXRvcnkyMzUzMzI5MDk='
 
 
 @pytest.mark.slow
@@ -134,7 +218,32 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
                         {
                             "commit": {
                                 "pushedDate": s2t("2020-02-02T09:47:34Z"),
-                                "oid": "062c33faed0a0195f204c2b494ecd3fef73238ff"
+                                "oid": "062c33faed0a0195f204c2b494ecd3fef73238ff",
+                                "checkSuites": {
+                                    "nodes": [
+                                        {
+                                            "checkRuns": {
+                                                "nodes": []
+                                            }
+                                        },
+                                        {
+                                            "checkRuns": {
+                                                "nodes": [
+                                                    {
+                                                        "status": "COMPLETED",
+                                                        "conclusion": "FAILURE",
+                                                        "name": "nothing-error"
+                                                    },
+                                                    {
+                                                        "status": "COMPLETED",
+                                                        "conclusion": "SUCCESS",
+                                                        "name": "nothing"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
                             }
                         }
                     ]

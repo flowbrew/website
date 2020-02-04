@@ -24,7 +24,7 @@ from toolz.functoolz import identity
 from functools import partial, reduce as reduce_, lru_cache
 
 from fn.iters import flatten
-from itertools import chain, product, tee, filterfalse
+from itertools import chain, product, tee, filterfalse, repeat
 
 
 def chain_(x): return chain(*x)
@@ -50,6 +50,7 @@ flip = comp(curry, flip)
 
 filter = curry(filter)
 filterempty = filter(identity)
+foldl = reduce
 
 
 def nt(x): return not (x)
@@ -98,6 +99,10 @@ def master_branch() -> str:
 
 def branch_prefix() -> str:
     return 'branch_'
+
+
+def build_test_deploy_check_name() -> str:
+    return 'build-test-deploy'
 
 
 def branch_to_prefix(branch: str) -> str:
@@ -670,6 +675,9 @@ def deep_get(keys, dictionary):
     )
 
 
+deep_get_ = lambda *keys: deep_get(keys)
+
+
 @curry
 def deep_set(keys, value, dictionary):
     h, *t = keys
@@ -732,52 +740,91 @@ def labels_io(github_token, organization, repo_name):
 
 
 @curry
+def repository_io(github_token, organization, repo_name):
+    query = '''
+query ($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    id
+  }
+}
+    '''
+    return requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'owner': organization,
+                'name': repo_name,
+            }
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+        }
+    ).json()['data']['repository']
+
+
+@curry
 def pull_requests_io(github_token, organization, repo_name):
     query = '''
-        query ($owner: String!, $name: String!, $master: String!){
-        repository(owner: $owner, name: $name) {
-            pullRequests(last:100, baseRefName: $master) {
-            edges{
-                node{
-                id
-                number
-                state
-                headRefName
-                baseRefName
-                title
-                repository {
-                    id
-                    name
-                    owner {
-                        login
-                    }
-                }
-                mergeStateStatus
-                commits(last: 1) {
-                    nodes{
-                    commit {
-                        pushedDate
-                        oid
-                    }
-                    }
-                }
-                timelineItems(last: 100, itemTypes: [LABELED_EVENT UNLABELED_EVENT]) {
-                    nodes {
-                    ... on LabeledEvent {
-                        label { name }
-                        createdAt
-                    }
-                    ... on UnlabeledEvent {
-                        label { name }
-                        removedAt: createdAt
-                    }
-                    }
-                }
-                }
+query ($owner: String!, $name: String!, $master: String!) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(last: 100, baseRefName: $master) {
+      edges {
+        node {
+          id
+          number
+          state
+          headRefName
+          baseRefName
+          title
+          repository {
+            id
+            name
+            owner {
+              login
             }
+          }
+          mergeStateStatus
+          commits(last: 1) {
+            nodes {
+              commit {
+                pushedDate
+                oid
+                checkSuites(last: 10) {
+                  nodes {
+                    checkRuns(last: 10) {
+                      nodes {
+                        status
+                        conclusion
+                        name
+                      }
+                    }
+                  }
+                }
+              }
             }
+          }
+          timelineItems(last: 100, itemTypes: [LABELED_EVENT, UNLABELED_EVENT]) {
+            nodes {
+              ... on LabeledEvent {
+                label {
+                  name
+                }
+                createdAt
+              }
+              ... on UnlabeledEvent {
+                label {
+                  name
+                }
+                removedAt: createdAt
+              }
+            }
+          }
         }
-        }
+      }
+    }
+  }
+}
     '''
     transform_pr = comp_(
         deep_map_f(
@@ -793,25 +840,26 @@ def pull_requests_io(github_token, organization, repo_name):
             deep_transform(['removedAt'], s2t),
         ),
     )
-    return pipe(
-        requests.post(
-            'https://api.github.com/graphql',
-            json={
-                'query': query,
-                'variables': {
-                    'owner': organization,
-                    'name': repo_name,
-                    'master':  master_branch(),
-                }
-            },
-            headers={
-                'Authorization': 'token ' + github_token,
-                'Accept': 'application/vnd.github.merge-info-preview+json',
+    js = requests.post(
+        'https://api.github.com/graphql',
+        json={
+            'query': query,
+            'variables': {
+                'owner': organization,
+                'name': repo_name,
+                'master':  master_branch(),
             }
-        ).json()['data']['repository']['pullRequests']['edges'],
-        map(transform_pr),
-        list
-    )
+        },
+        headers={
+            'Authorization': 'token ' + github_token,
+            'Accept': 'application/vnd.github.merge-info-preview+json, application/vnd.github.antiope-preview+json',
+        }
+    ).json()
+    return [
+        transform_pr(x) for x
+        in js['data']['repository']['pullRequests']['edges']
+        if deep_get(['node', 'commits', 'nodes', 0, 'commit', 'pushedDate'], x)
+    ]
 
 
 def is_green_pull_request(pull_request):
@@ -819,8 +867,8 @@ def is_green_pull_request(pull_request):
 
 
 @curry
-def sorted_(key, data, reverse=True):
-    return sorted(data, key=key, reverse=reverse)
+def sorted_(key, data, ascending):
+    return sorted(data, key=key, reverse=not ascending)
 
 
 @curry
@@ -828,7 +876,8 @@ def max_(key, data, default=None):
     return max(data, key=key, default=default)
 
 
-s2t = comp(datetime.fromisoformat, lambda x: x.replace('Z', ''))
+def s2t(s):
+    return datetime.fromisoformat(s.replace('Z', ''))
 
 
 def t2s(x):
@@ -860,11 +909,47 @@ def is_stale_pull_request(current_time, pull_request):
     ) >= split_test_stale()
 
 
-def allocate_traffic_to_pull_requests(traffic_per_day, pull_requests):
-    return None
+def is_suitable_for_split_testing(pull_request):
+    _state = deep_get_('node', 'state')
+    _suites = deep_get_(
+        'node', 'commits', 'nodes', 0, 'commit', 'checkSuites', 'nodes'
+    )
+    _runs = deep_get_('checkRuns', 'nodes')
+
+    is_open = _state(pull_request) == 'OPEN'
+
+    all_runs = chain_(_runs(x) for x in _suites(pull_request))
+
+    was_built_and_tested = any(
+        x.get('name') == build_test_deploy_check_name() and
+        x.get('status') == 'COMPLETED' and
+        x.get('conclusion') == 'SUCCESS'
+        for x in all_runs
+    )
+
+    return is_open and was_built_and_tested
 
 
-def apply_traffic_allocation_io(traffic_allocation):
+@curry
+def allocate_traffic_to_pull_requests(
+    max_parallel_split_tests,
+    pull_requests,
+):
+    _yes, no = partition(is_suitable_for_split_testing, pull_requests)
+
+    last_commit_time = deep_get_(
+        'node', 'commits', 'nodes', 0, 'commit', 'pushedDate'
+    )
+    sort_pr = sorted_(last_commit_time, ascending=True)
+    yes = sort_pr(_yes)
+
+    return (
+        yes[:max_parallel_split_tests],
+        sort_pr(no + yes[max_parallel_split_tests:])
+    )
+
+
+def apply_traffic_allocation_io(pull_requests):
     pass
 
 

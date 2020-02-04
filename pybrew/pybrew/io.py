@@ -286,7 +286,26 @@ def save_yaml_io(path, data):
         yaml.safe_dump(data, file, encoding='utf-8', allow_unicode=True)
 
 
-def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
+def to_jekyll_traffic_allocation(traffic_allocation):
+    if not traffic_allocation:
+        return dict()
+    yes, _ = traffic_allocation
+    if not yes:
+        return dict()
+    v = 1/len(yes)
+    _branch = deep_get_('node', 'headRefName')
+    return {_branch(x): v for x in yes}
+
+
+def build_jekyll_io(
+    repo_path,
+    dest,
+    sha,
+    branch,
+    local_run,
+    traffic_allocation,
+    **kwargs
+):
     with Path(repo_path):
         save_yaml_io(
             'temp_config.yml',
@@ -300,6 +319,9 @@ def build_jekyll_io(repo_path, dest, sha, branch, local_run, **kwargs):
                     'github-branch': branch,
                     'github-commit-sha': sha,
                     'no-index': branch != master_branch(),
+                    'traffic-allocation': to_jekyll_traffic_allocation(
+                        traffic_allocation
+                    )
                 }
             }
         )
@@ -592,36 +614,16 @@ def cicd_io(repo_path, event_name, **kwargs_):
     assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
 
 
-@curry
-def allocate_traffic_to_pull_requests_io(github_token, pull_requests):
-    if not pull_requests:
-        return
+def website_traffic_io():
+    return 100
 
-    current_traffic_per_day = 20
 
-    allocation = allocate_traffic_to_pull_requests(
-        current_traffic_per_day,
-        pull_requests
-    )
+def min_sufficient_traffic_for_split_test():
+    return 100
 
-    not_active = [
-        x for x in pull_requests
-        if x['node']['headRefName'] not in allocation.keys()
-    ]
 
-    repository_id = pull_requests[0]['node']['repository']['id']
-    create_split_test_label_io(github_token, repository_id)
-    [add_split_test_label_io(github_token, x) for x in active]
-    [remove_split_test_label_io(github_token, x) for x in not_active]
-
-    # current_traffic_per_day = 20
-    # traffic_allocation = allocate_traffic_to_pull_requests(
-    #     current_traffic_per_day,
-    #     pull_requests
-    # )
-    # apply_traffic_allocation_io(traffic_allocation)
-    # return pull_requests
-    # apply_traffic_allocation_io,
+def max_parallel_split_tests_io():
+    return int(website_traffic_io() / min_sufficient_traffic_for_split_test())
 
 
 def manage_pull_requests_io(
@@ -650,12 +652,35 @@ def manage_pull_requests_io(
         ]
         return prs()
 
-    pipe(
+    return pipe(
         prs(),
         merge_green_pull_requests_io,
         close_stale_pull_requests_io,
-        allocate_traffic_to_pull_requests_io(github_token),
+        allocate_traffic_to_pull_requests(max_parallel_split_tests_io()),
     )
+
+
+def apply_labels_io(
+    traffic_allocation,
+    organization,
+    repo_name,
+    **kwargs
+):
+    if not traffic_allocation:
+        return
+    yes, no = traffic_allocation
+
+    github_token = secret_io('GITHUB_WEBSITE_TOKEN')
+
+    repository_id = repository_io(
+        github_token=github_token,
+        organization=organization,
+        repo_name=repo_name
+    )['id']
+
+    create_split_test_label_io(github_token, repository_id)
+    [add_split_test_label_io(github_token, x) for x in yes]
+    [remove_split_test_label_io(github_token, x) for x in no]
 
 
 def on_schedule_io(**kwargs):
@@ -696,6 +721,11 @@ def block_if_local(local_run, **kwargs):
             time.sleep(1)
 
 
+def is_master(local_run, branch, **kwargs):
+    return not local_run and branch == master_branch()
+    # return True
+
+
 def on_branch_updated_io(**kwargs):
     notify_io_ = partial(
         github_action_notification_io,
@@ -703,14 +733,17 @@ def on_branch_updated_io(**kwargs):
         **kwargs
     )
 
+    master = is_master(**kwargs)
+
     with tmp() as ws:
         try:
             validate_pybrew_io(**kwargs)
 
-            if kwargs['branch'] == master_branch():
-                manage_pull_requests_io(**kwargs)
+            traffic_allocation = (
+                manage_pull_requests_io(**kwargs) if master else None
+            )
 
-            build_io(dest=ws, **kwargs)
+            build_io(dest=ws, traffic_allocation=traffic_allocation, **kwargs)
             validate_build_io(path=ws, **kwargs)
 
             # ---
@@ -721,6 +754,12 @@ def on_branch_updated_io(**kwargs):
 
             deploy_io(path=ws, **kwargs)
             validate_deployment_io(**kwargs)
+
+            if master:
+                apply_labels_io(
+                    traffic_allocation=traffic_allocation,
+                    **kwargs
+                )
 
             notify_io_(success=True)
 
