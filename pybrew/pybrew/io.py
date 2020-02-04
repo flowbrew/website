@@ -743,7 +743,11 @@ def on_branch_updated_io(**kwargs):
                 manage_pull_requests_io(**kwargs) if master else None
             )
 
-            build_io(dest=ws, traffic_allocation=traffic_allocation, **kwargs)
+            build_io(
+                dest=ws,
+                traffic_allocation=traffic_allocation,
+                **kwargs
+            )
             validate_build_io(path=ws, **kwargs)
 
             # ---
@@ -753,7 +757,10 @@ def on_branch_updated_io(**kwargs):
             # ---
 
             deploy_io(path=ws, **kwargs)
-            validate_deployment_io(**kwargs)
+            validate_deployment_io(
+                traffic_allocation=traffic_allocation,
+                **kwargs
+            )
 
             if master:
                 apply_labels_io(

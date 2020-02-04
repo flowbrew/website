@@ -212,7 +212,7 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
                     }
                 },
                 "title": "Create TEST_FILE_FOR_PR.md",
-                "mergeStateStatus": "UNSTABLE",
+                "mergeStateStatus": "UNKNOWN",
                 "commits": {
                     "nodes": [
                         {
