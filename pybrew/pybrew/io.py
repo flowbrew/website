@@ -56,6 +56,10 @@ def make_a_bot_url(url):
     return url + '?IS_FLB_BOT=True&'
 
 
+def bot_get(driver, url):
+    return driver.get(make_a_bot_url(url))
+
+
 def wait_until_deployed_by_sha_io(url: str, sha: str):
     wait_until_html_deployed_io(
         url,

@@ -17,6 +17,7 @@ def pytest_addoption(parser):
     parser.addoption("--BRANCH", action="store", default="")
     parser.addoption("--SHA", action="store", default="")
     parser.addoption("--WEBSITE_BUILD_PATH", action="store", default="")
+    parser.addoption("--TRAFFIC_ALLOCATION", action="store", default="")
 
 
 def pytest_configure(config):
@@ -73,3 +74,8 @@ def WEBSITE_BUILD_PATH(request):
 @pytest.fixture
 def URL(request):
     return request.config.getoption("--URL")
+
+
+@pytest.fixture
+def TRAFFIC_ALLOCATION(request):
+    return request.config.getoption("--TRAFFIC_ALLOCATION")

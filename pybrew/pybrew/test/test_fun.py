@@ -302,7 +302,7 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
         organization=ORGANIZATION,
         repo_name=TEST_REPOSITORY
     )
-    r1 = deep_set(['node', 'mergeStateStatus'], "NOT_IMPORTANT", r)
+    r1 = deep_set([0, 'node', 'mergeStateStatus'], "NOT_IMPORTANT", r)
     assert r1 == results
 
 
