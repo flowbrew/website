@@ -12,7 +12,12 @@ from statistics import stdev
 from path import Path
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, disable_google_analytics, frequency
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, disable_google_analytics, frequency, branch_prefix
+
+
+def validate_logs_io(driver):
+    for entry in driver.get_log('browser'):
+        assert entry.get('level', '').lower() not in ['severe']
 
 
 def emails_io(addr, port, login, password):
@@ -80,6 +85,7 @@ def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
             disable_google_analytics(chrome, base=URL)
             chrome.get(URL + entry_point)
             assert '404' not in chrome.title, "Page not found"
+            validate_logs_io(chrome)
             return url(chrome)
 
     n = 100
@@ -118,8 +124,34 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
                     "Split test traffic allocation is not consistent"
 
             [sub_test(chrome, first_url) for _ in range(0, 5)]
+            validate_logs_io(chrome)
 
     [run_test() for _ in range(0, 10)]
+
+
+@pytest.mark.slow
+@pytest.mark.deployment
+def test_e2e_404_redirect_io(URL):
+    with chrome_io() as chrome:
+        disable_google_analytics(chrome, base=URL)
+
+        chrome.get(URL + '/blog/nonexistent_article')
+        assert url(chrome) == URL + '/blog/'
+        assert 'блог' in chrome.title.lower()
+
+        branch = branch_prefix() + random_str()
+
+        chrome.get(f'{URL}/{branch}/blog')
+        assert url(chrome) == URL + '/blog/'
+        assert 'блог' in chrome.title.lower()
+
+        chrome.get(f'{URL}/{branch}/blog/nonexistent_article')
+        assert url(chrome) == URL + '/blog/'
+        assert 'блог' in chrome.title.lower()
+
+        chrome.get(f'{URL}/{branch}/debug_split_test/a/test_split_testing')
+        assert url(chrome) == URL + '/debug_split_test/a/test_split_testing'
+        assert 'Test split testing A' in chrome.title
 
 
 @pytest.mark.slow
@@ -158,6 +190,7 @@ def test_e2e_checkout_io(URL):
         __check_email()
 
         assert 'спасибо' in url(chrome)
+        validate_logs_io(chrome)
 
 
 @pytest.mark.slow

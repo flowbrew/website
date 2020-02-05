@@ -9,6 +9,7 @@
 
 # Dynamic params
 baseurl: /
+branch-prefix: 
 github-repo:
 github-branch:
 github-commit-sha: 

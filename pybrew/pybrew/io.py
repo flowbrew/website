@@ -10,6 +10,7 @@ from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from cachier import cachier
 from contextlib import contextmanager
@@ -39,7 +40,10 @@ def run_chrome_io(*args, **kwds):
         }
     )
 
-    driver = webdriver.Chrome(chrome_options=options)
+    d = DesiredCapabilities.CHROME
+    d['goog:loggingPrefs'] = {'browser': 'ALL'}
+
+    driver = webdriver.Chrome(chrome_options=options, desired_capabilities=d)
     driver.implicitly_wait(10)
     return driver
 
@@ -322,7 +326,8 @@ def build_jekyll_io(
                     'no-index': branch != master_branch(),
                     'traffic-allocation': to_jekyll_traffic_allocation(
                         traffic_allocation
-                    )
+                    ),
+                    'branch-prefix': branch_prefix()
                 }
             }
         )

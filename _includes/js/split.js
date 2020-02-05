@@ -23,10 +23,8 @@ export function split_test_io(base, current_sha, traffic_allocation) {
     "//" +
     location.hostname +
     (location.port ? ":" + location.port : "");
-  var path = '/' + (window.location.pathname + window.location.search).replace(
-    base,
-    ""
-  );
+  var path =
+    "/" + (window.location.pathname + window.location.search).replace(base, "");
 
   const old_sha = Cookies.get(C_SHA_COOKIE);
   var allocated_branch = Cookies.get(C_ALLOCATED_BRANCH);
@@ -48,4 +46,26 @@ export function split_test_io(base, current_sha, traffic_allocation) {
   }
 
   window.location.replace(host + base + allocated_branch + path);
+}
+
+export function try_redirect_to_backup_page_io(branch_prefix) {
+  console.log("try_redirect_to_backup_page_io: " + branch_prefix);
+
+  var host =
+    location.protocol +
+    "//" +
+    location.hostname +
+    (location.port ? ":" + location.port : "");
+  var path = (window.location.pathname + window.location.search).substr(1);
+
+  var parts = path.split("/");
+  if (!parts) {
+    return;
+  }
+
+  if (parts[0].startsWith(branch_prefix)) {
+    window.location.replace(host + "/" + parts.slice(1).join("/"));
+  } else if (parts[0] == "blog" && parts.length > 1) {
+    window.location.replace(host + "/" + "blog");
+  }
 }

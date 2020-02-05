@@ -6,45 +6,85 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    {% if site.no-index %}<meta name="robots" content="noindex">{% endif %}
+    {% if site.no-index or page.debug_split_test %}
+    <meta name="robots" content="noindex" />
+    {% endif %}
     <meta name="github-repo" content="{{ site.github-repo }}" />
     <meta name="github-branch" content="{{ site.github-branch }}" />
     <meta name="github-commit-sha" content="{{ site.github-commit-sha }}" />
 
     <title>{{ page.title }}</title>
     <meta name="description" content="{{ page.description }}" />
-    <link rel="shortcut icon" type="image/png" href="{{ 'favicon.png' | absolute_url }}" />
-    
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="{{ 'favicon.png' | absolute_url }}"
+    />
+
     <meta property="og:url" content="{{ full_path }}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="{{ page.title }}" />
     <meta property="og:description" content="{{ page.description }}" />
-    <meta property="og:image" content="{{ '/assets/img/' | append: page.link_image | absolute_url }}" />
+    <meta
+      property="og:image"
+      content="{{ '/assets/img/' | append: page.link_image | absolute_url }}"
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@flow_brew" />
     <meta name="twitter:creator" content="@flow_brew" />
     <meta name="twitter:title" content="{{ page.title }}" />
     <meta name="twitter:description" content="{{ page.description }}" />
     <meta name="twitter:url" content="{{ full_path }}" />
-    <meta name="twitter:image" content="{{ '/assets/img/' | append: page.link_image | absolute_url }}" />
+    <meta
+      name="twitter:image"
+      content="{{ '/assets/img/' | append: page.link_image | absolute_url }}"
+    />
 
     <meta name="yandex-verification" content="51d92fdd6fb140e9" />
 
-    <link rel="preconnect" href="https://www.tidiochat.com">
-    <link rel="preconnect" href="https://marketingplatform.google.com">
-    <link rel="preconnect" href="https://www.google.com">
-    <link rel="preconnect" href="https://www.googletagmanager.com/">
+    <link rel="preconnect" href="https://www.tidiochat.com" />
+    <link rel="preconnect" href="https://marketingplatform.google.com" />
+    <link rel="preconnect" href="https://www.google.com" />
+    <link rel="preconnect" href="https://www.googletagmanager.com/" />
 
-    {% include head_script.html %}
-  
-    {% unless page.light_page %}
-    <link rel="preload" href="{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}" as="font" type="font/ttf" crossorigin />
+    {% include head_script.html %} {% unless page.light_page %}
+    <link
+      rel="preload"
+      href="{{ '/assets/fonts/Annabelle-regular.ttf' | relative_url }}"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
     {% endunless %}
 
-    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMwf7I_FMl_GW8g.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMw77I_FMl_GW8g.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMwT7I_FMl_GW8g.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="{{ '/assets/fonts/0QIvMX1D_JOuMwr7I_FMl_E.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href="{{ '/assets/fonts/0QIvMX1D_JOuMwf7I_FMl_GW8g.woff2' | relative_url }}"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="{{ '/assets/fonts/0QIvMX1D_JOuMw77I_FMl_GW8g.woff2' | relative_url }}"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="{{ '/assets/fonts/0QIvMX1D_JOuMwT7I_FMl_GW8g.woff2' | relative_url }}"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="{{ '/assets/fonts/0QIvMX1D_JOuMwr7I_FMl_E.woff2' | relative_url }}"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
 
     {% include head_css.html %}
   </head>
@@ -57,15 +97,10 @@
         настройках вашего браузера.
       </div>
     </noscript>
-    {% include navbar.html %} 
-    {% include header.html invert_header_color=page.invert_header_color %}
-
-    {% unless page.no_skipper %}
+    {% include navbar.html %} {% include header.html
+    invert_header_color=page.invert_header_color %} {% unless page.no_skipper %}
     <div class="skipper"></div>
-    {% endunless %}
-
-    {{ content }}
-    {% include footer.html %}
-    {% include footer_script.html %}
+    {% endunless %} {{ content }} {% include footer.html %} {% include
+    footer_script.html %}
   </body>
 </html>

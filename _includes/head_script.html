@@ -2,10 +2,11 @@
   window.dataLayer = window.dataLayer || [];
 </script>
 
-{% unless page.disable_split_test %}
 <script type="text/javascript">
   //<![CDATA[
       {% include dist/split.bundle.js %}
+
+      {% unless page.disable_split_test %}
       Split.split_test_io(
         "{{ site.baseurl }}",
         "{{ site.github-commit-sha }}",
@@ -19,9 +20,14 @@
           {{ site.traffic_allocation | jsonify }}
         {% endif %}
       );
+      {% endunless %}
+
+      {% if page.try_redirect_to_backup_page %}
+      Split.try_redirect_to_backup_page_io("{{ site.branch-prefix }}");
+      {% endif %}
   //]]>
 </script>
-{% endunless %}
+
 
 <script type="text/javascript" defer>
   //<![CDATA[
