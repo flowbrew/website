@@ -141,17 +141,17 @@ def test_e2e_404_redirect_io(URL):
         disable_google_analytics(chrome, URL)
 
         get_url(chrome, URL, '/blog/nonexistent_article')
-        assert url(chrome) == url_join(URL, 'blog')
+        assert url(chrome) == url_join(URL, 'blog') + '/'
         assert 'блог' in chrome.title.lower()
 
         branch = branch_prefix() + random_str()
 
         get_url(chrome, URL, branch, 'blog')
-        assert url(chrome) == url_join(URL, 'blog')
+        assert url(chrome) == url_join(URL, 'blog') + '/'
         assert 'блог' in chrome.title.lower()
 
         get_url(chrome, URL, branch, 'blog', 'nonexistent_article')
-        assert url(chrome) == url_join(URL, 'blog')
+        assert url(chrome) == url_join(URL, 'blog') + '/'
         assert 'блог' in chrome.title.lower()
 
         get_url(chrome, URL, branch, 'debug_split_test/a/test_split_testing')

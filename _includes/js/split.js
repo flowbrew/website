@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+var urljoin = require('url-join');
 
 function weightedRand2(spec) {
   var i,
@@ -12,6 +13,10 @@ function weightedRand2(spec) {
 
 const C_SHA_COOKIE = "split_test_master_sha";
 const C_ALLOCATED_BRANCH = "split_test_allocated_branch";
+
+function trim_s(x){
+  return x.replace(/^\/+|\/+$/g, '');
+}
 
 export function split_test_io(base, current_sha, traffic_allocation) {
   if (!traffic_allocation || !current_sha) {
@@ -45,7 +50,9 @@ export function split_test_io(base, current_sha, traffic_allocation) {
     return;
   }
 
-  window.location.replace(host + base + allocated_branch + path);
+  window.location.replace(
+    urljoin([host, base, allocated_branch, path].map(trim_s))
+    );
 }
 
 export function try_redirect_to_backup_page_io(branch_prefix) {
@@ -59,13 +66,18 @@ export function try_redirect_to_backup_page_io(branch_prefix) {
   var path = (window.location.pathname + window.location.search).substr(1);
 
   var parts = path.split("/");
+  
   if (!parts) {
     return;
   }
 
   if (parts[0].startsWith(branch_prefix)) {
-    window.location.replace(host + "/" + parts.slice(1).join("/"));
+    window.location.replace(
+      urljoin([host].concat(parts.slice(1)).map(trim_s))
+      );
   } else if (parts[0] == "blog" && parts.length > 1) {
-    window.location.replace(host + "/" + "blog");
+    window.location.replace(
+      urljoin([host, "blog"])
+      );
   }
 }

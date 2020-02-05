@@ -106,9 +106,7 @@ def url_join(*args_):
 
     a2 = [x.strip('/') for x in a1 + [a] if x]
 
-    a3 = '/'.join(a2) + ('' if '.' in a2[-1] and len(args) > 1 else '/')
-
-    return a3 + params2
+    return '/'.join(a2) + params2
 
 
 def split_test_label() -> str:

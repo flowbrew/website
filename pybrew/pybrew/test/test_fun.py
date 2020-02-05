@@ -9,40 +9,40 @@ from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_
 @pytest.mark.pybrew
 def test_url_join():
     assert url_join('http://127.0.0.1:4000/', 'something') == \
-        'http://127.0.0.1:4000/something/'
+        'http://127.0.0.1:4000/something'
 
     assert url_join('http://127.0.0.1:4000/', 'something', 'lol') == \
-        'http://127.0.0.1:4000/something/lol/'
+        'http://127.0.0.1:4000/something/lol'
 
     assert url_join('http://127.0.0.1:4000', 'something', 'lol') == \
-        'http://127.0.0.1:4000/something/lol/'
+        'http://127.0.0.1:4000/something/lol'
 
     assert url_join('http://127.0.0.1:4000', '', 'lol') == \
-        'http://127.0.0.1:4000/lol/'
+        'http://127.0.0.1:4000/lol'
 
     assert url_join('http://127.0.0.1:4000', None, 'lol') == \
-        'http://127.0.0.1:4000/lol/'
+        'http://127.0.0.1:4000/lol'
 
     assert url_join('http://127.0.0.1:4000', 'something/', '/lol') == \
-        'http://127.0.0.1:4000/something/lol/'
+        'http://127.0.0.1:4000/something/lol'
 
     assert url_join('http://127.0.0.1:4000/', '/something/', '/lol') == \
-        'http://127.0.0.1:4000/something/lol/'
+        'http://127.0.0.1:4000/something/lol'
 
     assert url_join('http://127.0.0.1:4000') == \
-        'http://127.0.0.1:4000/'
+        'http://127.0.0.1:4000'
 
     assert url_join('http://127.0.0.1:4000/') == \
-        'http://127.0.0.1:4000/'
+        'http://127.0.0.1:4000'
 
     assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol/') == \
-        'http://127.0.0.1:4000/some/thing/lol/'
+        'http://127.0.0.1:4000/some/thing/lol'
 
     assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol?p=1') == \
-        'http://127.0.0.1:4000/some/thing/lol/?p=1'
+        'http://127.0.0.1:4000/some/thing/lol?p=1'
 
     assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol', '?p=1') == \
-        'http://127.0.0.1:4000/some/thing/lol/?p=1'
+        'http://127.0.0.1:4000/some/thing/lol?p=1'
 
     assert url_join('http://127.0.0.1:4000', '/lol.jpg', '?p=1') == \
         'http://127.0.0.1:4000/lol.jpg?p=1'
