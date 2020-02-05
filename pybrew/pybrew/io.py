@@ -570,16 +570,16 @@ def validate_deployment_io(
     **kwargs
 ):
     url = (
-        f'http://127.0.0.1:4000'
+        f'http://127.0.0.1:4000/'
         if local_run else
-        f'https://{domain_io(repo_path)}'
+        f'https://{domain_io(repo_path)}/'
     )
 
     baseurl = url + (
         ''
         if local_run or branch == master_branch() else
         branch_to_prefix(branch)
-    )
+    ).strip('/')
 
     traffic_allocation1 = to_jekyll_traffic_allocation(traffic_allocation)
     traffic_allocation2 = json.dumps(traffic_allocation1).replace("'", "")
