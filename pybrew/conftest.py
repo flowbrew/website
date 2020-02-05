@@ -38,13 +38,13 @@ def pytest_collection_modifyitems(config, items):
             if "skip_in_local" in item.keywords:
                 item.add_marker(skip_local)
 
-    if not config.getoption("--master") or config.getoption("--local"):
-        master_only = pytest.mark.skip(
-            reason="can run this only with --master"
+    if not config.getoption("--master") and not config.getoption("--local"):
+        not_in_branch = pytest.mark.skip(
+            reason="can run this with --master or --local"
         )
         for item in items:
-            if "master_only" in item.keywords:
-                item.add_marker(master_only)
+            if "not_in_branch" in item.keywords:
+                item.add_marker(not_in_branch)
 
     if config.getoption("--runslow"):
         return

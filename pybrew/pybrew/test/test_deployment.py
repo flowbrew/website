@@ -136,6 +136,7 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
 
 @pytest.mark.slow
 @pytest.mark.deployment
+@pytest.mark.not_in_branch
 def test_e2e_404_redirect_io(URL):
     with chrome_io() as chrome:
         disable_google_analytics(chrome, URL)
@@ -490,8 +491,8 @@ def test_website_performance_io(URL, BRANCH):
     tests = product(
         [google_test_page_speed_io, google_test_page_seo_io],
         [
-            URL + '',
-            URL + 'blog/7-prichin-pit-chaj-matcha'
+            url_join(URL, ''),
+            url_join(URL, 'blog/7-prichin-pit-chaj-matcha')
         ],
         [False, True],
     )
