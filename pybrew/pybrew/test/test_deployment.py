@@ -12,12 +12,20 @@ from statistics import stdev
 from path import Path
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, disable_google_analytics, frequency, branch_prefix
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, frequency, branch_prefix, url_join
 
 
 def validate_logs_io(driver):
     for entry in driver.get_log('browser'):
         assert entry.get('level', '').lower() not in ['severe']
+
+
+def get_url(driver, *args):
+    return driver.get(url_join(*args))
+
+
+def disable_google_analytics(driver, base):
+    get_url(driver, base, 'disable_google_analytics')
 
 
 def emails_io(addr, port, login, password):
@@ -76,14 +84,14 @@ def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
     )
 
     url_allocation = {
-        URL + ('/' + k if k else '') + entry_point: v
+        url_join(URL, k, entry_point): v
         for k, v in traffic_allocation.items()
     }
 
     def run_test():
         with chrome_io() as chrome:
-            disable_google_analytics(chrome, base=URL)
-            chrome.get(URL + entry_point)
+            disable_google_analytics(chrome, URL)
+            get_url(chrome, URL, entry_point)
             assert '404' not in chrome.title, "Page not found"
             validate_logs_io(chrome)
             return url(chrome)
@@ -107,19 +115,16 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
         TRAFFIC_ALLOCATION
     )
 
-    def goto_entry_point(x):
-        return x.get(URL + entry_point)
-
     def run_test():
         with chrome_io() as chrome:
-            disable_google_analytics(chrome, base=URL)
+            disable_google_analytics(chrome, URL)
 
-            goto_entry_point(chrome)
+            get_url(chrome, URL, entry_point)
             assert '404' not in chrome.title, "Page not found"
             first_url = url(chrome)
 
             def sub_test(chrome, first_url):
-                goto_entry_point(chrome)
+                get_url(chrome, URL, entry_point)
                 assert first_url == url(chrome), \
                     "Split test traffic allocation is not consistent"
 
@@ -133,33 +138,35 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
 @pytest.mark.deployment
 def test_e2e_404_redirect_io(URL):
     with chrome_io() as chrome:
-        disable_google_analytics(chrome, base=URL)
+        disable_google_analytics(chrome, URL)
 
-        chrome.get(URL + '/blog/nonexistent_article')
-        assert url(chrome) == URL + '/blog/'
+        get_url(chrome, URL, '/blog/nonexistent_article')
+        assert url(chrome) == url_join(URL, 'blog')
         assert 'блог' in chrome.title.lower()
 
         branch = branch_prefix() + random_str()
 
-        chrome.get(f'{URL}/{branch}/blog')
-        assert url(chrome) == URL + '/blog/'
+        get_url(chrome, URL, branch, 'blog')
+        assert url(chrome) == url_join(URL, 'blog')
         assert 'блог' in chrome.title.lower()
 
-        chrome.get(f'{URL}/{branch}/blog/nonexistent_article')
-        assert url(chrome) == URL + '/blog/'
+        get_url(chrome, URL, branch, 'blog', 'nonexistent_article')
+        assert url(chrome) == url_join(URL, 'blog')
         assert 'блог' in chrome.title.lower()
 
-        chrome.get(f'{URL}/{branch}/debug_split_test/a/test_split_testing')
-        assert url(chrome) == URL + '/debug_split_test/a/test_split_testing'
+        get_url(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
+        assert url(chrome) == url_join(
+            URL, 'debug_split_test/a/test_split_testing'
+        )
         assert 'Test split testing A' in chrome.title
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_checkout_io(URL):
     with chrome_io() as chrome:
         disable_google_analytics(chrome, base=URL)
-        chrome.get(URL)
+        get_url(chrome, URL)
         chrome.find_element_by_id('buy-button-1').click()
         assert 'checkout' in url_path(chrome)
 

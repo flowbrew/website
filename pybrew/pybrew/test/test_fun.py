@@ -3,7 +3,46 @@ import tempfile
 import os
 from datetime import datetime
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io, url_join
+
+
+@pytest.mark.pybrew
+def test_url_join():
+    assert url_join('http://127.0.0.1:4000/', 'something') == \
+        'http://127.0.0.1:4000/something/'
+
+    assert url_join('http://127.0.0.1:4000/', 'something', 'lol') == \
+        'http://127.0.0.1:4000/something/lol/'
+
+    assert url_join('http://127.0.0.1:4000', 'something', 'lol') == \
+        'http://127.0.0.1:4000/something/lol/'
+
+    assert url_join('http://127.0.0.1:4000', '', 'lol') == \
+        'http://127.0.0.1:4000/lol/'
+
+    assert url_join('http://127.0.0.1:4000', None, 'lol') == \
+        'http://127.0.0.1:4000/lol/'
+
+    assert url_join('http://127.0.0.1:4000', 'something/', '/lol') == \
+        'http://127.0.0.1:4000/something/lol/'
+
+    assert url_join('http://127.0.0.1:4000/', '/something/', '/lol') == \
+        'http://127.0.0.1:4000/something/lol/'
+
+    assert url_join('http://127.0.0.1:4000') == \
+        'http://127.0.0.1:4000/'
+
+    assert url_join('http://127.0.0.1:4000/') == \
+        'http://127.0.0.1:4000/'
+
+    assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol/') == \
+        'http://127.0.0.1:4000/some/thing/lol/'
+
+    assert url_join('http://127.0.0.1:4000/', 'something.html') == \
+        'http://127.0.0.1:4000/something.html'
+
+    assert url_join('http://127.0.0.1:4000/', '/something.jpg') == \
+        'http://127.0.0.1:4000/something.jpg'
 
 
 @pytest.mark.pybrew

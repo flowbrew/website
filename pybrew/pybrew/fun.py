@@ -90,6 +90,11 @@ def my_fun(x):
     return x + 1
 
 
+def url_join(*args):
+    r = os.path.join(*[x.strip('/') for x in args if x])
+    return r if '.' in args[-1] and len(args) > 1 else r.strip('/') + '/'
+
+
 def split_test_label() -> str:
     return 'SPLIT TESTING'
 
