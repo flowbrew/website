@@ -579,7 +579,7 @@ def validate_deployment_io(
         ''
         if local_run or branch == master_branch() else
         branch_to_prefix(branch)
-    )
+    ).strip('/')
 
     traffic_allocation1 = to_jekyll_traffic_allocation(traffic_allocation)
     traffic_allocation2 = json.dumps(traffic_allocation1).replace("'", "")

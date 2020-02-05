@@ -68,7 +68,7 @@ def i_want_to_test_split_test(TRAFFIC_ALLOCATION):
     return entry_point, traffic_allocation
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
     entry_point, traffic_allocation = i_want_to_test_split_test(
@@ -100,7 +100,7 @@ def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
     ), "Traffic distribution doesn't seem right"
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
     entry_point, _ = i_want_to_test_split_test(
@@ -129,7 +129,7 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
     [run_test() for _ in range(0, 10)]
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_404_redirect_io(URL):
     with chrome_io() as chrome:
