@@ -90,9 +90,25 @@ def my_fun(x):
     return x + 1
 
 
-def url_join(*args):
-    r = os.path.join(*[x.strip('/') for x in args if x])
-    return r if '.' in args[-1] and len(args) > 1 else r.strip('/') + '/'
+def url_join(*args_):
+    args = [x for x in args_ if x]
+
+    assert ''.join(args).count('?') <= 1
+    assert ''.join(args).count('?') == 0 or '?' in args[-1]
+
+    a1, params = partition(lambda x: '?' not in x, args)
+
+    if params:
+        a, params2_= params[0].split('?')
+        params2 = '?' + params2_
+    else:
+        a, params2 = ('', '')
+
+    a2 = [x.strip('/') for x in a1 + [a] if x]
+
+    a3 = '/'.join(a2) + ('' if '.' in a2[-1] and len(args) > 1 else '/')
+
+    return a3 + params2
 
 
 def split_test_label() -> str:

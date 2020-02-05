@@ -38,6 +38,18 @@ def test_url_join():
     assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol/') == \
         'http://127.0.0.1:4000/some/thing/lol/'
 
+    assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol?p=1') == \
+        'http://127.0.0.1:4000/some/thing/lol/?p=1'
+
+    assert url_join('http://127.0.0.1:4000', 'some/thing/', '/lol', '?p=1') == \
+        'http://127.0.0.1:4000/some/thing/lol/?p=1'
+
+    assert url_join('http://127.0.0.1:4000', '/lol.jpg', '?p=1') == \
+        'http://127.0.0.1:4000/lol.jpg?p=1'
+
+    assert url_join('http://127.0.0.1:4000', '/lol.jpg?p=1') == \
+        'http://127.0.0.1:4000/lol.jpg?p=1'
+
     assert url_join('http://127.0.0.1:4000/', 'something.html') == \
         'http://127.0.0.1:4000/something.html'
 
