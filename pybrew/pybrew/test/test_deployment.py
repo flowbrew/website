@@ -7,11 +7,12 @@ import email
 from email import policy
 import time
 from urllib.parse import unquote, urlparse
+from statistics import stdev
 
 from path import Path
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, make_a_bot_url, bot_get
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, disable_google_analytics, frequency
 
 
 def emails_io(addr, port, login, password):
@@ -44,10 +45,88 @@ def url_path(driver):
     return urlparse(driver.current_url).path.strip()
 
 
-# @pytest.mark.slow
+def url(x):
+    return unquote(x.current_url)
+
+
+def i_want_to_test_split_test(TRAFFIC_ALLOCATION):
+    if TRAFFIC_ALLOCATION:
+        entry_point = '/?val=2'
+        traffic_allocation = TRAFFIC_ALLOCATION
+    else:
+        entry_point = '/test_split_testing?val=2'
+        traffic_allocation = {
+            '': 0.2,
+            'debug_split_test/a': 0.35,
+            'debug_split_test/b': 0.45,
+        }
+    return entry_point, traffic_allocation
+
+
+@pytest.mark.slow
 @pytest.mark.deployment
-def test_checkout_io(URL):
-    with chrome_io(is_bot=True) as chrome:
+def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
+    entry_point, traffic_allocation = i_want_to_test_split_test(
+        TRAFFIC_ALLOCATION
+    )
+
+    url_allocation = {
+        URL + ('/' + k if k else '') + entry_point: v
+        for k, v in traffic_allocation.items()
+    }
+
+    def run_test():
+        with chrome_io() as chrome:
+            disable_google_analytics(chrome, base=URL)
+            chrome.get(URL + entry_point)
+            assert '404' not in chrome.title, "Page not found"
+            return url(chrome)
+
+    n = 100
+    results_ = frequency(run_test() for _ in range(0, n))
+    results = {k: v / n for k, v in results_.items()}
+
+    assert set(results.keys()) == set(url_allocation.keys()), \
+        "Didn't redirect on right pages or missing url params"
+
+    assert all(
+        abs(results[k] - url_allocation[k]) < 0.15 for k in results.keys()
+    ), "Traffic distribution doesn't seem right"
+
+
+@pytest.mark.slow
+@pytest.mark.deployment
+def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
+    entry_point, _ = i_want_to_test_split_test(
+        TRAFFIC_ALLOCATION
+    )
+
+    def goto_entry_point(x):
+        return x.get(URL + entry_point)
+
+    def run_test():
+        with chrome_io() as chrome:
+            disable_google_analytics(chrome, base=URL)
+
+            goto_entry_point(chrome)
+            assert '404' not in chrome.title, "Page not found"
+            first_url = url(chrome)
+
+            def sub_test(chrome, first_url):
+                goto_entry_point(chrome)
+                assert first_url == url(chrome), \
+                    "Split test traffic allocation is not consistent"
+
+            [sub_test(chrome, first_url) for _ in range(0, 5)]
+
+    [run_test() for _ in range(0, 10)]
+
+
+@pytest.mark.slow
+@pytest.mark.deployment
+def test_e2e_checkout_io(URL):
+    with chrome_io() as chrome:
+        disable_google_analytics(chrome, base=URL)
         chrome.get(URL)
         chrome.find_element_by_id('buy-button-1').click()
         assert 'checkout' in url_path(chrome)
@@ -78,13 +157,13 @@ def test_checkout_io(URL):
 
         __check_email()
 
-        assert 'спасибо' in unquote(chrome.current_url)
+        assert 'спасибо' in url(chrome)
 
 
 @pytest.mark.slow
 @pytest.mark.pybrew
 def test_selenium_io():
-    with chrome_io(is_bot=True) as chrome:
+    with chrome_io() as chrome:
         chrome.get("http://www.python.org")
         assert 'Python'in chrome.title
 
@@ -317,12 +396,6 @@ def test_deploy_to_github_io(
         TEST_REPOSITORY + '/' + p1_.replace('.html', ''),
         SHA
     )
-
-
-@pytest.mark.skip_in_local
-@pytest.mark.deployment
-def test_split_testing_io(URL, BRANCH, TRAFFIC_ALLOCATION):
-    pass
 
 
 @pytest.mark.slow

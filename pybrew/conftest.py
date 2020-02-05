@@ -1,5 +1,6 @@
 import pytest
 import os
+import json
 
 
 def pytest_addoption(parser):
@@ -10,6 +11,10 @@ def pytest_addoption(parser):
     parser.addoption("--local",
                      action="store_true", default=False,
                      help="skipping some tests unavalible in local"
+                     )
+    parser.addoption("--master",
+                     action="store_true", default=False,
+                     help="run some tests avalible only in local"
                      )
     parser.addoption("--ORGANIZATION", action="store", default="")
     parser.addoption("--URL", action="store", default="")
@@ -32,6 +37,14 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skip_in_local" in item.keywords:
                 item.add_marker(skip_local)
+
+    if not config.getoption("--master") or config.getoption("--local"):
+        master_only = pytest.mark.skip(
+            reason="can run this only with --master"
+        )
+        for item in items:
+            if "master_only" in item.keywords:
+                item.add_marker(master_only)
 
     if config.getoption("--runslow"):
         return
@@ -78,4 +91,6 @@ def URL(request):
 
 @pytest.fixture
 def TRAFFIC_ALLOCATION(request):
-    return request.config.getoption("--TRAFFIC_ALLOCATION")
+    return json.loads(
+        request.config.getoption("--TRAFFIC_ALLOCATION")
+    )

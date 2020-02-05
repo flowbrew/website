@@ -12,6 +12,7 @@ import yaml
 import re
 import shutil
 import more_itertools
+from collections import Counter
 from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
@@ -58,6 +59,10 @@ def nt(x): return not (x)
 
 filter = curry(filter)
 get = curry(get)
+
+
+def frequency(data):
+    return dict(Counter(data))
 
 
 def try_n_times_decorator(n=5, timeout=5):

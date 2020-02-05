@@ -16,11 +16,9 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def chrome_io(is_bot, *args, **kwds):
+def chrome_io(*args, **kwds):
     driver = run_chrome_io(*args, **kwds)
     try:
-        if is_bot:
-            driver.get()
         yield driver
     finally:
         stop_chrome_io(driver)
@@ -54,12 +52,8 @@ def secret_io(key):
     return os.environ[key]
 
 
-def make_a_bot_url(url):
-    return url + '?IS_FLB_BOT=True&'
-
-
-def bot_get(driver, url):
-    return driver.get(make_a_bot_url(url))
+def disable_google_analytics(driver, base):
+    driver.get(base + '/disable_google_analytics')
 
 
 def wait_until_deployed_by_sha_io(url: str, sha: str):
@@ -296,11 +290,12 @@ def to_jekyll_traffic_allocation(traffic_allocation):
     if not traffic_allocation:
         return dict()
     yes, _ = traffic_allocation
-    if not yes:
-        return dict()
-    v = 1/len(yes)
+    v = 1 / (len(yes) + 1)
     _branch = deep_get_('node', 'headRefName')
-    return {_branch(x): v for x in yes}
+    return {
+        **{_branch(x): v for x in yes},
+        **{'': v}
+    }
 
 
 def build_jekyll_io(
@@ -495,7 +490,7 @@ def deploy_jekyll_io(path, local_run, deployment_repo, sha, **kwargs):
         )
 
 
-def pytest_args(mark, local_run):
+def pytest_args(mark, branch, local_run):
     return f'''pytest
         -vv -l
         --color=yes
@@ -504,6 +499,7 @@ def pytest_args(mark, local_run):
         -m {mark}
         {"--local" if local_run else ""}
         {"--runslow" if not local_run else ""}
+        {"--master" if branch == master_branch() else ""}
         '''
 
 
@@ -515,7 +511,7 @@ def validate_pybrew_io(
     local_run,
     **kwargs
 ):
-    run_io(pytest_args('pybrew', local_run) + f'''
+    run_io(pytest_args('pybrew', branch, local_run) + f'''
         --SHA={sha}
         --BRANCH={branch}
         --TEST_REPOSITORY={test_deployment_repo}
@@ -551,7 +547,7 @@ def validate_build_io(
     local_run,
     **kwargs
 ):
-    run_io(pytest_args('build', local_run) + f'''
+    run_io(pytest_args('build', branch, local_run) + f'''
         --WEBSITE_BUILD_PATH={path}
         --BRANCH={branch}
         ''')
@@ -569,9 +565,9 @@ def validate_deployment_io(
     **kwargs
 ):
     url = (
-        f'http://127.0.0.1:4000/'
+        f'http://127.0.0.1:4000'
         if local_run else
-        f'https://{domain_io(repo_path)}/'
+        f'https://{domain_io(repo_path)}'
     )
 
     baseurl = url + (
@@ -583,7 +579,7 @@ def validate_deployment_io(
     traffic_allocation1 = to_jekyll_traffic_allocation(traffic_allocation)
     traffic_allocation2 = json.dumps(traffic_allocation1).replace("'", "")
 
-    run_io(pytest_args('deployment', local_run) + f'''
+    run_io(pytest_args('deployment', branch, local_run) + f'''
         --BRANCH={branch}
         --URL={baseurl}
         --TRAFFIC_ALLOCATION='{traffic_allocation2}'
@@ -663,6 +659,8 @@ def manage_pull_requests_io(
         ]
         return prs()
 
+    # re run split-test-checks
+
     return pipe(
         prs(),
         merge_green_pull_requests_io,
@@ -734,7 +732,6 @@ def block_if_local(local_run, **kwargs):
 
 def is_master(local_run, branch, **kwargs):
     return not local_run and branch == master_branch()
-    # return True
 
 
 def on_branch_updated_io(**kwargs):
