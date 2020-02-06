@@ -157,6 +157,7 @@ def google_test_page_seo_io(**kwarg):
 
 
 def yandex_speller_io(_text, use_cache=True):
+    assert False
     # «Проверка правописания: Яндекс.Спеллер» http://api.yandex.ru/speller/
     text = _text.replace('γδ', '')
 
@@ -201,6 +202,7 @@ def yandex_speller_io(_text, use_cache=True):
 
 @try_n_times_decorator(5, 10)
 def glvrd_proofread_io(text, use_cache=True):
+    assert False
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
     content = {

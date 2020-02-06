@@ -505,7 +505,7 @@ def test_website_performance_io(URL, BRANCH):
         [google_test_page_speed_io, google_test_page_seo_io],
         [
             url_join(URL, ''),
-            url_join(URL, 'blog/7-prichin-pit-chaj-matcha')
+            # url_join(URL, 'blog/7-prichin-pit-chaj-matcha')
         ],
         [False, True],
     )
