@@ -78,7 +78,6 @@ def i_want_to_test_split_test(TRAFFIC_ALLOCATION):
         }
     return entry_point, traffic_allocation
 
-
 @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
