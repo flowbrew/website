@@ -134,7 +134,6 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
     [run_test() for _ in range(0, 10)]
 
 
-@pytest.mark.slow
 @pytest.mark.deployment
 @pytest.mark.not_in_branch
 def test_e2e_404_redirect_io(URL):
