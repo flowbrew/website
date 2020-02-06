@@ -564,10 +564,11 @@ def workflow_runs_io(
     organization,
     repo_name,
     yml_file,
-    branch
+    branch,
+    status=None
 ):
     url = github_endpoint() + \
-        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}"
+        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}" + ('' if not status else '&status=' + status)
 
     r = requests.get(
         url,
@@ -579,7 +580,7 @@ def workflow_runs_io(
 
 
 @curry
-def re_run_workflow_io(github_token, pull_request, yml_file):
+def re_run_workflow_io(github_token, pull_request, yml_file, status=None):
     branch = deep_get(['node', 'headRefName'], pull_request)
     sha = deep_get(
         ['node', 'commits', 'nodes', 0, 'commit', 'oid'],
@@ -598,7 +599,8 @@ def re_run_workflow_io(github_token, pull_request, yml_file):
                 organization,
                 repo_name,
                 yml_file,
-                branch
+                branch,
+                status=status
             ) if x['head_sha'] == sha and x['head_branch'] == branch
         )['id']
     except StopIteration:
