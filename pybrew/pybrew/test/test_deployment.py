@@ -78,7 +78,6 @@ def i_want_to_test_split_test(TRAFFIC_ALLOCATION):
         }
     return entry_point, traffic_allocation
 
-
 @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
@@ -143,19 +142,23 @@ def test_e2e_404_redirect_io(URL):
     with chrome_io() as chrome:
         disable_google_analytics(chrome, URL)
 
+        def assert_is_blog():
+            assert url(chrome) in [
+                url_join(URL, 'blog'),
+                url_join(URL, 'blog') + '/'
+            ]
+            assert 'блог' in chrome.title.lower()
+
         get_url(chrome, URL, '/blog/nonexistent_article')
-        assert url(chrome) == url_join(URL, 'blog') + '/'
-        assert 'блог' in chrome.title.lower()
+        assert_is_blog()
 
         branch = branch_prefix() + random_str()
 
         get_url(chrome, URL, branch, 'blog')
-        assert url(chrome) == url_join(URL, 'blog') + '/'
-        assert 'блог' in chrome.title.lower()
+        assert_is_blog()
 
         get_url(chrome, URL, branch, 'blog', 'nonexistent_article')
-        assert url(chrome) == url_join(URL, 'blog') + '/'
-        assert 'блог' in chrome.title.lower()
+        assert_is_blog()
 
         get_url(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
         assert url(chrome) == url_join(
@@ -469,7 +472,7 @@ def test_website_performance_io(URL, BRANCH):
                     assert audit['score'] >= 0.75
 
             elif is_mobile and name == 'first-contentful-paint-3g':
-                assert audit['score'] >= 0.4
+                assert audit['score'] >= 0.3
 
             elif is_mobile and name == 'first-cpu-idle':
                 assert audit['score'] >= 0.4
