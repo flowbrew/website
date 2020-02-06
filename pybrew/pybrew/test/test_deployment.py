@@ -495,6 +495,9 @@ def test_website_performance_io(URL, BRANCH):
             elif is_mobile and name == 'third-party-summary':
                 assert audit['details']['summary']['wastedMs'] < 650
 
+            elif is_mobile and name == 'total-blocking-time':
+                assert audit['score'] >= 0.6
+
             else:
                 assert audit['score'] >= 0.75
 
