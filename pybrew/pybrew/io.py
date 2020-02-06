@@ -660,7 +660,7 @@ def manage_pull_requests_io(
 
     def re_run_split_test_check_io(pull_requests):
         [
-            re_run_workflow_io(github_token, x, 'split-test')
+            re_run_workflow_io(github_token, x, 'split_test')
             for x in pull_requests if is_open_pull_request(x)
         ]
         return pull_requests

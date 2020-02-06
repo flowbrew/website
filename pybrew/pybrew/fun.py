@@ -559,36 +559,60 @@ def job_name_to_workflow_id_io(pull_request, job_name):
 
 
 @curry
-def re_run_workflow_io(github_token, pull_request, job_name):
-    workflow_id = job_name_to_workflow_id_io(pull_request, job_name)
+def workflow_runs_io(
+    github_token,
+    organization,
+    repo_name,
+    yml_file,
+    branch
+):
+    url = github_endpoint() + \
+        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}"
+
+    r = requests.get(
+        url,
+        headers={
+            'Authorization': 'token ' + github_token,
+        },
+    )
+    return r.json()['workflow_runs']
+
+
+@curry
+def re_run_workflow_io(github_token, pull_request, yml_file):
+    branch = deep_get(['node', 'headRefName'], pull_request)
+    sha = deep_get(
+        ['node', 'commits', 'nodes', 0, 'commit', 'oid'],
+        pull_request
+    )
     repo_name = deep_get(['node', 'repository', 'name'], pull_request)
     organization = deep_get(
         ['node', 'repository', 'owner', 'login'],
         pull_request
     )
 
+    try:
+        workflow_id = next(
+            x for x in workflow_runs_io(
+                github_token,
+                organization,
+                repo_name,
+                yml_file,
+                branch
+            ) if x['head_sha'] == sha and x['head_branch'] == branch
+        )['id']
+    except StopIteration:
+        return
+
     url = github_endpoint() + \
         f"/repos/{organization}/{repo_name}/actions/runs/{workflow_id}/rerun"
 
-    return requests.post(
+    requests.post(
         url,
         headers={
             'Authorization': 'token ' + github_token,
         },
     )
-
-
-@curry
-def workflows_io(github_token, organization, repo_name):
-    url = github_endpoint() + \
-        f"/repos/{organization}/{repo_name}/actions/workflows"
-
-    return requests.get(
-        url,
-        headers={
-            'Authorization': 'token ' + github_token,
-        },
-    ).json()['workflows']
 
 
 @curry
