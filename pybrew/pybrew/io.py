@@ -103,7 +103,11 @@ def cpost(cache_dir, url, data, headers):
             headers=json.loads(jheaders)
         )
 
-    return _cpost(url, json.dumps(data), json.dumps(headers))
+    return _cpost(
+        url,
+        json.dumps(data, ensure_ascii=False),
+        json.dumps(headers, ensure_ascii=False)
+    )
 
 
 @curry
@@ -118,7 +122,11 @@ def cget(cache_dir, url, params, headers):
             headers=json.loads(jheaders)
         )
 
-    return _cget(url, json.dumps(params), json.dumps(headers))
+    return _cget(
+        url,
+        json.dumps(params, ensure_ascii=False),
+        json.dumps(headers, ensure_ascii=False)
+    )
 
 
 def _google_pagespeed_io(
