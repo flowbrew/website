@@ -472,7 +472,7 @@ def test_website_performance_io(URL, BRANCH):
                     assert audit['score'] >= 0.75
 
             elif is_mobile and name == 'first-contentful-paint-3g':
-                assert audit['score'] >= 0.4
+                assert audit['score'] >= 0.3
 
             elif is_mobile and name == 'first-cpu-idle':
                 assert audit['score'] >= 0.4
