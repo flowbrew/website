@@ -96,6 +96,7 @@ def cpost(cache_dir, url, data, headers):
 
     @cachier(cache_dir=cache_dir)
     def _cpost(url, jdata, jheaders):
+        assert False
         return requests.post(
             url,
             data=json.loads(jdata),
@@ -110,6 +111,7 @@ def cget(cache_dir, url, params, headers):
 
     @cachier(cache_dir=cache_dir)
     def _cget(url, jparams, jheaders):
+        assert False
         return requests.get(
             url,
             params=json.loads(jparams),
@@ -157,7 +159,6 @@ def google_test_page_seo_io(**kwarg):
 
 
 def yandex_speller_io(_text, use_cache=True):
-    assert False
     # «Проверка правописания: Яндекс.Спеллер» http://api.yandex.ru/speller/
     text = _text.replace('γδ', '')
 
@@ -202,7 +203,6 @@ def yandex_speller_io(_text, use_cache=True):
 
 @try_n_times_decorator(5, 10)
 def glvrd_proofread_io(text, use_cache=True):
-    assert False
     url = 'https://glvrd.ru/api/v0/@proofread/'
     headers = {}
     content = {
