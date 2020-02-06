@@ -1,0 +1,13 @@
+name: split-test
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  split-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: errorrr

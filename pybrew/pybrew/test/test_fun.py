@@ -3,7 +3,7 @@ import tempfile
 import os
 from datetime import datetime
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io, url_join
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io, url_join, job_name_to_workflow_id_io
 
 
 @pytest.mark.pybrew
@@ -272,11 +272,13 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
                                 "checkSuites": {
                                     "nodes": [
                                         {
+                                            "databaseId": 433375438,
                                             "checkRuns": {
                                                 "nodes": []
                                             }
                                         },
                                         {
+                                            "databaseId": 433375451,
                                             "checkRuns": {
                                                 "nodes": [
                                                     {
@@ -354,14 +356,20 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
     r1 = deep_set(['node', 'mergeStateStatus'], "NOT_IMPORTANT", r)
     assert r1 == results
 
+    assert job_name_to_workflow_id_io(r1, 'nothing-error') == 433375451
+
 
 @pytest.mark.pybrew
 def test_is_green_pull_request():
     assert not is_green_pull_request({
-        "mergeStateStatus": "asgds",
+        "node": {
+            "mergeStateStatus": "asgds",
+        }
     })
     assert is_green_pull_request({
-        "mergeStateStatus": "CLEAN",
+        "node": {
+            "mergeStateStatus": "CLEAN",
+        }
     })
 
 
@@ -370,49 +378,55 @@ def test_is_staled_pull_request():
     current_time = s2t("2020-02-02T09:26:33Z")
     assert not is_stale_pull_request(current_time, {})
     assert not is_stale_pull_request(current_time, {
-        "timelineItems": {
-            "nodes": [
-                {
-                    "label": {
-                        "name": split_test_label()
+        "node": {
+            "timelineItems": {
+                "nodes": [
+                    {
+                        "label": {
+                            "name": split_test_label()
+                        },
+                        "createdAt": s2t("2020-02-02T09:26:10Z")
                     },
-                    "createdAt": s2t("2020-02-02T09:26:10Z")
-                },
-                {
-                    "label": {
-                        "name": split_test_label()
+                    {
+                        "label": {
+                            "name": split_test_label()
+                        },
+                        "removedAt": s2t("2020-02-02T09:26:20Z")
                     },
-                    "removedAt": s2t("2020-02-02T09:26:20Z")
-                },
-            ]
+                ]
+            }
         }
     })
     assert not is_stale_pull_request(current_time, {
-        "timelineItems": {
-            "nodes": [
-                {
-                    "label": {
-                        "name": split_test_label()
+        "node": {
+            "timelineItems": {
+                "nodes": [
+                    {
+                        "label": {
+                            "name": split_test_label()
+                        },
+                        "createdAt": (
+                            current_time - split_test_stale() + tdlt(seconds=1)
+                        )
                     },
-                    "createdAt": (
-                        current_time - split_test_stale() + tdlt(seconds=1)
-                    )
-                },
-            ]
+                ]
+            }
         }
     })
     assert is_stale_pull_request(current_time, {
-        "timelineItems": {
-            "nodes": [
-                {
-                    "label": {
-                        "name": split_test_label()
+        "node": {
+            "timelineItems": {
+                "nodes": [
+                    {
+                        "label": {
+                            "name": split_test_label()
+                        },
+                        "createdAt": (
+                            current_time - split_test_stale()
+                        )
                     },
-                    "createdAt": (
-                        current_time - split_test_stale()
-                    )
-                },
-            ]
+                ]
+            }
         }
     })
 

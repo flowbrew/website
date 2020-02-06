@@ -99,7 +99,7 @@ def url_join(*args_):
     a1, params = partition(lambda x: '?' not in x, args)
 
     if params:
-        a, params2_= params[0].split('?')
+        a, params2_ = params[0].split('?')
         params2 = '?' + params2_
     else:
         a, params2 = ('', '')
@@ -543,6 +543,55 @@ def merge_pull_request_io(github_token, pull_request, mid=None):
 
 
 @curry
+def job_name_to_workflow_id_io(pull_request, job_name):
+    checkSuites = deep_get(
+        ['node', 'commits', 'nodes', 0, 'commit', 'checkSuites', 'nodes'],
+        pull_request
+    )
+
+    return next(
+        x for x in checkSuites if
+        any(
+            True for y in deep_get(['checkRuns', 'nodes'], x)
+            if y['name'] == job_name
+        )
+    ).get('databaseId')
+
+
+@curry
+def re_run_workflow_io(github_token, pull_request, job_name):
+    workflow_id = job_name_to_workflow_id_io(pull_request, job_name)
+    repo_name = deep_get(['node', 'repository', 'name'], pull_request)
+    organization = deep_get(
+        ['node', 'repository', 'owner', 'login'],
+        pull_request
+    )
+
+    url = github_endpoint() + \
+        f"/repos/{organization}/{repo_name}/actions/runs/{workflow_id}/rerun"
+
+    return requests.post(
+        url,
+        headers={
+            'Authorization': 'token ' + github_token,
+        },
+    )
+
+
+@curry
+def workflows_io(github_token, organization, repo_name):
+    url = github_endpoint() + \
+        f"/repos/{organization}/{repo_name}/actions/workflows"
+
+    return requests.get(
+        url,
+        headers={
+            'Authorization': 'token ' + github_token,
+        },
+    ).json()['workflows']
+
+
+@curry
 def close_pull_request_io(github_token, pull_request, mid=None):
     mid = random_str() if not mid else mid
     query = '''
@@ -555,7 +604,7 @@ def close_pull_request_io(github_token, pull_request, mid=None):
         }
     }
     '''
-    return requests.post(
+    r = requests.post(
         'https://api.github.com/graphql',
         json={
             'query': query,
@@ -567,7 +616,8 @@ def close_pull_request_io(github_token, pull_request, mid=None):
         headers={
             'Authorization': 'token ' + github_token,
         }
-    ).json()['data']['closePullRequest']['clientMutationId']
+    ).json()
+    return r['data']['closePullRequest']['clientMutationId']
 
 
 @curry
@@ -606,7 +656,7 @@ def create_split_test_label_io(github_token, repository_id):
         github_token=github_token,
         repository_id=repository_id,
         name=split_test_label(),
-        color='a2eeef',
+        color='0075ca',
         description='The branch is receiving live traffic',
         mid=None
     )
@@ -816,6 +866,7 @@ query ($owner: String!, $name: String!, $master: String!) {
                 oid
                 checkSuites(last: 10) {
                   nodes {
+                    databaseId
                     checkRuns(last: 10) {
                       nodes {
                         status
@@ -887,7 +938,11 @@ query ($owner: String!, $name: String!, $master: String!) {
 
 
 def is_green_pull_request(pull_request):
-    return pull_request.get('mergeStateStatus', None) == 'CLEAN'
+    return pull_request.get('node', '').get('mergeStateStatus', None) == 'CLEAN'
+
+
+def is_open_pull_request(pull_request):
+    return pull_request.get('node', {}).get('state', '') == 'OPEN'
 
 
 @curry
@@ -913,7 +968,7 @@ tdlt = timedelta
 
 def is_stale_pull_request(current_time, pull_request):
     last_action = pipe(
-        pull_request.get('timelineItems', {}).get('nodes', []),
+        pull_request.get('node', {}).get('timelineItems', {}).get('nodes', []),
         filter(
             lambda x:
                 x.get('label', {}).get('name', None) == split_test_label()

@@ -610,12 +610,10 @@ def cicd_io(repo_path, event_name, **kwargs_):
         }
     }
 
-    if event_name == 'push':
+    if event_name == 'push' or event_name == 'schedule':
         on_branch_updated_io(**kwargs)
     elif event_name == 'delete':
         ob_branch_deleted_io(**kwargs)
-    elif event_name == 'schedule':
-        on_schedule_io(**kwargs)
     else:
         raise Exception(f'Unknown event "{event_name}""')
 
@@ -660,12 +658,18 @@ def manage_pull_requests_io(
         ]
         return prs()
 
-    # re run split-test-checks
+    def re_run_split_test_check_io(pull_requests):
+        [
+            re_run_workflow_io(github_token, x, 'split-test')
+            for x in pull_requests if is_open_pull_request(x)
+        ]
+        return pull_requests
 
     return pipe(
         prs(),
         merge_green_pull_requests_io,
         close_stale_pull_requests_io,
+        re_run_split_test_check_io,
         allocate_traffic_to_pull_requests(max_parallel_split_tests_io()),
     )
 
@@ -682,19 +686,11 @@ def apply_labels_io(
 
     github_token = secret_io('GITHUB_WEBSITE_TOKEN')
 
-    repository_id = repository_io(
-        github_token=github_token,
-        organization=organization,
-        repo_name=repo_name
-    )['id']
+    repository_id = repository_io(github_token, organization, repo_name)['id']
 
     create_split_test_label_io(github_token, repository_id)
     [add_split_test_label_io(github_token, x) for x in yes]
     [remove_split_test_label_io(github_token, x) for x in no]
-
-
-def on_schedule_io(**kwargs):
-    pass
 
 
 def ob_branch_deleted_io(**kwargs):

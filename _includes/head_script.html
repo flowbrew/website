@@ -7,6 +7,8 @@
       {% include dist/split.bundle.js %}
 
       {% unless page.disable_split_test %}
+      {% assign traffic_allocation = site.traffic-allocation %}
+
       Split.split_test_io(
         "{{ site.baseurl }}",
         "{{ site.github-commit-sha }}",
@@ -17,7 +19,7 @@
             'debug_split_test/b': 0.45,
           }
         {% else %}
-          {{ site.traffic_allocation | jsonify }}
+          {{ traffic_allocation | jsonify }}
         {% endif %}
       );
       {% endunless %}
