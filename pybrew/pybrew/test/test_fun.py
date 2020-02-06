@@ -250,6 +250,13 @@ def test_pull_requests_io(ORGANIZATION, TEST_REPOSITORY):
     results = {
         "node": {
             "id": "MDExOlB1bGxSZXF1ZXN0MzY5OTkxMDA1",
+            "labels": {
+                "edges": [
+                    {"node": {"name": "bug"}},
+                    {"node": {"name": "documentation"}},
+                    {"node": {"name": "good first issue"}}
+                    ]
+            },
             "number": 1,
             "state": "OPEN",
             "headRefName": "pull_request_test",

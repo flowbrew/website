@@ -870,6 +870,13 @@ query ($owner: String!, $name: String!, $master: String!) {
       edges {
         node {
           id
+          labels(last: 10) {
+            edges {
+              node {
+                name
+              }
+            }
+          }
           number
           state
           headRefName
@@ -1010,6 +1017,14 @@ def is_stale_pull_request(current_time, pull_request):
     return 'createdAt' in last_action and (
         current_time - last_action.get('createdAt')
     ) >= split_test_stale()
+
+
+@curry
+def is_labeled_pull_request(pull_request, label_name):
+    return any(
+        deep_get(['node', 'name'], x) == label_name
+        for x in deep_get(['node', 'labels', 'edges'], pull_request)
+    )
 
 
 def is_suitable_for_split_testing(pull_request):

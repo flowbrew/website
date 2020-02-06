@@ -686,11 +686,19 @@ def apply_labels_io(
 
     github_token = secret_io('GITHUB_WEBSITE_TOKEN')
 
-    repository_id = repository_io(github_token, organization, repo_name)['id']
+    create_split_test_label_io(
+        github_token,
+        repository_io(github_token, organization, repo_name)['id']
+    )
 
-    create_split_test_label_io(github_token, repository_id)
-    [add_split_test_label_io(github_token, x) for x in yes]
-    [remove_split_test_label_io(github_token, x) for x in no]
+    [
+        add_split_test_label_io(github_token, x) for x in yes
+        if not is_labeled_pull_request(x, split_test_label())
+    ]
+    [
+        remove_split_test_label_io(github_token, x) for x in no
+        if is_labeled_pull_request(x, split_test_label())
+    ]
 
 
 def ob_branch_deleted_io(**kwargs):
