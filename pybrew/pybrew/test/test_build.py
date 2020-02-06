@@ -45,6 +45,7 @@ def all_texts_io(path):
 @pytest.mark.build
 def test_texts_with_glvrd_io(WEBSITE_BUILD_PATH):
     def __validate_io(path, text):
+        print(path, text)
         r = glvrd_proofread_io(text)
         assert r['red'] >= 7.9
         assert r['blue'] >= 7.9
