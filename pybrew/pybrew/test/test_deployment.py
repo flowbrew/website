@@ -143,19 +143,23 @@ def test_e2e_404_redirect_io(URL):
     with chrome_io() as chrome:
         disable_google_analytics(chrome, URL)
 
+        def assert_is_blog():
+            assert url(chrome) in [
+                url_join(URL, 'blog'),
+                url_join(URL, 'blog') + '/'
+            ]
+            assert 'блог' in chrome.title.lower()
+
         get_url(chrome, URL, '/blog/nonexistent_article')
-        assert url(chrome) == url_join(URL, 'blog') + '/'
-        assert 'блог' in chrome.title.lower()
+        assert_is_blog()
 
         branch = branch_prefix() + random_str()
 
         get_url(chrome, URL, branch, 'blog')
-        assert url(chrome) == url_join(URL, 'blog') + '/'
-        assert 'блог' in chrome.title.lower()
+        assert_is_blog()
 
         get_url(chrome, URL, branch, 'blog', 'nonexistent_article')
-        assert url(chrome) == url_join(URL, 'blog') + '/'
-        assert 'блог' in chrome.title.lower()
+        assert_is_blog()
 
         get_url(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
         assert url(chrome) == url_join(
