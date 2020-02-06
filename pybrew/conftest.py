@@ -1,5 +1,6 @@
 import pytest
 import os
+import json
 
 
 def pytest_addoption(parser):
@@ -11,12 +12,17 @@ def pytest_addoption(parser):
                      action="store_true", default=False,
                      help="skipping some tests unavalible in local"
                      )
+    parser.addoption("--master",
+                     action="store_true", default=False,
+                     help="run some tests avalible only in local"
+                     )
     parser.addoption("--ORGANIZATION", action="store", default="")
     parser.addoption("--URL", action="store", default="")
     parser.addoption("--TEST_REPOSITORY", action="store", default="")
     parser.addoption("--BRANCH", action="store", default="")
     parser.addoption("--SHA", action="store", default="")
     parser.addoption("--WEBSITE_BUILD_PATH", action="store", default="")
+    parser.addoption("--TRAFFIC_ALLOCATION", action="store", default="")
 
 
 def pytest_configure(config):
@@ -31,6 +37,14 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skip_in_local" in item.keywords:
                 item.add_marker(skip_local)
+
+    if not config.getoption("--master") and not config.getoption("--local"):
+        not_in_branch = pytest.mark.skip(
+            reason="can run this with --master or --local"
+        )
+        for item in items:
+            if "not_in_branch" in item.keywords:
+                item.add_marker(not_in_branch)
 
     if config.getoption("--runslow"):
         return
@@ -73,3 +87,10 @@ def WEBSITE_BUILD_PATH(request):
 @pytest.fixture
 def URL(request):
     return request.config.getoption("--URL")
+
+
+@pytest.fixture
+def TRAFFIC_ALLOCATION(request):
+    return json.loads(
+        request.config.getoption("--TRAFFIC_ALLOCATION")
+    )

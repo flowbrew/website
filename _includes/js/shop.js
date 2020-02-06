@@ -445,12 +445,14 @@ function init_navigation() {
   });
 }
 
-export function is_flb_bot_session() {
-  return (
-    getUrlParam("IS_FLB_BOT", "")
-      .toLowerCase()
-      .trim() == "true"
-  );
+const DISABLE_GA_COOKIE = "disable_google_analytics";
+
+export function disable_google_analytics() {
+  Cookies.set(DISABLE_GA_COOKIE, "1", { expires: 30 });
+}
+
+export function is_google_analytics_diabled() {
+  return Cookies.get(DISABLE_GA_COOKIE) == "1";
 }
 
 export function mdc_set_textfield(selector, value) {

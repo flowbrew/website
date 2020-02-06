@@ -2,14 +2,43 @@
   window.dataLayer = window.dataLayer || [];
 </script>
 
+<script type="text/javascript">
+  //<![CDATA[
+      {% include dist/split.bundle.js %}
+
+      {% unless page.disable_split_test %}
+      {% assign traffic_allocation = site.traffic-allocation %}
+
+      Split.split_test_io(
+        "{{ site.baseurl }}",
+        "{{ site.github-commit-sha }}",
+        {% if page.debug_split_test %}
+          {
+            '': 0.2,
+            'debug_split_test/a': 0.35,
+            'debug_split_test/b': 0.45,
+          }
+        {% else %}
+          {{ traffic_allocation | jsonify }}
+        {% endif %}
+      );
+      {% endunless %}
+
+      {% if page.try_redirect_to_backup_page %}
+      Split.try_redirect_to_backup_page_io("{{ site.branch-prefix }}");
+      {% endif %}
+  //]]>
+</script>
+
+
 <script type="text/javascript" defer>
   //<![CDATA[
-      {% include dist/bundle.js %}
+      {% include dist/shop.bundle.js %}
   //]]>
 </script>
 
 <script type="text/javascript" defer>
-  if (!Shop.is_flb_bot_session()) {
+  if (!Shop.is_google_analytics_diabled()) {
     (function(w, d, s, l, i) {
       w[l] = w[l] || [];
       w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });

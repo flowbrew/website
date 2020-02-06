@@ -1,9 +1,17 @@
 name: CI/CD
 
-on: [push, delete]
+on:
+  push:
+    branches:
+      - "*"
+  delete:
+    branches:
+      - "*"
+  schedule:
+    - cron: "*/15 * * * *"
 
 jobs:
-  build-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: nelonoel/branch-name@v1
