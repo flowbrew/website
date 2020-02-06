@@ -91,44 +91,6 @@ def wait_until_html_deployed_io(url: str, f):
     assert f(soup), f'Page {url} is not valid'
 
 
-@curry
-def cpost(cache_dir, url, data, headers):
-
-    @cachier(cache_dir=cache_dir)
-    def _cpost(url, jdata, jheaders):
-        assert False
-        return requests.post(
-            url,
-            data=json.loads(jdata),
-            headers=json.loads(jheaders)
-        )
-
-    return _cpost(
-        url,
-        json.dumps(data, ensure_ascii=False),
-        json.dumps(headers, ensure_ascii=False)
-    )
-
-
-@curry
-def cget(cache_dir, url, params, headers):
-
-    @cachier(cache_dir=cache_dir)
-    def _cget(url, jparams, jheaders):
-        assert False
-        return requests.get(
-            url,
-            params=json.loads(jparams),
-            headers=json.loads(jheaders)
-        )
-
-    return _cget(
-        url,
-        json.dumps(params, ensure_ascii=False),
-        json.dumps(headers, ensure_ascii=False)
-    )
-
-
 def _google_pagespeed_io(
     google_pagespeed_key,
     url,
@@ -166,18 +128,23 @@ def google_test_page_seo_io(**kwarg):
     return _google_pagespeed_io(category='seo', **kwarg)
 
 
-def yandex_speller_io(_text, use_cache=True):
+def yandex_speller_io(__text, use_cache=True):
     # «Проверка правописания: Яндекс.Спеллер» http://api.yandex.ru/speller/
-    text = _text.replace('γδ', '')
+    def yandex(t):
+        text = t.replace('γδ', '')
+        url = 'https://speller.yandex.net/services/spellservice.json/checkText'
+        headers = {}
+        params = {
+            'text': text
+        }
+        return requests.get(url, params=params, headers=headers).json()
 
-    url = 'https://speller.yandex.net/services/spellservice.json/checkText'
-    headers = {}
-    params = {
-        'text': text
-    }
+    @cachier(cache_dir='.cache/yandex')
+    def yandexc(t):
+        return yandex(t)
 
-    _f = cget('.cache/yandex') if use_cache else requests.get
-    r = _f(url, params=params, headers=headers).json()
+    _text = __text.strip('\n\r').strip()
+    r = yandexc(_text) if use_cache else yandex(_text)
 
     def _make_result(x):
         def _error(code):
@@ -210,15 +177,21 @@ def yandex_speller_io(_text, use_cache=True):
 
 
 @try_n_times_decorator(5, 10)
-def glvrd_proofread_io(text, use_cache=True):
-    url = 'https://glvrd.ru/api/v0/@proofread/'
-    headers = {}
-    content = {
-        'chunks': text
-    }
+def glvrd_proofread_io(text_, use_cache=True):
+    def glvrd(t):
+        url = 'https://glvrd.ru/api/v0/@proofread/'
+        headers = {}
+        content = {
+            'chunks': t
+        }
+        return requests.post(url, data=content, headers=headers).json()
 
-    _f = cpost('.cache/glvrd') if use_cache else requests.post
-    r = _f(url, data=content, headers=headers).json()
+    @cachier(cache_dir='.cache/glvrd')
+    def glvrdc(t):
+        return glvrd(t)
+
+    text = text_.strip('\n\r').strip()
+    r = glvrdc(text) if use_cache else glvrd(text)
 
     total_length = comp(len, re.sub)(
         r'[А-Яа-яA-Za-z0-9-]+([^А-Яа-яA-Za-z0-9-]+)?',
