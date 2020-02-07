@@ -386,6 +386,7 @@ def cleanup_io(deployment_repo, ref_branch, **kwargs):
 
 @cachier(cache_dir='.cache/baked')
 def tinify_bake_io(img: bytes, resolution: int) -> bytes:
+    print('LOL')
     assert False
     source = tinify.from_buffer(img)
     if resolution > 0:
@@ -424,8 +425,9 @@ def bake_images_io(
         assert os.path.isfile('.cache/baked/.pybrew.io.tinify_bake_io')
         hh = xxxx('.cache/baked/.pybrew.io.tinify_bake_io')
         print('hhhhhhh', hh)
-        assert False
+        # assert False
         with open(path, 'rb') as f, open(path2, 'wb') as f2:
+            print(path, path2)
             comp(f2.write, tinify_bake_io)(f.read(), resolution)
 
     with Path(os.path.join(repo_path, 'assets')):
@@ -536,8 +538,8 @@ def build_npm_io(repo_path, local_run, **kwargs):
 
 def build_io(local_run, **__kwargs):
     kwargs = {**__kwargs, **{'local_run': local_run}}
-    # if not local_run:
-    bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
+    if not local_run:
+        bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
     build_npm_io(**kwargs)
     build_jekyll_io(**kwargs)
 
