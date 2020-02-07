@@ -6,6 +6,7 @@ import re
 import tinify
 import time
 import json
+import os
 from datetime import datetime
 
 from selenium import webdriver
@@ -139,8 +140,11 @@ def yandex_speller_io(__text, use_cache=True):
         }
         return requests.get(url, params=params, headers=headers).json()
 
+    assert os.path.isfile('.cache/glvrd/.pybrew.io.yandexc')
+
     @cachier(cache_dir='.cache/yandex')
     def yandexc(t):
+        assert False
         return yandex(t)
 
     _text = __text.strip('\n\r').strip()
@@ -176,7 +180,7 @@ def yandex_speller_io(__text, use_cache=True):
     return comp(list, filterempty)(_make_result(x) for x in r)
 
 
-@try_n_times_decorator(5, 10)
+# @try_n_times_decorator(5, 10)
 def glvrd_proofread_io(text_, use_cache=True):
     def glvrd(t):
         url = 'https://glvrd.ru/api/v0/@proofread/'
@@ -186,8 +190,11 @@ def glvrd_proofread_io(text_, use_cache=True):
         }
         return requests.post(url, data=content, headers=headers).json()
 
+    assert os.path.isfile('.cache/glvrd/.pybrew.io.glvrdc')
+
     @cachier(cache_dir='.cache/glvrd')
     def glvrdc(t):
+        assert False
         return glvrd(t)
 
     text = text_.strip('\n\r').strip()
