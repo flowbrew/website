@@ -393,6 +393,9 @@ def tinify_bake_io(img: bytes, resolution: int) -> bytes:
     else:
         return source.to_buffer()
 
+def xxxx(path):
+    with open(path,"rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
 
 def bake_images_io(
     tinify_key,
@@ -419,7 +422,7 @@ def bake_images_io(
         path2 = _baked_image_name(path, resolution)
         os.makedirs(os.path.dirname(path2), exist_ok=True)
         assert os.path.isfile('.cache/baked/.pybrew.io.tinify_bake_io')
-        assert hashlib.md5('.cache/baked/.pybrew.io.tinify_bake_io').hexdigest()
+        assert xxxx('.cache/baked/.pybrew.io.tinify_bake_io')
         with open(path, 'rb') as f, open(path2, 'wb') as f2:
             comp(f2.write, tinify_bake_io)(f.read(), resolution)
 
@@ -531,8 +534,8 @@ def build_npm_io(repo_path, local_run, **kwargs):
 
 def build_io(local_run, **__kwargs):
     kwargs = {**__kwargs, **{'local_run': local_run}}
-    if not local_run:
-        bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
+    # if not local_run:
+    bake_images_io(tinify_key=secret_io('TINIFY_KEY'), **kwargs)
     build_npm_io(**kwargs)
     build_jekyll_io(**kwargs)
 
