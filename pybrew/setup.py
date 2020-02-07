@@ -24,7 +24,7 @@ setup(
     packages=find_packages(exclude=('tests',)),
     install_requires=[
         'pytest==3.8.0',
-        'pyyaml==3.13',
+        'pyyaml==5.1',
         'beautifulsoup4==4.6.3',
         'path==13.1.0',
         'slackclient==2.5.0',
