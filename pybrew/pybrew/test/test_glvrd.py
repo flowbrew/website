@@ -2,6 +2,7 @@ import pytest
 from pybrew import glvrd_proofread_io
 
 
+@pytest.mark.skip(reason="temp")
 @pytest.mark.slow
 @pytest.mark.pybrew
 def test_glvrd_proofread_io():
