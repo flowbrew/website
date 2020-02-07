@@ -115,6 +115,7 @@ def cget(cache_dir, url, params, headers):
     return _cget(url, json.dumps(params), json.dumps(headers))
 
 
+@try_n_times_decorator(n=3, timeout=15)
 def _google_pagespeed_io(
     google_pagespeed_key,
     url,
