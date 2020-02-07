@@ -75,11 +75,6 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
 @try_n_times_decorator(n=30, timeout=15)
 def wait_until_html_deployed_io(url: str, f):
     # This is a workaround of caching on get requests in Github Actions
-    api_url = f"https://wvailztjei.execute-api.eu-west-1.amazonaws.com/default/deploy_validator?random=" + random_str()
-    content = {
-        "url": url,
-        "random": random_str()
-    }
     headers = {
         'User-Agent': 'Github Action',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -87,7 +82,7 @@ def wait_until_html_deployed_io(url: str, f):
         'Expires': '0',
         'RANDOM': random_str()
     }
-    html = requests.post(api_url, json=content, headers=headers).text
+    html = requests.get(url + '?random=' + random_str(), headers=headers).text
     soup = BeautifulSoup(html, features="html.parser")
     assert f(soup), f'Page {url} is not valid'
 
