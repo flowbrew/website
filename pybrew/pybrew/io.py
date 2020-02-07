@@ -422,7 +422,9 @@ def bake_images_io(
         path2 = _baked_image_name(path, resolution)
         os.makedirs(os.path.dirname(path2), exist_ok=True)
         assert os.path.isfile('.cache/baked/.pybrew.io.tinify_bake_io')
-        assert xxxx('.cache/baked/.pybrew.io.tinify_bake_io')
+        hh = xxxx('.cache/baked/.pybrew.io.tinify_bake_io')
+        print('hhhhhhh', hh)
+        assert False
         with open(path, 'rb') as f, open(path2, 'wb') as f2:
             comp(f2.write, tinify_bake_io)(f.read(), resolution)
 
