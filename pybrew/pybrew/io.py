@@ -6,6 +6,7 @@ import re
 import tinify
 import time
 import json
+import hashlib
 import os
 from datetime import datetime
 
@@ -140,7 +141,7 @@ def yandex_speller_io(__text, use_cache=True):
         }
         return requests.get(url, params=params, headers=headers).json()
 
-    assert os.path.isfile('.cache/glvrd/.pybrew.io.yandexc')
+    assert os.path.isfile('.cache/yandex/.pybrew.io.yandexc')
 
     @cachier(cache_dir='.cache/yandex')
     def yandexc(t):
@@ -385,6 +386,7 @@ def cleanup_io(deployment_repo, ref_branch, **kwargs):
 
 @cachier(cache_dir='.cache/baked')
 def tinify_bake_io(img: bytes, resolution: int) -> bytes:
+    assert False
     source = tinify.from_buffer(img)
     if resolution > 0:
         return source.resize(method='scale', width=resolution).to_buffer()
@@ -416,6 +418,8 @@ def bake_images_io(
     def _bake_image_io(path, resolution):
         path2 = _baked_image_name(path, resolution)
         os.makedirs(os.path.dirname(path2), exist_ok=True)
+        assert os.path.isfile('.cache/baked/.pybrew.io.tinify_bake_io')
+        assert hashlib.md5('.cache/baked/.pybrew.io.tinify_bake_io').hexdigest()
         with open(path, 'rb') as f, open(path2, 'wb') as f2:
             comp(f2.write, tinify_bake_io)(f.read(), resolution)
 
