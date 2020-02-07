@@ -25,6 +25,7 @@ def chrome_io(*args, **kwds):
         stop_chrome_io(driver)
 
 
+@try_n_times_decorator(n=3, timeout=15)
 def run_chrome_io(*args, **kwds):
     options = webdriver.ChromeOptions()
     options.add_argument('--disable-extensions')
@@ -71,21 +72,17 @@ def wait_until_deployed_by_sha_io_(domain, branch, sha, **kwargs):
     )
 
 
-@try_n_times_decorator(n=25, timeout=15)
+@try_n_times_decorator(n=30, timeout=15)
 def wait_until_html_deployed_io(url: str, f):
     # This is a workaround of caching on get requests in Github Actions
-    api_url = f"https://wvailztjei.execute-api.eu-west-1.amazonaws.com/default/deploy_validator?random=" + random_str()
-    content = {
-        "url": url,
-        "random": random_str()
-    }
     headers = {
         'User-Agent': 'Github Action',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
+        'RANDOM': random_str()
     }
-    html = requests.post(api_url, json=content, headers=headers).text
+    html = requests.get(url + '?random=' + random_str(), headers=headers).text
     soup = BeautifulSoup(html, features="html.parser")
     assert f(soup), f'Page {url} is not valid'
 
@@ -665,11 +662,19 @@ def manage_pull_requests_io(
         ]
         return pull_requests
 
+    def re_run_failed_builds_io(pull_requests):
+        [
+            re_run_workflow_io(github_token, x, 'cicd', status='failure')
+            for x in pull_requests if is_open_pull_request(x)
+        ]
+        return pull_requests
+
     return pipe(
         prs(),
         merge_green_pull_requests_io,
         close_stale_pull_requests_io,
         re_run_split_test_check_io,
+        re_run_failed_builds_io,
         allocate_traffic_to_pull_requests(max_parallel_split_tests_io()),
     )
 

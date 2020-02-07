@@ -1,9 +1,10 @@
-FROM nikolaik/python-nodejs:latest
+FROM nikolaik/python-nodejs:python3.8-nodejs12
 
 # Sometimes ruby crashes when building with jekyll
 # I don't know if it will fix it, but there is a chance
 ENV BUNDLE_FORCE_RUBY_PLATFORM true
 
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN apt-get -y update && apt-get -y install \
         apt-utils \
         ruby-full \
@@ -19,17 +20,17 @@ RUN gem install \
 
 RUN pip install --upgrade pip
 RUN pip install \
-        "pytest!=5.3.4" \
-        pyyaml \
-        beautifulsoup4 \
-        path \
-        slackclient \
-        requests \
-        toolz \
-        fn \
-        tinify \
-        more-itertools \
-        cachier
+        "pytest==3.8.0" \
+        "pyyaml==3.13" \
+        "beautifulsoup4==4.6.3"\
+        "path==13.1.0" \
+        "slackclient==2.5.0" \
+        "requests==2.21.0" \
+        "toolz==0.9.0" \
+        "fn==0.4.3" \
+        "tinify==1.5.1" \
+        "more-itertools==4.3.0" \
+        "cachier==1.2.8"
 
 RUN npm update && npm install -g npm
 
@@ -46,7 +47,7 @@ RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 # set display port to avoid crash
 ENV DISPLAY=:99
 # install selenium
-RUN pip install --upgrade pip && pip install selenium
+RUN pip install --upgrade pip && pip install "selenium==3.141.0"
 # ***
 
 # Baking npm deps

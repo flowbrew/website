@@ -55,7 +55,13 @@ PYEOF
 EOF
 )
 
-docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
+if docker build ${BUILDPARAMS} -t "$DOCKERNAME" .
+then
+    echo docker built sucessfully
+else
+    echo ERROR: cant build docker
+    exit 1
+fi
 
 if [ "$1" != "local" ]; then
     docker push "$DOCKERNAME"
