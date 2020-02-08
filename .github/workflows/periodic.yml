@@ -1,4 +1,4 @@
-name: split-test
+name: Periodic
 
 on:
   push:
