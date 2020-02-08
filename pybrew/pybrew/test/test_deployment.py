@@ -24,7 +24,7 @@ def validate_logs_io(driver):
 
 
 def get_url_io(driver, allow_split_test=False, *args):
-    args2 = args + [disable_split_test_url_param()]
+    args2 = list(args) + [disable_split_test_url_param()]
     return driver.get(url_join(*args2))
 
 
