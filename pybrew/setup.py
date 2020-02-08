@@ -37,8 +37,16 @@ setup(
         'selenium==3.141.0',
         'oauth2client==4.1.3',
         'google-api-python-client==1.7.11',
-        'scipy==1.1.0',
-        'pandas==1.0.0',
+        
+        # Analytics 
+        'numpy',
+        'scipy',
+        'matplotlib',
+        'ipython',
+        'jupyter',
+        'pandas',
+        'sympy',
+        'nose',
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

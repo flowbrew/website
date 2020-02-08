@@ -33,8 +33,7 @@ RUN pip install \
         "cachier==1.2.8" \
         "oauth2client==4.1.3" \
         "google-api-python-client==1.7.11" \
-        "scipy==1.1.0" \
-        "pandas==1.0.0"
+        numpy scipy matplotlib ipython jupyter pandas sympy nose
 
 RUN npm update && npm install -g npm
 
