@@ -33,6 +33,10 @@ export function split_test_io(base, current_sha, traffic_allocation) {
     return;
   }
 
+  if (window.location.search.includes("__google_pagespeed_bot")) {
+    return;
+  }
+
   var host =
     location.protocol +
     "//" +

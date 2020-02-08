@@ -127,7 +127,7 @@ def _google_pagespeed_io(
         'Accept': 'application/json',
     }
     params = {
-        'url': url,
+        'url': url_join(url, '?__google_pagespeed_bot=1'),
         'category': category,
         'strategy': 'mobile' if is_mobile else 'desktop',
         'key': google_pagespeed_key,
