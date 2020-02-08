@@ -27,6 +27,9 @@ from functools import partial, reduce as reduce_, lru_cache
 from fn.iters import flatten
 from itertools import chain, product, tee, filterfalse, repeat
 
+from cachier import cachier
+from contextlib import contextmanager
+
 
 def chain_(x): return chain(*x)
 
@@ -397,6 +400,7 @@ def github_push_io(path, message, allow_empty):
 def github_clone_io(username, token, organization, repo_name, branch, path):
     clone_url = github_clone_url(username, token, organization, repo_name)
     run_io(f'git clone \
+                --depth 1 \
                 --single-branch --branch "{branch}" \
                 "{clone_url}" \
                 "{path}"')
@@ -568,7 +572,8 @@ def workflow_runs_io(
     status=None
 ):
     url = github_endpoint() + \
-        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}" + ('' if not status else '&status=' + status)
+        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}" + \
+        ('' if not status else '&status=' + status)
 
     r = requests.get(
         url,
@@ -1116,3 +1121,15 @@ def copy_dir_io(source, dest):
 
 def allocate_traffic(pull_requests, visitors_per_day):
     pass
+
+
+def secret_io(key):
+    return os.environ[key]
+
+
+@contextmanager
+def github_io(*args, message='', allow_empty=False, **kwds):
+    with tmp() as repo_path:
+        github_clone_io(*args, path=repo_path, **kwds)
+        yield repo_path
+        github_push_io(repo_path, message, allow_empty)

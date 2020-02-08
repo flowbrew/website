@@ -10,4 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: error
+      - env:
+          GITHUB_WEBSITE_USERNAME: ${{ secrets.GITHUB_WEBSITE_USERNAME }}
+          GITHUB_WEBSITE_TOKEN: ${{ secrets.GITHUB_WEBSITE_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          GOOGLE_ANALYTICS: ${{ secrets.GOOGLE_ANALYTICS }}
+        run: |
+          ./cicd \
+            ${{ github.workflow }} \
+            split_test \
+            ${{ github.event.ref }}

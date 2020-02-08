@@ -1,7 +1,7 @@
 
 from .fun import *
-from .io import secret_io
 
+import os
 import pandas as pd
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
@@ -43,3 +43,41 @@ def to_dataframe(data):
 
     dataFrameFormat = pd.DataFrame(finalRows)
     return dataFrameFormat
+
+
+def publish_paper_io(
+    paper_name,
+    event_name,
+    organization,
+    deployment_repo,
+    branch,
+    **kwargs
+):
+    with github_io(
+        username=secret_io('GITHUB_WEBSITE_USERNAME'),
+        token=secret_io('GITHUB_WEBSITE_TOKEN'),
+        repo_name=deployment_repo,
+        branch='master',
+        message=event_name + ' report',
+        organization=organization
+    ) as repo_path:
+        paper_folder = os.path.join(
+            repo_path,
+            branch_to_prefix(branch),
+            'papers',
+        )
+        os.makedirs(paper_folder, exist_ok=True)
+        run_io(
+            f'jupyter nbconvert \
+                --execute \
+                --output-dir {paper_folder} \
+                ./papers/{paper_name}.ipynb'
+        )
+
+
+def on_pre_split_test_analysis(**kwargs):
+    publish_paper_io(paper_name='test', **kwargs)
+
+
+def on_split_test_io(**kwargs):
+    pass

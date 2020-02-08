@@ -1,4 +1,5 @@
 from .fun import *
+from .analytics import on_pre_split_test_analysis, on_split_test_io
 
 import operator
 import math
@@ -51,10 +52,6 @@ def run_chrome_io(*args, **kwds):
 
 def stop_chrome_io(driver):
     driver.quit()
-
-
-def secret_io(key):
-    return os.environ[key]
 
 
 def wait_until_deployed_by_sha_io(url: str, sha: str):
@@ -612,14 +609,33 @@ def cicd_io(repo_path, event_name, **kwargs_):
         }
     }
 
-    if event_name == 'push' or event_name == 'schedule':
-        on_branch_updated_io(**kwargs)
-        assert time.time() - start_time < 600, \
-            "cicd_io is too slow, consider to speedup"
-    elif event_name == 'delete':
-        ob_branch_deleted_io(**kwargs)
-    else:
-        raise Exception(f'Unknown event "{event_name}""')
+    notify_io_ = partial(
+        github_action_notification_io,
+        slack_token=secret_io('SLACK_BOT_TOKEN'),
+        **kwargs
+    )
+
+    try:
+        validate_pybrew_io(**kwargs)
+
+        if event_name == 'push' or event_name == 'schedule':
+            on_branch_updated_io(**kwargs)
+            assert time.time() - start_time < 600, \
+                "cicd_io is too slow, consider to speedup"
+        elif event_name == 'delete':
+            on_branch_deleted_io(**kwargs)
+        elif event_name == 'pre_split_test_analysis':
+            on_pre_split_test_analysis(**kwargs)
+        elif event_name == 'split_test':
+            on_split_test_io(**kwargs)
+        else:
+            raise Exception(f'Unknown event "{event_name}""')
+
+        notify_io_(success=True)
+
+    except Exception as _:
+        notify_io_(success=False)
+        raise
 
 
 def website_traffic_io():
@@ -711,7 +727,7 @@ def apply_labels_io(
     ]
 
 
-def ob_branch_deleted_io(**kwargs):
+def on_branch_deleted_io(**kwargs):
     cleanup_io(
         **{
             **kwargs,
@@ -725,6 +741,10 @@ def ob_branch_deleted_io(**kwargs):
 def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
     if not git_has_unstaged_changes_io():
         return
+
+    assert local_run, "State was changed during the run. \
+        Perhaps @cachier updated some cache. \
+        Run build locally to update the cache and only then commit changes."
 
     if local_run:
         run_io(
@@ -740,13 +760,6 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
                 {repo_path} /local_website/'
         )
 
-    else:
-        github_push_io(
-            path=repo_path,
-            message=f'CI/CD updated state of {branch}',
-            allow_empty=False
-        )
-
 
 def block_if_local(local_run, **kwargs):
     if local_run:
@@ -760,51 +773,36 @@ def is_master(local_run, branch, **kwargs):
 
 
 def on_branch_updated_io(**kwargs):
-    notify_io_ = partial(
-        github_action_notification_io,
-        slack_token=secret_io('SLACK_BOT_TOKEN'),
-        **kwargs
-    )
-
     master = is_master(**kwargs)
 
     with tmp() as ws:
-        try:
-            validate_pybrew_io(**kwargs)
+        traffic_allocation = (
+            manage_pull_requests_io(**kwargs) if master else None
+        )
 
-            traffic_allocation = (
-                manage_pull_requests_io(**kwargs) if master else None
-            )
+        build_io(
+            dest=ws,
+            traffic_allocation=traffic_allocation,
+            **kwargs
+        )
+        validate_build_io(path=ws, **kwargs)
 
-            build_io(
-                dest=ws,
+        # ---
+
+        git_push_state_if_updated_io(**kwargs)
+
+        # ---
+
+        deploy_io(path=ws, **kwargs)
+        validate_deployment_io(
+            traffic_allocation=traffic_allocation,
+            **kwargs
+        )
+
+        if master:
+            apply_labels_io(
                 traffic_allocation=traffic_allocation,
                 **kwargs
             )
-            validate_build_io(path=ws, **kwargs)
 
-            # ---
-
-            git_push_state_if_updated_io(**kwargs)
-
-            # ---
-
-            deploy_io(path=ws, **kwargs)
-            validate_deployment_io(
-                traffic_allocation=traffic_allocation,
-                **kwargs
-            )
-
-            if master:
-                apply_labels_io(
-                    traffic_allocation=traffic_allocation,
-                    **kwargs
-                )
-
-            notify_io_(success=True)
-
-            block_if_local(**kwargs)
-
-        except Exception as _:
-            notify_io_(success=False)
-            raise
+        block_if_local(**kwargs)
