@@ -452,7 +452,7 @@ def test_deploy_to_github_io(
 @pytest.mark.slow
 @pytest.mark.skip_in_local
 @pytest.mark.deployment
-def test_website_performance_io(URL, BRANCH):
+def test_website_performance_io(URL, BRANCH, SHA):
     def ___test_io(f, url, is_mobile):
         _f = comp(
             partial(sorted, key=lambda x: x[1]['score']),
@@ -462,7 +462,8 @@ def test_website_performance_io(URL, BRANCH):
         for name, audit in _f(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
             url=url,
-            is_mobile=is_mobile
+            is_mobile=is_mobile,
+            cookies={'split_test_master_sha': SHA}
         ):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
