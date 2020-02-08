@@ -150,8 +150,7 @@ def test_e2e_404_redirect_io(URL):
 
         def assert_is_blog():
             assert url(chrome) in [
-                url_join(URL, 'blog'),
-                url_join(URL, 'blog') + '/'
+                url_join(URL, 'blog', disable_split_test_url_param()),
             ]
             assert 'блог' in chrome.title.lower()
 
@@ -168,7 +167,9 @@ def test_e2e_404_redirect_io(URL):
 
         get_url_io(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
         assert url(chrome) == url_join(
-            URL, 'debug_split_test/a/test_split_testing'
+            URL, 
+            'debug_split_test/a/test_split_testing',
+            disable_split_test_url_param()
         )
         assert 'Test split testing A' in chrome.title
 
