@@ -33,7 +33,7 @@ export function split_test_io(base, current_sha, traffic_allocation) {
     return;
   }
 
-  if (window.location.search.includes("__google_pagespeed_bot")) {
+  if (window.location.search.includes("__disable_split_test=1")) {
     return;
   }
 

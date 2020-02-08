@@ -115,6 +115,10 @@ def cget(cache_dir, url, params, headers):
     return _cget(url, json.dumps(params), json.dumps(headers))
 
 
+def disable_split_test_url_param():
+    return '?__disable_split_test=1'
+
+
 @try_n_times_decorator(n=3, timeout=15)
 def _google_pagespeed_io(
     google_pagespeed_key,
@@ -127,7 +131,7 @@ def _google_pagespeed_io(
         'Accept': 'application/json',
     }
     params = {
-        'url': url + '?__google_pagespeed_bot=1',
+        'url': url_join(url, disable_split_test_url_param()),
         'category': category,
         'strategy': 'mobile' if is_mobile else 'desktop',
         'key': google_pagespeed_key,
@@ -291,7 +295,7 @@ def to_jekyll_traffic_allocation(traffic_allocation):
     v = 1 / (len(yes) + 1)
     _branch = deep_get_('node', 'headRefName')
     return {
-        **{_branch(x): v for x in yes},
+        **{branch_to_prefix(_branch(x)).strip('/'): v for x in yes},
         **{'': v}
     }
 
