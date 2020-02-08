@@ -23,7 +23,7 @@ def validate_logs_io(driver):
         assert entry.get('level', '').lower() not in ['severe']
 
 
-def get_url_io(driver, allow_split_test=False, *args):
+def get_url_io(driver, *args):
     args2 = list(args) + [disable_split_test_url_param()]
     return driver.get(url_join(*args2))
 
@@ -68,6 +68,10 @@ def url_path(driver):
 
 def url(x):
     return unquote(x.current_url)
+
+
+def only_url(x):
+    return url(x).split('?')[0]
 
 
 def i_want_to_test_split_test(TRAFFIC_ALLOCATION):
@@ -149,9 +153,9 @@ def test_e2e_404_redirect_io(URL):
         disable_google_analytics_io(chrome, URL)
 
         def assert_is_blog():
-            assert url(chrome) in [
+            assert only_url(chrome) in [
                 url_join(URL, 'blog'),
-                url_join(URL, 'blog') + '/'
+                url_join(URL, 'blog') + '/',
             ]
             assert 'блог' in chrome.title.lower()
 
@@ -166,9 +170,11 @@ def test_e2e_404_redirect_io(URL):
         get_url_io(chrome, URL, branch, 'blog', 'nonexistent_article')
         assert_is_blog()
 
-        get_url_io(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
-        assert url(chrome) == url_join(
-            URL, 'debug_split_test/a/test_split_testing'
+        get_url_io(chrome, URL, branch,
+                   'debug_split_test/a/test_split_testing')
+        assert only_url(chrome) == url_join(
+            URL,
+            'debug_split_test/a/test_split_testing'
         )
         assert 'Test split testing A' in chrome.title
 
