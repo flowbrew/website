@@ -115,6 +115,10 @@ def cget(cache_dir, url, params, headers):
     return _cget(url, json.dumps(params), json.dumps(headers))
 
 
+def disable_split_test_url_param():
+    return '?__disable_split_test=1'
+
+
 @try_n_times_decorator(n=3, timeout=15)
 def _google_pagespeed_io(
     google_pagespeed_key,
@@ -127,7 +131,7 @@ def _google_pagespeed_io(
         'Accept': 'application/json',
     }
     params = {
-        'url': url_join(url, '?__google_pagespeed_bot=1'),
+        'url': url_join(url, disable_split_test_url_param()),
         'category': category,
         'strategy': 'mobile' if is_mobile else 'desktop',
         'key': google_pagespeed_key,

@@ -15,7 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, frequency, branch_prefix, url_join
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, b2p, tmp, applyw, inject_branch_to_deployment, dict_to_filesystem_io, filesystem_to_dict_io, random_str, deploy_to_github_io, http_get_io, delete_github_repo_io, branch_to_prefix, try_n_times_decorator, remove_branch_from_deployment, wait_until_deployed_by_sha_io, secret_io, google_test_page_speed_io, partial, google_test_page_seo_io, curry, product, master_branch, chrome_io, frequency, branch_prefix, url_join, disable_split_test_url_param
 
 
 def validate_logs_io(driver):
@@ -23,12 +23,17 @@ def validate_logs_io(driver):
         assert entry.get('level', '').lower() not in ['severe']
 
 
-def get_url(driver, *args):
+def get_url_io(driver, allow_split_test=False, *args):
+    args2 = args + [disable_split_test_url_param()]
+    return driver.get(url_join(*args2))
+
+
+def get_url_with_split_test_io(driver, *args):
     return driver.get(url_join(*args))
 
 
-def disable_google_analytics(driver, base):
-    get_url(driver, base, 'disable_google_analytics')
+def disable_google_analytics_io(driver, base):
+    get_url_io(driver, base, 'disable_google_analytics')
 
 
 def emails_io(addr, port, login, password):
@@ -78,6 +83,7 @@ def i_want_to_test_split_test(TRAFFIC_ALLOCATION):
         }
     return entry_point, traffic_allocation
 
+
 @pytest.mark.slow
 @pytest.mark.deployment
 def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
@@ -92,8 +98,8 @@ def test_e2e_split_testing_traffic_allocation_io(URL, TRAFFIC_ALLOCATION):
 
     def run_test():
         with chrome_io() as chrome:
-            disable_google_analytics(chrome, URL)
-            get_url(chrome, URL, entry_point)
+            disable_google_analytics_io(chrome, URL)
+            get_url_with_split_test_io(chrome, URL, entry_point)
             assert '404' not in chrome.title, "Page not found"
             validate_logs_io(chrome)
             return url(chrome)
@@ -119,14 +125,14 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
 
     def run_test():
         with chrome_io() as chrome:
-            disable_google_analytics(chrome, URL)
+            disable_google_analytics_io(chrome, URL)
 
-            get_url(chrome, URL, entry_point)
+            get_url_with_split_test_io(chrome, URL, entry_point)
             assert '404' not in chrome.title, "Page not found"
             first_url = url(chrome)
 
             def sub_test(chrome, first_url):
-                get_url(chrome, URL, entry_point)
+                get_url_with_split_test_io(chrome, URL, entry_point)
                 assert first_url == url(chrome), \
                     "Split test traffic allocation is not consistent"
 
@@ -140,7 +146,7 @@ def test_e2e_split_testing_allocation_consistency_io(URL, TRAFFIC_ALLOCATION):
 @pytest.mark.not_in_branch
 def test_e2e_404_redirect_io(URL):
     with chrome_io() as chrome:
-        disable_google_analytics(chrome, URL)
+        disable_google_analytics_io(chrome, URL)
 
         def assert_is_blog():
             assert url(chrome) in [
@@ -149,18 +155,18 @@ def test_e2e_404_redirect_io(URL):
             ]
             assert 'блог' in chrome.title.lower()
 
-        get_url(chrome, URL, '/blog/nonexistent_article')
+        get_url_io(chrome, URL, '/blog/nonexistent_article')
         assert_is_blog()
 
         branch = branch_prefix() + random_str()
 
-        get_url(chrome, URL, branch, 'blog')
+        get_url_io(chrome, URL, branch, 'blog')
         assert_is_blog()
 
-        get_url(chrome, URL, branch, 'blog', 'nonexistent_article')
+        get_url_io(chrome, URL, branch, 'blog', 'nonexistent_article')
         assert_is_blog()
 
-        get_url(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
+        get_url_io(chrome, URL, branch, 'debug_split_test/a/test_split_testing')
         assert url(chrome) == url_join(
             URL, 'debug_split_test/a/test_split_testing'
         )
@@ -171,8 +177,8 @@ def test_e2e_404_redirect_io(URL):
 @pytest.mark.deployment
 def test_e2e_checkout_io(URL):
     with chrome_io() as chrome:
-        disable_google_analytics(chrome, base=URL)
-        get_url(chrome, URL)
+        disable_google_analytics_io(chrome, base=URL)
+        get_url_io(chrome, URL)
         chrome.find_element_by_id('buy-button-1').click()
         assert 'checkout' in url_path(chrome)
 
@@ -462,7 +468,7 @@ def test_website_performance_io(URL, BRANCH):
         for name, audit in _f(
             google_pagespeed_key=secret_io('GOOGLE_PAGESPEED_KEY'),
             url=url,
-            is_mobile=is_mobile
+            is_mobile=is_mobile,
         ):
             if name == 'uses-long-cache-ttl':
                 assert audit['score'] >= 0.3
