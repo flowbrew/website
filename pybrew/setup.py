@@ -35,6 +35,10 @@ setup(
         'more-itertools==4.3.0',
         'cachier==1.2.8',
         'selenium==3.141.0',
+        'oauth2client==4.1.3',
+        'google-api-python-client==1.7.11',
+        'scipy==1.1.0',
+        'pandas==1.0.0',
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

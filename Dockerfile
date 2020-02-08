@@ -30,7 +30,11 @@ RUN pip install \
         "fn==0.4.3" \
         "tinify==1.5.1" \
         "more-itertools==4.3.0" \
-        "cachier==1.2.8"
+        "cachier==1.2.8" \
+        "oauth2client==4.1.3" \
+        "google-api-python-client==1.7.11" \
+        "scipy==1.1.0" \
+        "pandas==1.0.0"
 
 RUN npm update && npm install -g npm
 
