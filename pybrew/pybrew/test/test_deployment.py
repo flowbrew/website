@@ -23,7 +23,7 @@ def validate_logs_io(driver):
         assert entry.get('level', '').lower() not in ['severe']
 
 
-def get_url_io(driver, allow_split_test=False, *args):
+def get_url_io(driver, *args):
     args2 = list(args) + [disable_split_test_url_param()]
     return driver.get(url_join(*args2))
 
