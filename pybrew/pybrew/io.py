@@ -291,7 +291,7 @@ def to_jekyll_traffic_allocation(traffic_allocation):
     v = 1 / (len(yes) + 1)
     _branch = deep_get_('node', 'headRefName')
     return {
-        **{_branch(x): v for x in yes},
+        **{branch_to_prefix(_branch(x)).strip('/'): v for x in yes},
         **{'': v}
     }
 
