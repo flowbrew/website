@@ -48,6 +48,8 @@ setup(
         'sympy',
         'nose',
         'jupyterlab',
+        
+        'boto3',
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

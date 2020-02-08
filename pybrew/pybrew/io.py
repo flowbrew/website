@@ -1,5 +1,5 @@
 from .fun import *
-from .analytics import on_pre_split_test_analysis, on_split_test_io
+from .analytics import on_pre_split_test_analysis_io, on_split_test_io
 
 import operator
 import math
@@ -620,7 +620,7 @@ def cicd_io(repo_path, event_name, **kwargs_):
         elif event_name == 'delete':
             on_branch_deleted_io(**kwargs)
         elif event_name == 'pre_split_test_analysis':
-            on_pre_split_test_analysis(**kwargs)
+            on_pre_split_test_analysis_io(**kwargs)
         elif event_name == 'split_test':
             on_split_test_io(**kwargs)
         else:

@@ -30,6 +30,8 @@ from itertools import chain, product, tee, filterfalse, repeat
 from cachier import cachier
 from contextlib import contextmanager
 
+import boto3
+
 
 def chain_(x): return chain(*x)
 
@@ -1138,3 +1140,16 @@ def github_io(*args, message='', allow_empty=False, **kwds):
 def domain_io(path):
     with open('CNAME', 'r') as f:
         return f.read().strip('\r\n').strip()
+
+
+def upload_to_s3_io(file_path, bucket, key):
+    session = boto3.Session(
+        aws_access_key_id=secret_io('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=secret_io('AWS_SECRET_ACCESS_KEY'),
+    )
+    s3 = session.resource('s3')
+    return s3.Object(bucket, key).put(
+        Body=open(file_path, 'rb'),
+        ContentType='text/html',
+        ACL='public-read'
+        )

@@ -33,7 +33,8 @@ RUN pip install \
         "cachier==1.2.8" \
         "oauth2client==4.1.3" \
         "google-api-python-client==1.7.11" \
-        numpy scipy matplotlib ipython jupyter pandas sympy nose jupyterlab
+        numpy scipy matplotlib ipython jupyter pandas sympy nose jupyterlab \
+        boto3
 
 RUN npm update && npm install -g npm
 

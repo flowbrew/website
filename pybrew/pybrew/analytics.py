@@ -74,49 +74,28 @@ def execute_notebook_io(in_notebook, out_html):
             return notebook
 
 
-def publish_paper_io(
-    paper_name,
-    event_name,
-    organization,
-    deployment_repo,
-    branch,
-    sha,
-    **kwargs
-):
-    with github_io(
-        username=secret_io('GITHUB_WEBSITE_USERNAME'),
-        token=secret_io('GITHUB_WEBSITE_TOKEN'),
-        repo_name=deployment_repo,
-        branch='master',
-        message=event_name + ' report',
-        organization=organization
-    ) as repo_path:
-        paper_folder = os.path.join(
-            repo_path,
-            branch_to_prefix(branch),
-            'papers',
-        )
+def publish_paper_io(paper_name, sha, **kwargs):
+    with tmp() as tp:
+        html = os.path.join(tp, f'{paper_name}.html')
+
         notebook = execute_notebook_io(
-            os.path.join(paper_folder, f'{paper_name}.ipynb'),
-            os.path.join(paper_folder, sha, f'{paper_name}.html')
-        )
-        publish_url = url_join(
-            f'https://{domain_io(repo_path)}',
-            branch_to_prefix(branch),
-            'papers',
-            sha,
-            f'{paper_name}.html'
+            os.path.join('./papers', f'{paper_name}.ipynb'),
+            html
         )
 
-    for cell in notebook['cells']:
-        for output in cell['outputs']:
-            assert 'error' not in output['output_type'], \
-                f'There was an error during paper "{publish_url}" execution.  {output.get("ename")}: {output.get("evalue")}'
+        key = f'papers/{sha}/{paper_name}.html'
+        upload_to_s3_io(html, 'flowbrew', key)
+        publish_url = f'https://flowbrew.s3-eu-west-1.amazonaws.com/{key}'
+
+        for cell in notebook['cells']:
+            for output in cell['outputs']:
+                assert 'error' not in output['output_type'], \
+                    f'There was an error during paper "{publish_url}" execution. {output.get("ename")}: {output.get("evalue")}'
 
 
-def on_pre_split_test_analysis(**kwargs):
+def on_pre_split_test_analysis_io(**kwargs):
     publish_paper_io(paper_name='test', **kwargs)
 
 
 def on_split_test_io(**kwargs):
-    publish_paper_io(paper_name='test', **kwargs)
+    publish_paper_io(paper_name='split_test_default_kpi', **kwargs)
