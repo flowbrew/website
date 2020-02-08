@@ -32,3 +32,9 @@ jobs:
             ${{ github.workflow }} \
             ${{ github.event_name }} \
             ${{ github.event.ref }}
+
+  pre-split-test-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: error
