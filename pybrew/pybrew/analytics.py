@@ -7,6 +7,10 @@ from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import json
 
+import nbformat
+from nbconvert import HTMLExporter
+from nbconvert.preprocessors import ExecutePreprocessor
+
 
 def google_analytics_io():
     credentials = ServiceAccountCredentials.from_json_keyfile_dict(
@@ -45,12 +49,38 @@ def to_dataframe(data):
     return dataFrameFormat
 
 
+def execute_notebook_io(in_notebook, out_html):
+    paper_folder, _ = os.path.split(out_html)
+    os.makedirs(paper_folder, exist_ok=True)
+
+    with open(in_notebook, 'r') as notebook_file:
+        notebook = nbformat.reads(
+            notebook_file.read(),
+            as_version=4
+        )
+
+        ep = ExecutePreprocessor(
+            timeout=600,
+            kernel_name='python3',
+            allow_errors=True
+        )
+        ep.preprocess(notebook, {'metadata': {'path': './'}})
+
+        html_exporter = HTMLExporter()
+        (body, _) = html_exporter.from_notebook_node(notebook)
+
+        with open(out_html, 'w') as html:
+            html.write(body)
+            return notebook
+
+
 def publish_paper_io(
     paper_name,
     event_name,
     organization,
     deployment_repo,
     branch,
+    sha,
     **kwargs
 ):
     with github_io(
@@ -66,13 +96,22 @@ def publish_paper_io(
             branch_to_prefix(branch),
             'papers',
         )
-        os.makedirs(paper_folder, exist_ok=True)
-        run_io(
-            f'jupyter nbconvert \
-                --execute \
-                --output-dir {paper_folder} \
-                ./papers/{paper_name}.ipynb'
+        notebook = execute_notebook_io(
+            os.path.join(paper_folder, f'{paper_name}.ipynb'),
+            os.path.join(paper_folder, sha, f'{paper_name}.html')
         )
+        publish_url = url_join(
+            f'https://{domain_io(repo_path)}',
+            branch_to_prefix(branch),
+            'papers',
+            sha,
+            f'{paper_name}.html'
+        )
+
+    for cell in notebook['cells']:
+        for output in cell['outputs']:
+            assert 'error' not in output['output_type'], \
+                f'There was an error during paper "{publish_url}" execution.  {output.get("ename")}: {output.get("evalue")}'
 
 
 def on_pre_split_test_analysis(**kwargs):
@@ -80,4 +119,4 @@ def on_pre_split_test_analysis(**kwargs):
 
 
 def on_split_test_io(**kwargs):
-    pass
+    publish_paper_io(paper_name='test', **kwargs)

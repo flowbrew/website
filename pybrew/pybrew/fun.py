@@ -1133,3 +1133,8 @@ def github_io(*args, message='', allow_empty=False, **kwds):
         github_clone_io(*args, path=repo_path, **kwds)
         yield repo_path
         github_push_io(repo_path, message, allow_empty)
+
+
+def domain_io(path):
+    with open('CNAME', 'r') as f:
+        return f.read().strip('\r\n').strip()

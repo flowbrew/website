@@ -333,11 +333,6 @@ def build_jekyll_io(
         run_io(f'jekyll build --trace -d {dest} --config temp_config.yml')
 
 
-def domain_io(path):
-    with open('CNAME', 'r') as f:
-        return f.read().strip('\r\n').strip()
-
-
 def github_action_notification_io(
     slack_token: str,
     workflow: str,
@@ -353,7 +348,7 @@ def github_action_notification_io(
 ):
     where_str = f"{workflow} of {organization}/{repo_name}, branch '{branch}'"
 
-    what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name}'"
+    what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name.upper()}'"
 
     last_commit_str = (
         f"Last commit was '{head_commit_message}'\n{head_commit_url}"
