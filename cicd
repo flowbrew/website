@@ -27,6 +27,7 @@ export TINIFY_KEY='${TINIFY_KEY}'
 export GOOGLE_PAGESPEED_KEY='${GOOGLE_PAGESPEED_KEY}'
 export YANDEX_BOT_EMAIL='${YANDEX_BOT_EMAIL}'
 export YANDEX_BOT_TOKEN='${YANDEX_BOT_TOKEN}'
+export GOOGLE_ANALYTICS='${GOOGLE_ANALYTICS}'
 
 git config --global user.email "action@flowbrew.ru"
 git config --global user.name "GitHub Action"

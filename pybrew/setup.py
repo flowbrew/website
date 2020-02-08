@@ -47,6 +47,7 @@ setup(
         'pandas',
         'sympy',
         'nose',
+        'jupyterlab',
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

@@ -614,12 +614,12 @@ def cicd_io(repo_path, event_name, **kwargs_):
 
     if event_name == 'push' or event_name == 'schedule':
         on_branch_updated_io(**kwargs)
+        assert time.time() - start_time < 600, \
+            "cicd_io is too slow, consider to speedup"
     elif event_name == 'delete':
         ob_branch_deleted_io(**kwargs)
     else:
         raise Exception(f'Unknown event "{event_name}""')
-
-    assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
 
 
 def website_traffic_io():
@@ -728,7 +728,17 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
 
     if local_run:
         run_io(
-            f'rsync -a --exclude "node_modules" {repo_path} /local_website/')
+            f'rsync -a \
+                --exclude "node_modules" \
+                --exclude "*.py*" \
+                --exclude "*.html*" \
+                --exclude "*.md*" \
+                --exclude "*.js*" \
+                --exclude "*.json*" \
+                --exclude "*.yml*" \
+                --exclude "*.ipynb*" \
+                {repo_path} /local_website/'
+        )
 
     else:
         github_push_io(
