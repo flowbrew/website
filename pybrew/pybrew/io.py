@@ -120,7 +120,6 @@ def _google_pagespeed_io(
     google_pagespeed_key,
     url,
     category,
-    cookies=None,
     is_mobile=False
 ):
     api_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
@@ -128,18 +127,13 @@ def _google_pagespeed_io(
         'Accept': 'application/json',
     }
     params = {
-        'url': url,
+        'url': url + '?__google_pagespeed_bot=1',
         'category': category,
         'strategy': 'mobile' if is_mobile else 'desktop',
         'key': google_pagespeed_key,
     }
 
-    r = requests.get(
-        api_url,
-        params=params,
-        headers=headers,
-        cookies=cookies
-        ).json()
+    r = requests.get(api_url, params=params, headers=headers).json()
 
     depricated = [
         # 'first-cpu-idle'
@@ -567,7 +561,6 @@ def validate_deployment_io(
     branch,
     local_run,
     traffic_allocation,
-    sha,
     **kwargs
 ):
     url = (
@@ -589,7 +582,6 @@ def validate_deployment_io(
         --BRANCH={branch}
         --URL={baseurl}
         --TRAFFIC_ALLOCATION='{traffic_allocation2}'
-        --SHA={sha}
         ''')
 
 
