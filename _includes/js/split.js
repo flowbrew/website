@@ -70,10 +70,6 @@ export function split_test_io(base, current_sha, traffic_allocation) {
 }
 
 export function try_redirect_to_backup_page_io(branch_prefix) {
-  if (window.location.pathname.includes("/papers/")) {
-    return;
-  }
-
   var host =
     location.protocol +
     "//" +

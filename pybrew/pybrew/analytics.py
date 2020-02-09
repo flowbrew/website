@@ -92,6 +92,8 @@ def publish_paper_io(paper_name, sha, **kwargs):
                 assert 'error' not in output['output_type'], \
                     f'There was an error during paper "{publish_url}" execution. {output.get("ename")}: {output.get("evalue")}'
 
+        print(f'Paper were published to "{publish_url}"')
+
 
 def on_pre_split_test_analysis_io(**kwargs):
     publish_paper_io(paper_name='test', **kwargs)
