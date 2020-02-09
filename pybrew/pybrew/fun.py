@@ -13,7 +13,7 @@ import re
 import shutil
 import more_itertools
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from bs4 import BeautifulSoup
 from path import Path
@@ -1152,4 +1152,44 @@ def upload_to_s3_io(file_path, bucket, key):
         Body=open(file_path, 'rb'),
         ContentType='text/html',
         ACL='public-read'
-        )
+    )
+
+
+def _check_output(x): return check_output(x).decode('utf-8').strip('\n')
+
+
+def git_branch_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+
+
+def git_sha_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'rev-parse', '--verify', 'HEAD'])
+
+
+def git_branch_sha_io(branch, path='.'):
+    with Path(path):
+        return _check_output(['git', 'rev-parse', branch])
+
+
+def utc_time_from_sha_io(sha, path='.'):
+    with Path(path):
+        return datetime.strptime(
+            _check_output(['git', 'show', '-s', '--format=%ci', sha]),
+            "%Y-%m-%d %H:%M:%S %z"
+        ).astimezone(timezone.utc)
+
+
+def git_origin_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'config', '--get', 'remote.origin.url'])
+
+
+def git_head_commit_message_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'log', '-1', '--pretty=%B'])
+
+
+def github_commit_url_io(org, name, sha):
+    return f'https://github.com/{org}/{name}/commit/{sha}'

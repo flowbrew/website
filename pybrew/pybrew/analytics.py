@@ -25,6 +25,10 @@ def business_cycle():
     return timedelta(days=7)
 
 
+def parallel_test_groups():
+    return 2
+
+
 def google_analytics_io():
     credentials = ServiceAccountCredentials.from_json_keyfile_dict(
         json.loads(
@@ -137,22 +141,110 @@ def ga_dynamic_segment(name, filters):
     }
 
 
+def target_audience_filters():
+    return [
+        {
+            'dimensionName': 'ga:country',
+            'expressions': ['Russia'],
+            'operator': 'EXACT'
+        },
+        {
+            'dimensionName': 'ga:sessionCount',
+            'expressions': ['3'],
+            'operator': 'NUMERIC_LESS_THAN'
+        }
+    ]
+
+
 def ga_target_audience_segment():
     return ga_dynamic_segment(
         "Target Audience",
-        [
-            {
-                'dimensionName': 'ga:country',
-                'expressions': ['Russia'],
-                'operator': 'EXACT'
-            },
-            {
-                'dimensionName': 'ga:sessionCount',
-                'expressions': ['3'],
-                'operator': 'NUMERIC_LESS_THAN'
-            }
-        ]
+        target_audience_filters()
     )
+
+
+def ga_sha_segment(sha):
+    return ga_dynamic_segment(
+        "Target Audience",
+        target_audience_filters() + [{
+            'dimensionName': 'ga:dimension2',
+            'expressions': [sha],
+            'operator': 'EXACT'
+        }]
+    )
+
+
+@curry
+def unique_pageviews_of_segments_io(analytics, start, end, segments):
+    res = analytics.reports().batchGet(
+        body={
+            'reportRequests': [
+                {
+                    'viewId': google_analytics_view_id(),
+                    'dateRanges': [{
+                        'startDate': str(start.date()),
+                        'endDate': str(end.date())}
+                    ],
+                    'metrics': [{
+                        'expression': 'ga:uniquePageviews'
+                    }],
+                    'dimensions': [{'name': 'ga:segment'}, {'name': 'ga:pagePath'}],
+                    'segments': segments,
+                }]
+        }
+    ).execute()
+    df = to_dataframe(res)
+    if 'ga:uniquePageviews' not in df.columns:
+        return pd.DataFrame({'ga:uniquePageviews': []})
+    upv = df.astype({'ga:uniquePageviews': 'int32'})
+    upv['ga:pagePath'] = upv['ga:pagePath'].apply(
+        lambda x: x.split('?')[0])
+    return upv.groupby(['ga:pagePath', 'ga:segment']).sum()
+
+
+def unique_pageviews_of_target_audience_io(analytics, start, end):
+    return unique_pageviews_of_segments_io(
+        analytics, start, end,
+        [ga_target_audience_segment()]
+    )
+
+
+def unique_pageviews_of_sha_io(analytics, start, end, sha):
+    return unique_pageviews_of_segments_io(
+        analytics, start, end,
+        [ga_sha_segment(sha)]
+    )
+
+
+def ga_segment_stats_io(
+    analytics,
+    start,
+    end,
+    segments
+):
+    upv = unique_pageviews_of_segments_io(
+        analytics,
+        start,
+        end,
+        segments,
+    )
+
+    n = \
+        upv['ga:uniquePageviews'].get(
+            ['/', 'Target Audience'],
+            default=[0]
+        )[0]
+    n_conversion = \
+        upv['ga:uniquePageviews'].get(
+            ['/checkout.html', 'Target Audience'],
+            default=[0]
+        )[0]
+
+    return {
+        'n': n,
+        'n_conversion': n_conversion,
+        'conversion': 0 if n == 0 else n_conversion / n
+    }
 
 
 def on_pre_split_test_analysis_io(**kwargs):

@@ -435,33 +435,6 @@ def bake_images_io(
         [_bake_image_io(*x) for x in tasks]
 
 
-def _check_output(x): return check_output(x).decode('utf-8').strip('\n')
-
-
-def git_branch_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-
-
-def git_sha_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'rev-parse', '--verify', 'HEAD'])
-
-
-def git_origin_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'config', '--get', 'remote.origin.url'])
-
-
-def git_head_commit_message_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'log', '-1', '--pretty=%B'])
-
-
-def github_commit_url_io(org, name, sha):
-    return f'https://github.com/{org}/{name}/commit/{sha}'
-
-
 def deploy_jekyll_io(path, local_run, deployment_repo, sha, **kwargs):
     if local_run:
         run_io(f'jekyll serve \
