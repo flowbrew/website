@@ -44,11 +44,13 @@ setup(
         'matplotlib',
         'ipython',
         'jupyter',
-        'pandas',
+        'pandas==0.23.1',
         'sympy',
         'nose',
         'jupyterlab',
-        
+        'rpy2',
+        'statsmodels',
+
         'boto3',
     ],
     classifiers=[

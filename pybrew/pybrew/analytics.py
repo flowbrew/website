@@ -96,8 +96,8 @@ def publish_paper_io(paper_name, sha, **kwargs):
 
 
 def on_pre_split_test_analysis_io(**kwargs):
-    publish_paper_io(paper_name='test', **kwargs)
+    publish_paper_io(paper_name='pre_split_test_analysis', **kwargs)
 
 
 def on_split_test_io(**kwargs):
-    publish_paper_io(paper_name='split_test_default_kpi', **kwargs)
+    publish_paper_io(paper_name='split_test', **kwargs)

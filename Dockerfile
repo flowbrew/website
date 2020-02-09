@@ -10,7 +10,8 @@ RUN apt-get -y update && apt-get -y install \
         ruby-full \
         build-essential \
         zlib1g-dev \
-        rsync
+        rsync \
+        r-base
 
 RUN gem install \
         jekyll \
@@ -33,7 +34,10 @@ RUN pip install \
         "cachier==1.2.8" \
         "oauth2client==4.1.3" \
         "google-api-python-client==1.7.11" \
-        numpy scipy matplotlib ipython jupyter pandas sympy nose jupyterlab \
+        "pandas==0.23.1" \
+        statsmodels \
+        numpy scipy matplotlib ipython jupyter sympy nose jupyterlab \
+        rpy2 \
         boto3
 
 RUN npm update && npm install -g npm
