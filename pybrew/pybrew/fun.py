@@ -1170,7 +1170,7 @@ def git_sha_io(path='.'):
 def git_branch_sha_io(branch, path='.'):
     with Path(path):
         run_io(f'git fetch origin {branch}')
-        return _check_output(['git', 'rev-parse', branch])
+        return _check_output(['git', 'rev-parse', 'origin/' + branch])
 
 
 def utc_time_from_sha_io(sha, path='.'):
