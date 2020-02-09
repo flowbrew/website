@@ -6,10 +6,23 @@ import pandas as pd
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import json
+from datetime import datetime, timedelta
 
 import nbformat
 from nbconvert import HTMLExporter
 from nbconvert.preprocessors import ExecutePreprocessor
+
+
+def base_alpha():
+    return 0.05
+
+
+def base_beta():
+    return 0.8
+
+
+def business_cycle():
+    return timedelta(days=7)
 
 
 def google_analytics_io():
@@ -93,6 +106,53 @@ def publish_paper_io(paper_name, sha, **kwargs):
                     f'There was an error during paper "{publish_url}" execution. {output.get("ename")}: {output.get("evalue")}'
 
         print(f'Paper were published to "{publish_url}"')
+
+
+def ga_dimension_filter(**kwargs):
+    return {
+        'segmentFilterClauses': [
+            {
+                'dimensionFilter': kwargs
+            },
+        ]
+    }
+
+
+def ga_simple_segment(filters):
+    return {
+        'simpleSegment': {
+            'orFiltersForSegment': [ga_dimension_filter(**x) for x in filters]
+        }
+    }
+
+
+def ga_dynamic_segment(name, filters):
+    return {
+        'dynamicSegment': {
+            'name': name,
+            'userSegment': {
+                'segmentFilters': [ga_simple_segment(filters)]
+            }
+        }
+    }
+
+
+def ga_target_audience_segment():
+    return ga_dynamic_segment(
+        "Target Audience",
+        [
+            {
+                'dimensionName': 'ga:country',
+                'expressions': ['Russia'],
+                'operator': 'EXACT'
+            },
+            {
+                'dimensionName': 'ga:sessionCount',
+                'expressions': ['3'],
+                'operator': 'NUMERIC_LESS_THAN'
+            }
+        ]
+    )
 
 
 def on_pre_split_test_analysis_io(**kwargs):

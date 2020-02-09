@@ -498,6 +498,10 @@ def pytest_args(mark, branch, local_run):
         '''
 
 
+def install_pybrew_io(**kwargs):
+    run_io('pip install -e ./pybrew')
+
+
 def validate_pybrew_io(
     sha,
     branch,
@@ -612,6 +616,7 @@ def cicd_io(repo_path, event_name, **kwargs_):
 
     try:
         validate_pybrew_io(**kwargs)
+        install_pybrew_io(**kwargs)
 
         if event_name == 'push' or event_name == 'schedule':
             on_branch_updated_io(**kwargs)

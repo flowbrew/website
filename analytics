@@ -13,15 +13,17 @@ else
     exit 1
 fi
 
+DOCKER_COMMAND=$(cat <<-EOF
+    pip install -e ./pybrew
+
+    jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir=/local_website
+EOF
+)
+
 docker rm -f analytics
 docker run -t --rm --name analytics \
     ${RUNPARAMS} \
     -v "$PWD":/local_website \
     -e GOOGLE_ANALYTICS \
     -p 127.0.0.1:8888:8888 \
-    "$DOCKERNAME" bash -c "jupyter lab \
-        --no-browser \
-        --ip=0.0.0.0 \
-        --allow-root \
-        --notebook-dir=/local_website \
-        "
+    "$DOCKERNAME" bash -c "$DOCKER_COMMAND"
