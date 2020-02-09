@@ -599,29 +599,28 @@ def re_run_workflow_io(github_token, pull_request, yml_file, status=None):
         pull_request
     )
 
-    try:
-        workflow_id = next(
-            x for x in workflow_runs_io(
-                github_token,
-                organization,
-                repo_name,
-                yml_file,
-                branch,
-                status=status
-            ) if x['head_sha'] == sha and x['head_branch'] == branch
-        )['id']
-    except StopIteration:
-        return
-
-    url = github_endpoint() + \
-        f"/repos/{organization}/{repo_name}/actions/runs/{workflow_id}/rerun"
-
-    requests.post(
-        url,
-        headers={
-            'Authorization': 'token ' + github_token,
-        },
+    workflows = (
+        x for x in workflow_runs_io(
+            github_token,
+            organization,
+            repo_name,
+            yml_file,
+            branch,
+            status=status
+        ) if x['head_sha'] == sha and x['head_branch'] == branch
     )
+
+    def rerun(workflow_id):
+        url = github_endpoint() + \
+            f"/repos/{organization}/{repo_name}/actions/runs/{workflow_id}/rerun"
+        requests.post(
+            url,
+            headers={
+                'Authorization': 'token ' + github_token,
+            },
+        )
+
+    [rerun(x['id']) for x in workflows]
 
 
 @curry
