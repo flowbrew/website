@@ -1,0 +1,4 @@
+#!/bin/bash
+
+./cicd local pre_split_test_analysis $1
+# ./cicd local split_test $1

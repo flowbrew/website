@@ -70,8 +70,6 @@ export function split_test_io(base, current_sha, traffic_allocation) {
 }
 
 export function try_redirect_to_backup_page_io(branch_prefix) {
-  console.log("try_redirect_to_backup_page_io: " + branch_prefix);
-
   var host =
     location.protocol +
     "//" +

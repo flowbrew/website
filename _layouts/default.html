@@ -9,9 +9,7 @@
     {% if site.no-index or page.debug_split_test %}
     <meta name="robots" content="noindex" />
     {% endif %}
-    <meta name="github-repo" content="{{ site.github-repo }}" />
-    <meta name="github-branch" content="{{ site.github-branch }}" />
-    <meta name="github-commit-sha" content="{{ site.github-commit-sha }}" />
+    {% include github_meta.html %}
 
     <title>{{ page.title }}</title>
     <meta name="description" content="{{ page.description }}" />

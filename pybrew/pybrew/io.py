@@ -1,4 +1,5 @@
 from .fun import *
+from .analytics import on_pre_split_test_analysis_io, on_split_test_io
 
 import operator
 import math
@@ -51,10 +52,6 @@ def run_chrome_io(*args, **kwds):
 
 def stop_chrome_io(driver):
     driver.quit()
-
-
-def secret_io(key):
-    return os.environ[key]
 
 
 def wait_until_deployed_by_sha_io(url: str, sha: str):
@@ -336,11 +333,6 @@ def build_jekyll_io(
         run_io(f'jekyll build --trace -d {dest} --config temp_config.yml')
 
 
-def domain_io(path):
-    with open('CNAME', 'r') as f:
-        return f.read().strip('\r\n').strip()
-
-
 def github_action_notification_io(
     slack_token: str,
     workflow: str,
@@ -356,7 +348,7 @@ def github_action_notification_io(
 ):
     where_str = f"{workflow} of {organization}/{repo_name}, branch '{branch}'"
 
-    what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name}'"
+    what_str = f"{'SUCCESS ✅' if success else 'FAILURE ❌'} on event '{event_name.upper()}'"
 
     last_commit_str = (
         f"Last commit was '{head_commit_message}'\n{head_commit_url}"
@@ -443,33 +435,6 @@ def bake_images_io(
         [_bake_image_io(*x) for x in tasks]
 
 
-def _check_output(x): return check_output(x).decode('utf-8').strip('\n')
-
-
-def git_branch_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-
-
-def git_sha_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'rev-parse', '--verify', 'HEAD'])
-
-
-def git_origin_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'config', '--get', 'remote.origin.url'])
-
-
-def git_head_commit_message_io(path='.'):
-    with Path(path):
-        return _check_output(['git', 'log', '-1', '--pretty=%B'])
-
-
-def github_commit_url_io(org, name, sha):
-    return f'https://github.com/{org}/{name}/commit/{sha}'
-
-
 def deploy_jekyll_io(path, local_run, deployment_repo, sha, **kwargs):
     if local_run:
         run_io(f'jekyll serve \
@@ -504,6 +469,10 @@ def pytest_args(mark, branch, local_run):
         {"--runslow" if not local_run else ""}
         {"--master" if branch == master_branch() else ""}
         '''
+
+
+def install_pybrew_io(**kwargs):
+    run_io('pip install -e ./pybrew')
 
 
 def validate_pybrew_io(
@@ -612,14 +581,34 @@ def cicd_io(repo_path, event_name, **kwargs_):
         }
     }
 
-    if event_name == 'push' or event_name == 'schedule':
-        on_branch_updated_io(**kwargs)
-    elif event_name == 'delete':
-        ob_branch_deleted_io(**kwargs)
-    else:
-        raise Exception(f'Unknown event "{event_name}""')
+    notify_io_ = partial(
+        github_action_notification_io,
+        slack_token=secret_io('SLACK_BOT_TOKEN'),
+        **kwargs
+    )
 
-    assert time.time() - start_time < 600, "cicd_io is too slow, consider to speedup"
+    try:
+        validate_pybrew_io(**kwargs)
+        install_pybrew_io(**kwargs)
+
+        if event_name == 'push' or event_name == 'schedule':
+            on_branch_updated_io(**kwargs)
+            assert time.time() - start_time < 600, \
+                "cicd_io is too slow, consider to speedup"
+        elif event_name == 'delete':
+            on_branch_deleted_io(**kwargs)
+        elif event_name == 'pre_split_test_analysis':
+            on_pre_split_test_analysis_io(**kwargs)
+        elif event_name == 'split_test':
+            on_split_test_io(**kwargs)
+        else:
+            raise Exception(f'Unknown event "{event_name}""')
+
+        notify_io_(success=True)
+
+    except Exception as _:
+        notify_io_(success=False)
+        raise
 
 
 def website_traffic_io():
@@ -662,14 +651,14 @@ def manage_pull_requests_io(
 
     def re_run_split_test_check_io(pull_requests):
         [
-            re_run_workflow_io(github_token, x, 'split_test')
+            re_run_workflow_io(github_token, x, 'periodic')
             for x in pull_requests if is_open_pull_request(x)
         ]
         return pull_requests
 
     def re_run_failed_builds_io(pull_requests):
         [
-            re_run_workflow_io(github_token, x, 'cicd', status='failure')
+            re_run_workflow_io(github_token, x, 'main', status='failure')
             for x in pull_requests if is_open_pull_request(x)
         ]
         return pull_requests
@@ -711,7 +700,7 @@ def apply_labels_io(
     ]
 
 
-def ob_branch_deleted_io(**kwargs):
+def on_branch_deleted_io(**kwargs):
     cleanup_io(
         **{
             **kwargs,
@@ -726,15 +715,22 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
     if not git_has_unstaged_changes_io():
         return
 
+    assert local_run, "State was changed during the run. \
+        Perhaps @cachier updated some cache. \
+        Run build locally to update the cache and only then commit changes."
+
     if local_run:
         run_io(
-            f'rsync -a --exclude "node_modules" {repo_path} /local_website/')
-
-    else:
-        github_push_io(
-            path=repo_path,
-            message=f'CI/CD updated state of {branch}',
-            allow_empty=False
+            f'rsync -a \
+                --exclude "node_modules" \
+                --exclude "*.py*" \
+                --exclude "*.html*" \
+                --exclude "*.md*" \
+                --exclude "*.js*" \
+                --exclude "*.json*" \
+                --exclude "*.yml*" \
+                --exclude "*.ipynb*" \
+                {repo_path} /local_website/'
         )
 
 
@@ -750,51 +746,36 @@ def is_master(local_run, branch, **kwargs):
 
 
 def on_branch_updated_io(**kwargs):
-    notify_io_ = partial(
-        github_action_notification_io,
-        slack_token=secret_io('SLACK_BOT_TOKEN'),
-        **kwargs
-    )
-
     master = is_master(**kwargs)
 
     with tmp() as ws:
-        try:
-            validate_pybrew_io(**kwargs)
+        traffic_allocation = (
+            manage_pull_requests_io(**kwargs) if master else None
+        )
 
-            traffic_allocation = (
-                manage_pull_requests_io(**kwargs) if master else None
-            )
+        build_io(
+            dest=ws,
+            traffic_allocation=traffic_allocation,
+            **kwargs
+        )
+        validate_build_io(path=ws, **kwargs)
 
-            build_io(
-                dest=ws,
+        # ---
+
+        git_push_state_if_updated_io(**kwargs)
+
+        # ---
+
+        deploy_io(path=ws, **kwargs)
+        validate_deployment_io(
+            traffic_allocation=traffic_allocation,
+            **kwargs
+        )
+
+        if master:
+            apply_labels_io(
                 traffic_allocation=traffic_allocation,
                 **kwargs
             )
-            validate_build_io(path=ws, **kwargs)
 
-            # ---
-
-            git_push_state_if_updated_io(**kwargs)
-
-            # ---
-
-            deploy_io(path=ws, **kwargs)
-            validate_deployment_io(
-                traffic_allocation=traffic_allocation,
-                **kwargs
-            )
-
-            if master:
-                apply_labels_io(
-                    traffic_allocation=traffic_allocation,
-                    **kwargs
-                )
-
-            notify_io_(success=True)
-
-            block_if_local(**kwargs)
-
-        except Exception as _:
-            notify_io_(success=False)
-            raise
+        block_if_local(**kwargs)

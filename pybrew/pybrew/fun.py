@@ -13,7 +13,7 @@ import re
 import shutil
 import more_itertools
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from bs4 import BeautifulSoup
 from path import Path
@@ -26,6 +26,11 @@ from functools import partial, reduce as reduce_, lru_cache
 
 from fn.iters import flatten
 from itertools import chain, product, tee, filterfalse, repeat
+
+from cachier import cachier
+from contextlib import contextmanager
+
+import boto3
 
 
 def chain_(x): return chain(*x)
@@ -126,7 +131,11 @@ def branch_prefix() -> str:
 
 
 def build_test_deploy_check_name() -> str:
-    return 'build-test-deploy'
+    return 'ci-cd'
+
+
+def pre_split_test_check_name() -> str:
+    return 'pre-split-test-analysis'
 
 
 def branch_to_prefix(branch: str) -> str:
@@ -397,6 +406,7 @@ def github_push_io(path, message, allow_empty):
 def github_clone_io(username, token, organization, repo_name, branch, path):
     clone_url = github_clone_url(username, token, organization, repo_name)
     run_io(f'git clone \
+                --depth 1 \
                 --single-branch --branch "{branch}" \
                 "{clone_url}" \
                 "{path}"')
@@ -568,7 +578,8 @@ def workflow_runs_io(
     status=None
 ):
     url = github_endpoint() + \
-        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}" + ('' if not status else '&status=' + status)
+        f"/repos/{organization}/{repo_name}/actions/workflows/{yml_file}.yml/runs?branch={branch}" + \
+        ('' if not status else '&status=' + status)
 
     r = requests.get(
         url,
@@ -592,29 +603,28 @@ def re_run_workflow_io(github_token, pull_request, yml_file, status=None):
         pull_request
     )
 
-    try:
-        workflow_id = next(
-            x for x in workflow_runs_io(
-                github_token,
-                organization,
-                repo_name,
-                yml_file,
-                branch,
-                status=status
-            ) if x['head_sha'] == sha and x['head_branch'] == branch
-        )['id']
-    except StopIteration:
-        return
-
-    url = github_endpoint() + \
-        f"/repos/{organization}/{repo_name}/actions/runs/{workflow_id}/rerun"
-
-    requests.post(
-        url,
-        headers={
-            'Authorization': 'token ' + github_token,
-        },
+    workflows = (
+        x for x in workflow_runs_io(
+            github_token,
+            organization,
+            repo_name,
+            yml_file,
+            branch,
+            status=status
+        ) if x['head_sha'] == sha and x['head_branch'] == branch
     )
+
+    def rerun(workflow_id):
+        url = github_endpoint() + \
+            f"/repos/{organization}/{repo_name}/actions/runs/{workflow_id}/rerun"
+        requests.post(
+            url,
+            headers={
+                'Authorization': 'token ' + github_token,
+            },
+        )
+
+    [rerun(x['id']) for x in workflows]
 
 
 @curry
@@ -1047,7 +1057,14 @@ def is_suitable_for_split_testing(pull_request):
         for x in all_runs
     )
 
-    return is_open and was_built_and_tested
+    passed_pre_split_test = any(
+        x.get('name') == pre_split_test_check_name() and
+        x.get('status') == 'COMPLETED' and
+        x.get('conclusion') == 'SUCCESS'
+        for x in all_runs
+    )
+
+    return is_open and was_built_and_tested and passed_pre_split_test
 
 
 @curry
@@ -1116,3 +1133,74 @@ def copy_dir_io(source, dest):
 
 def allocate_traffic(pull_requests, visitors_per_day):
     pass
+
+
+def secret_io(key):
+    return os.environ[key]
+
+
+@contextmanager
+def github_io(*args, message='', allow_empty=False, **kwds):
+    with tmp() as repo_path:
+        github_clone_io(*args, path=repo_path, **kwds)
+        yield repo_path
+        github_push_io(repo_path, message, allow_empty)
+
+
+def domain_io(path):
+    with open('CNAME', 'r') as f:
+        return f.read().strip('\r\n').strip()
+
+
+def upload_to_s3_io(file_path, bucket, key):
+    session = boto3.Session(
+        aws_access_key_id=secret_io('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=secret_io('AWS_SECRET_ACCESS_KEY'),
+    )
+    s3 = session.resource('s3')
+    return s3.Object(bucket, key).put(
+        Body=open(file_path, 'rb'),
+        ContentType='text/html',
+        ACL='public-read'
+    )
+
+
+def _check_output(x): return check_output(x).decode('utf-8').strip('\n')
+
+
+def git_branch_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+
+
+def git_sha_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'rev-parse', '--verify', 'HEAD'])
+
+
+def git_branch_sha_io(branch, path='.'):
+    with Path(path):
+        run_io(f'git fetch origin {branch}')
+        return _check_output(['git', 'rev-parse', 'origin/' + branch])
+
+
+def utc_time_from_sha_io(sha, path='.'):
+    with Path(path):
+        return datetime.strptime(
+            _check_output(['git', 'show', '-s', '--format=%ci', sha]),
+            "%Y-%m-%d %H:%M:%S %z"
+        ).astimezone(timezone.utc)
+
+
+def git_origin_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'config', '--get', 'remote.origin.url'])
+
+
+def git_head_commit_message_io(path='.'):
+    with Path(path):
+        return _check_output(['git', 'log', '-1', '--pretty=%B'])
+
+
+def github_commit_url_io(org, name, sha):
+    return f'https://github.com/{org}/{name}/commit/{sha}'

@@ -35,6 +35,23 @@ setup(
         'more-itertools==4.3.0',
         'cachier==1.2.8',
         'selenium==3.141.0',
+        'oauth2client==4.1.3',
+        'google-api-python-client==1.7.11',
+        
+        # Analytics 
+        'numpy',
+        'scipy',
+        'matplotlib',
+        'ipython',
+        'jupyter',
+        'pandas==0.23.1',
+        'sympy',
+        'nose',
+        'jupyterlab',
+        'rpy2',
+        'statsmodels',
+
+        'boto3',
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
