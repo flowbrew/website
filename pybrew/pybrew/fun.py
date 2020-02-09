@@ -131,7 +131,11 @@ def branch_prefix() -> str:
 
 
 def build_test_deploy_check_name() -> str:
-    return 'build-test-deploy'
+    return 'ci-cd'
+
+
+def pre_split_test_check_name() -> str:
+    return 'pre-split-test-analysis'
 
 
 def branch_to_prefix(branch: str) -> str:
@@ -1053,7 +1057,14 @@ def is_suitable_for_split_testing(pull_request):
         for x in all_runs
     )
 
-    return is_open and was_built_and_tested
+    passed_pre_split_test = any(
+        x.get('name') == pre_split_test_check_name() and
+        x.get('status') == 'COMPLETED' and
+        x.get('conclusion') == 'SUCCESS'
+        for x in all_runs
+    )
+
+    return is_open and was_built_and_tested and passed_pre_split_test
 
 
 @curry

@@ -3,7 +3,7 @@ import tempfile
 import os
 from datetime import datetime
 from path import Path
-from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io, url_join, job_name_to_workflow_id_io
+from pybrew import my_fun, notification_io, run_io, pipe, map, comp, force, try_n_times_decorator, tmp, extract_repo_name_from_origin, dict_to_filesystem_io, filesystem_to_dict_io, copy_dir_io, wait_until_html_deployed_io, allocate_traffic_to_pull_requests, extract_key, pull_requests_io, secret_io, is_green_pull_request, is_stale_pull_request, split_test_label, s2t, tdlt, t2s, split_test_stale, deep_get, deep_set, deep_transform, labels_io, build_test_deploy_check_name, partition, foldl, repeat, repository_io, url_join, job_name_to_workflow_id_io, pre_split_test_check_name
 
 
 @pytest.mark.pybrew
@@ -174,13 +174,17 @@ def test_allocate_traffic_to_pull_requests():
                 }
             }
         }
-
     def _cheks(chk1, chk2):
         return [
             {
                 "status": "COMPLETED",
                 "conclusion": "SUCCESS" if chk1 else "FAILURE",
                 "name": build_test_deploy_check_name()
+            },
+            {
+                "status": "COMPLETED",
+                "conclusion": "SUCCESS" if chk1 else "FAILURE",
+                "name": pre_split_test_check_name()
             },
             {
                 "status": "COMPLETED",
