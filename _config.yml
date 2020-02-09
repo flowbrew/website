@@ -25,8 +25,9 @@ products:
     price: 3880
     currency: "RUB"
     shipping: 100
+    fast_shiping: 1100
     weight: 60
-    quantity: 5
+    quantity: 4
 
 plugins:
   - jekyll-redirect-from
