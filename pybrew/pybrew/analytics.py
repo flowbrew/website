@@ -105,7 +105,7 @@ def publish_paper_io(paper_name, sha, **kwargs):
         publish_url = f'https://flowbrew.s3-eu-west-1.amazonaws.com/{key}'
 
         for cell in notebook['cells']:
-            for output in cell['outputs']:
+            for output in cell.get('outputs', []):
                 assert 'error' not in output['output_type'], \
                     f'There was an error during paper "{publish_url}" execution. {output.get("ename")}: {output.get("evalue")}'
 
