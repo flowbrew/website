@@ -777,12 +777,15 @@ add_split_test_label_io = _label_io_(
 
 
 @curry
-def deep_get(keys, dictionary):
-    return reduce(
-        lambda d, key: d[key],
-        dictionary,
-        keys
-    )
+def deep_get(keys, dictionary, default=None):
+    h, *t = keys
+    try:
+        r = dictionary[h]
+    except KeyError:
+        if default != None:
+            return default
+        raise
+    return deep_get(t, r, default) if t else r
 
 
 deep_get_ = lambda *keys: deep_get(keys)
@@ -1178,10 +1181,17 @@ def git_sha_io(path='.'):
         return _check_output(['git', 'rev-parse', '--verify', 'HEAD'])
 
 
-def git_branch_sha_io(branch, path='.'):
-    with Path(path):
-        run_io(f'git fetch origin {branch}')
-        return _check_output(['git', 'rev-parse', 'origin/' + branch])
+def github_sha_io(organization, repo_name, branch):
+    url = \
+        f"{github_endpoint()}/repos/{organization}/{repo_name}/commits/{branch}"
+    return requests.get(url).json()['sha']
+
+
+def github_branch_sha_io(branch, path='.'):
+    org, name = extract_repo_name_from_origin(
+        git_origin_io(path)
+    )
+    return github_sha_io(org, name, branch)
 
 
 def utc_time_from_sha_io(sha, path='.'):

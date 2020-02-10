@@ -229,21 +229,19 @@ def ga_segment_stats_io(
         segments,
     )
 
-    n = \
-        upv['ga:uniquePageviews'].get(
-            ['/', 'Target Audience'],
-            default=[0]
-        )[0]
-    n_conversion = \
-        upv['ga:uniquePageviews'].get(
-            ['/checkout.html', 'Target Audience'],
-            default=[0]
-        )[0]
+    n = deep_get(
+        ['ga:uniquePageviews', '/', 'Target Audience'], upv, 0
+    )
+
+    n_conversion = deep_get(
+        ['ga:uniquePageviews', '/checkout.html', 'Target Audience'],
+        upv, 0
+    )
 
     return {
         'n': n,
         'n_conversion': n_conversion,
-        'conversion': 0 if n == 0 else n_conversion / n
+        'conversion': 0.0 if n == 0 else n_conversion / n
     }
 
 
