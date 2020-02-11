@@ -14,9 +14,16 @@ else
 fi
 
 DOCKER_COMMAND=$(cat <<-EOF
+    cd /local_website
+    git config --global user.email "action@flowbrew.ru"
+    git config --global user.name "GitHub Analytics"
     pip install -e ./pybrew
-
-    jupyter lab --no-browser --ip=0.0.0.0 --allow-root --notebook-dir=/local_website
+    jupyter lab \
+        --no-browser \
+        --ip=0.0.0.0 \
+        --allow-root \
+        --notebook-dir=/local_website \
+        --config=/local_website/JupyterApp.config.py
 EOF
 )
 
