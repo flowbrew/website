@@ -22,7 +22,7 @@ email: ak@flowbrew.ru
 products:
   matcha:
     id: flowbrew60
-    price: 3880
+    price: 3080
     currency: "RUB"
     shipping: 100
     fast_shiping: 1100

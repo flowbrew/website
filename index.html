@@ -11,10 +11,10 @@ link_image: matcha_tea_in_bowl.jpg
 #---
 matcha_tea: Чай Матча
 reviewsh: отзыва
-promotion: Бесплатный набор для заварки новым клиентам. <span class="quantity"></span>
+promotion: Бесплатный венчик для заварки новым клиентам. <span class="quantity"></span>
 buy: Купить
 property: >-
-  <i class="fas fa-shipping-fast fnorm"></i> 0 руб за доставку по Спб и Москве<br>
+  <i class="fas fa-shipping-fast fnorm"></i> Бесплатная доставка по Спб и Москве<br>
   <i class="fab fa-envira fnorm"></i> Изготовлен в Японии, Киото<br>
   <i class="fas fa-heart fnorm"></i> Обволакивающий вкус и кремово-ореховое послевкусие. Ягодный аромат.
 mproperty: >-
@@ -24,8 +24,8 @@ mproperty: >-
 images:
   - image: matcha_tea_dry_in_bowl_flowbrew.jpg
     alt: Сухой порошок чая матча Flow Brew в чаше
-  - image: gift_matcha_tea_box_from_top_ex.jpg
-    alt: Чай матча, венчик и чаша в подарочной коробке Flow Brew
+  - image: matcha_tea_flowbrew.jpg
+    alt: Чай матча Flow Brew
   - image: matcha_tea_in_hand.jpg
     alt: Чай матча Flow Brew в чаше в руке
   - image: matcha_tea_in_bowl.jpg
@@ -35,15 +35,6 @@ images:
 # Benefits section
 #---
 benifits:
-  - name: free-chasen-and-chawan
-    image: 
-        image: gift_matcha_tea_box_from_front.jpg
-        alt: Венчик часен и чаша чаван для чая матча от Flow Brew
-    header: Венчик и Чаша в Подарок
-    body: >-
-      <p>Мы дарим бесплатный набор для заварки новым клиентам.</p><p><span class="quantity"></span></p>
-      <p>Для заварки чая матча следует использовать венчик часен и чашу чаван. Иначе в чае останутся комочки, которые испортят вкус.</p>
-    
   - name: japanese-quality
     image:
         image: matcha_tea_in_test_tube.jpg
@@ -51,15 +42,16 @@ benifits:
     header: Японское Качество
     body: >-
       <p>Мы попробовали 20 сортов японского чая матча и отобрали лучший. Мы уделили внимание как и вкусу чая, так и его тонизирующему эффекту.</p>
-      
-  - name: whisk-support
-    image:
+
+  - name: free-chasen-and-chawan
+    image: 
         image: whisk.jpg
         alt: Венчик часен
-    header: Программа Замены Венчика
+    header: Венчик в Подарок
     body: >-
-      <p>Мы бесплатно заменим вам венчик в случае его износа.</p>
-      <p>Для этого в комментарии к заказу чая укажите "нужен новый венчик". И вместе с чаем мы вышлем вам замену.</p>
+      <p>Мы дарим бесплатный венчик для заварки новым клиентам.</p><p><span class="quantity"></span></p>
+      <p>Для заварки чая матча следует использовать венчик часен. Иначе в чае останутся комочки, которые испортят вкус.</p>
+    
 
 #---
 # Faq section
@@ -93,13 +85,13 @@ reviews_h: Отзывы
 reviews:
   - body: Вкус, насыщенный и не на что не похожий
     name: Мария
-    time: 2019
+    time: 
   - body: Послевкусие как от улуна, смородиновый лист. также вкус чистый, приятный.
     name: Марат
-    time: 2019
+    time: 
   - body: Мой любимый вариант заварки с молоком. Нежный и мягкий вкус )
     name: Марина
-    time: 2019
+    time: 
 ---
 
 {% assign product = site.products.matcha %}
@@ -113,9 +105,9 @@ reviews:
     <div class="bli">
       {% if item.image %}
         {% if remainder == 0 %}
-          {% assign class = 'auto-zoom big-shape right-image' %}
-        {% else %}
           {% assign class = 'auto-zoom big-shape left-image' %}
+        {% else %}
+          {% assign class = 'auto-zoom big-shape right-image' %}
         {% endif %}
         {% include image_variant.html class=class image=item.image.image alt=item.image.alt title=item.image.alt %}
       {% elsif item.video %}
