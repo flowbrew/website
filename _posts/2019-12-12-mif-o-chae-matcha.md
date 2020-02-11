@@ -1,4 +1,5 @@
 ---
+visible: true
 layout: post
 light_page: true
 
