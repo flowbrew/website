@@ -112,20 +112,10 @@ def publish_paper_io(paper_name, sha, **kwargs):
         print(f'Paper were published to "{publish_url}"')
 
 
-def ga_dimension_filter(**kwargs):
-    return {
-        'segmentFilterClauses': [
-            {
-                'dimensionFilter': kwargs
-            },
-        ]
-    }
-
-
 def ga_simple_segment(filters):
     return {
         'simpleSegment': {
-            'orFiltersForSegment': [ga_dimension_filter(**x) for x in filters]
+            'orFiltersForSegment': filters
         }
     }
 
@@ -141,18 +131,51 @@ def ga_dynamic_segment(name, filters):
     }
 
 
+def dimension_filter(dimensionName, expressions, operator):
+    return {
+        'segmentFilterClauses': [
+            {
+                'dimensionFilter': {
+                    'dimensionName': dimensionName,
+                    'expressions': expressions,
+                    'operator': operator
+                },
+            },
+        ],
+    }
+
+
+def metric_filter(metricName, operator, comparisonValue):
+    return {
+        'segmentFilterClauses': [
+            {
+                'metricFilter': {
+                    'metricName': metricName,
+                    'operator': operator,
+                    'comparisonValue': comparisonValue
+                },
+            },
+        ],
+    }
+
+
 def target_audience_filters():
     return [
-        {
-            'dimensionName': 'ga:country',
-            'expressions': ['Russia'],
-            'operator': 'EXACT'
-        },
-        {
-            'dimensionName': 'ga:sessionCount',
-            'expressions': ['3'],
-            'operator': 'NUMERIC_LESS_THAN'
-        }
+        dimension_filter(
+            dimensionName='ga:country',
+            expressions=['Russia'],
+            operator='EXACT'
+        ),
+        dimension_filter(
+            dimensionName='ga:sessionCount',
+            expressions=['5'],
+            operator='NUMERIC_LESS_THAN'
+        ),
+        metric_filter(
+            metricName='ga:sessionDuration',
+            operator='GREATER_THAN',
+            comparisonValue='15'
+        ),
     ]
 
 
@@ -166,11 +189,13 @@ def ga_target_audience_segment():
 def ga_sha_segment(sha):
     return ga_dynamic_segment(
         "Target Audience",
-        target_audience_filters() + [{
-            'dimensionName': 'ga:dimension2',
-            'expressions': [sha],
-            'operator': 'EXACT'
-        }]
+        target_audience_filters() + [
+            dimension_filter(
+                dimensionName='ga:dimension2',
+                expressions=[sha],
+                operator='EXACT'
+            ),
+        ]
     )
 
 
@@ -188,7 +213,10 @@ def unique_pageviews_of_segments_io(analytics, start, end, segments):
                     'metrics': [{
                         'expression': 'ga:uniquePageviews'
                     }],
-                    'dimensions': [{'name': 'ga:segment'}, {'name': 'ga:pagePath'}],
+                    'dimensions': [
+                        {'name': 'ga:segment'},
+                        {'name': 'ga:pagePath'}
+                    ],
                     'segments': segments,
                 }]
         }
@@ -196,9 +224,12 @@ def unique_pageviews_of_segments_io(analytics, start, end, segments):
     df = to_dataframe(res)
     if 'ga:uniquePageviews' not in df.columns:
         return pd.DataFrame({'ga:uniquePageviews': []})
+
     upv = df.astype({'ga:uniquePageviews': 'int32'})
     upv['ga:pagePath'] = upv['ga:pagePath'].apply(
-        lambda x: x.split('?')[0])
+        lambda x: x.split('?')[0]
+    )
+
     return upv.groupby(['ga:pagePath', 'ga:segment']).sum()
 
 
@@ -229,21 +260,20 @@ def ga_segment_stats_io(
         segments,
     )
 
-    n = \
-        upv['ga:uniquePageviews'].get(
-            ['/', 'Target Audience'],
-            default=[0]
-        )[0]
-    n_conversion = \
-        upv['ga:uniquePageviews'].get(
-            ['/checkout.html', 'Target Audience'],
-            default=[0]
-        )[0]
+    n = deep_get(
+        ['ga:uniquePageviews', '/', 'Target Audience'],
+        upv, 0
+    )
+
+    n_conversion = deep_get(
+        ['ga:uniquePageviews', '/checkout.html', 'Target Audience'],
+        upv, 0
+    )
 
     return {
         'n': n,
         'n_conversion': n_conversion,
-        'conversion': 0 if n == 0 else n_conversion / n
+        'conversion': 0.0 if n == 0 else n_conversion / n
     }
 
 

@@ -76,6 +76,7 @@ def test_deep_get():
     assert deep_get(['a', 'x'], dictionary) == 'internet'
     with pytest.raises(KeyError):
         deep_get(['a', 'z'], dictionary)
+    assert deep_get(['a', 'z'], dictionary, default='LOL') == 'LOL'
 
 
 @pytest.mark.pybrew
