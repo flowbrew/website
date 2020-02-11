@@ -8,10 +8,10 @@ redirect_from:
   - /blog/ne-pokupajte-chaj-matcha-radi-antioksidantov
 
 title: Миф о чае матча
-subtitle: Каким свойством он НЕ обладает
+subtitle: Об этом не знаю даже продавцы чая
 
 link_image: /blog/100_times_egcg_ex3.png
-description: Каким свойством он НЕ обладает
+description: Об этом не знаю даже продавцы чая
 
 author:
   name: Алексей Козин
