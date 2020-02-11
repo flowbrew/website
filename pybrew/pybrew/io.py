@@ -458,7 +458,7 @@ def deploy_jekyll_io(path, local_run, deployment_repo, sha, **kwargs):
         )
 
 
-def pytest_args(mark, branch, local_run):
+def pytest_args(mark, branch, local_run, event_name):
     return f'''pytest
         -vv -l
         --color=yes
@@ -466,7 +466,7 @@ def pytest_args(mark, branch, local_run):
         --pyargs pybrew
         -m {mark}
         {"--local" if local_run else ""}
-        {"--runslow" if not local_run else ""}
+        {"--runslow" if event_name == 'push_slow' or not local_run else ""}
         {"--master" if branch == master_branch() else ""}
         '''
 
@@ -481,9 +481,10 @@ def validate_pybrew_io(
     test_deployment_repo,
     organization,
     local_run,
+    event_name,
     **kwargs
 ):
-    run_io(pytest_args('pybrew', branch, local_run) + f'''
+    run_io(pytest_args('pybrew', branch, local_run, event_name) + f'''
         --SHA={sha}
         --BRANCH={branch}
         --TEST_REPOSITORY={test_deployment_repo}
@@ -517,9 +518,10 @@ def validate_build_io(
     path,
     branch,
     local_run,
+    event_name,
     **kwargs
 ):
-    run_io(pytest_args('build', branch, local_run) + f'''
+    run_io(pytest_args('build', branch, local_run, event_name) + f'''
         --WEBSITE_BUILD_PATH={path}
         --BRANCH={branch}
         ''')
@@ -534,6 +536,7 @@ def validate_deployment_io(
     branch,
     local_run,
     traffic_allocation,
+    event_name,
     **kwargs
 ):
     url = (
@@ -551,7 +554,7 @@ def validate_deployment_io(
     traffic_allocation1 = to_jekyll_traffic_allocation(traffic_allocation)
     traffic_allocation2 = json.dumps(traffic_allocation1).replace("'", "")
 
-    run_io(pytest_args('deployment', branch, local_run) + f'''
+    run_io(pytest_args('deployment', branch, local_run, event_name) + f'''
         --BRANCH={branch}
         --URL={baseurl}
         --TRAFFIC_ALLOCATION='{traffic_allocation2}'
@@ -591,7 +594,7 @@ def cicd_io(repo_path, event_name, **kwargs_):
         validate_pybrew_io(**kwargs)
         install_pybrew_io(**kwargs)
 
-        if event_name == 'push' or event_name == 'schedule':
+        if event_name in ['push', 'schedule', 'push_slow']:
             on_branch_updated_io(**kwargs)
             assert time.time() - start_time < 600, \
                 "cicd_io is too slow, consider to speedup"
@@ -715,6 +718,8 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
     if not git_has_unstaged_changes_io():
         return
 
+    run_io("git status")
+
     assert local_run, "State was changed during the run. \
         Perhaps @cachier updated some cache. \
         Run build locally to update the cache and only then commit changes."
@@ -723,13 +728,6 @@ def git_push_state_if_updated_io(repo_path, branch, local_run, **kwargs):
         run_io(
             f'rsync -a \
                 --exclude "node_modules" \
-                --exclude "*.py*" \
-                --exclude "*.html*" \
-                --exclude "*.md*" \
-                --exclude "*.js*" \
-                --exclude "*.json*" \
-                --exclude "*.yml*" \
-                --exclude "*.ipynb*" \
                 {repo_path} /local_website/'
         )
 
