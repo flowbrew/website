@@ -277,9 +277,15 @@ def ga_segment_stats_io(
     }
 
 
-def on_pre_split_test_analysis_io(**kwargs):
-    publish_paper_io(paper_name='pre_split_test_analysis', **kwargs)
+def on_pre_split_test_analysis_io(branch, **kwargs):
+    if branch == master_branch():
+        return
+    else:
+        publish_paper_io(paper_name='pre_split_test_analysis', **kwargs)
 
 
-def on_split_test_io(**kwargs):
-    publish_paper_io(paper_name='split_test', **kwargs)
+def on_split_test_io(branch, **kwargs):
+    if branch == master_branch():
+        return
+    else:
+        publish_paper_io(paper_name='split_test', **kwargs)
