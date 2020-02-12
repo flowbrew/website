@@ -1194,6 +1194,16 @@ def github_branch_sha_io(branch, path='.'):
     return github_sha_io(org, name, branch)
 
 
+def github_branch_info_io(branch=None, path='.'):
+    org, name = extract_repo_name_from_origin(
+        git_origin_io(path)
+    )
+    branch_ = branch if branch else git_branch_io(path)
+    url = \
+        f"{github_endpoint()}/repos/{org}/{name}/commits/{branch_}"
+    return {**requests.get(url).json(), **{'branch': branch_}}
+
+
 def utc_time_from_sha_io(sha, path='.'):
     with Path(path):
         return datetime.strptime(
