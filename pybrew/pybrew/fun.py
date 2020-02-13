@@ -877,7 +877,7 @@ query ($owner: String!, $name: String!) {
 
 
 @curry
-def pull_request_io(baseRefName, path='.'):
+def pull_request_io(headRefName, path='.'):
     org, name = extract_repo_name_from_origin(
         git_origin_io(path)
     )
@@ -888,7 +888,7 @@ def pull_request_io(baseRefName, path='.'):
     )
     return next(
         x for x in pull_requests
-        if deep_get(['node', 'baseRefName'], x) == baseRefName and
+        if deep_get(['node', 'headRefName'], x) == headRefName and
         deep_get(['node', 'state'], x) == 'OPEN'
     )
 
