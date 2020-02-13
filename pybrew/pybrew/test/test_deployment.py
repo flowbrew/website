@@ -483,6 +483,9 @@ def test_website_performance_io(URL, BRANCH):
                 if BRANCH == master_branch():
                     assert audit['score'] >= 0.75
 
+            elif name == 'uses-webp-images':
+                assert audit['score'] >= 0.5
+
             elif is_mobile and name == 'first-contentful-paint-3g':
                 assert audit['score'] >= 0.3
 
