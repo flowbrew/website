@@ -32,5 +32,6 @@ docker run -t --rm --name analytics \
     ${RUNPARAMS} \
     -v "$PWD":/local_website \
     -e GOOGLE_ANALYTICS \
+    -e GITHUB_WEBSITE_TOKEN \
     -p 127.0.0.1:8888:8888 \
     "$DOCKERNAME" bash -c "$DOCKER_COMMAND"
