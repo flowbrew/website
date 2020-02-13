@@ -877,6 +877,23 @@ query ($owner: String!, $name: String!) {
 
 
 @curry
+def pull_request_io(baseRefName, path='.'):
+    org, name = extract_repo_name_from_origin(
+        git_origin_io(path)
+    )
+    pull_requests = pull_requests_io(
+        secret_io('GITHUB_WEBSITE_TOKEN'),
+        org,
+        name
+    )
+    return next(
+        x for x in pull_requests
+        if deep_get(['node', 'baseRefName'], x) == baseRefName and
+        deep_get(['node', 'state'], x) == 'OPEN'
+    )
+
+
+@curry
 def pull_requests_io(github_token, organization, repo_name):
     query = '''
 query ($owner: String!, $name: String!, $master: String!) {
@@ -1012,8 +1029,8 @@ def t2s(x):
 tdlt = timedelta
 
 
-def is_stale_pull_request(current_time, pull_request):
-    last_action = pipe(
+def last_split_action_in_pull_request(pull_request):
+    return pipe(
         pull_request.get('node', {}).get('timelineItems', {}).get('nodes', []),
         filter(
             lambda x:
@@ -1028,6 +1045,10 @@ def is_stale_pull_request(current_time, pull_request):
             default={}
         )
     )
+
+
+def is_stale_pull_request(current_time, pull_request):
+    last_action = last_split_action_in_pull_request(pull_request)
 
     return 'createdAt' in last_action and (
         current_time - last_action.get('createdAt')
@@ -1051,7 +1072,7 @@ def is_suitable_for_split_testing(pull_request):
 
     is_open = _state(pull_request) == 'OPEN'
 
-    all_runs = chain_(_runs(x) for x in _suites(pull_request))
+    all_runs = list(chain_(_runs(x) for x in _suites(pull_request)))
 
     was_built_and_tested = any(
         x.get('name') == build_test_deploy_check_name() and
