@@ -84,8 +84,12 @@ export function try_redirect_to_backup_page_io(branch_prefix) {
   }
 
   if (parts[0].startsWith(branch_prefix)) {
-    window.location.replace(urljoin([host].concat(parts.slice(1)).map(trim_s)));
+    window.location.replace(
+      urljoin([host].concat(parts.slice(1)).map(trim_s))
+      );
   } else if (parts[0] == "blog" && parts.length > 1) {
-    window.location.replace(urljoin([host, "blog"]));
+    window.location.replace(
+      urljoin([host, "blog", window.location.search].map(trim_s))
+      );
   }
 }
